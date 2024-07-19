@@ -1,0 +1,10 @@
+[copr:copr.fedorainfracloud.org:szydell:system76]
+name=Copr repo for system76 owned by szydell
+baseurl=https://download.copr.fedorainfracloud.org/results/szydell/system76/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/szydell/system76/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
