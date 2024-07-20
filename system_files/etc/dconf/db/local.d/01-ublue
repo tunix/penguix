@@ -1,0 +1,158 @@
+[org/gnome/shell] 
+favorite-apps = ['com.brave.Browser.desktop', 'org.gnome.Nautilus.desktop', 'com.spotify.Client.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Software.desktop', 'org.gnome.Settings.desktop', 'org.telegram.desktop.desktop', 'com.slack.Slack.desktop', 'com.discordapp.Discord.desktop', 'md.obsidian.Obsidian.desktop']
+enabled-extensions = ['appindicatorsupport@rgcjonas.gmail.com', 'blur-my-shell@aunetx', 'gsconnect@andyholmes.github.io', 'tailscale@joaophi.github.com', 'caffeine@patapon.info', 'nightthemeswitcher@romainvigier.fr', 'Vitals@CoreCoding.com', 'search-light@icedman.github.com']
+disable-user-extensions = false
+
+[org/gnome/shell/weather]
+automatic-location = true
+
+[org/gnome/desktop/background]
+picture-uri = 'file:///usr/share/backgrounds/bluefin/bluefin-summer-dynamic.xml'
+picture-uri-dark = 'file:///usr/share/backgrounds/bluefin/bluefin-summer-dynamic.xml'
+picture-options = 'zoom'
+primary-color = '000000'
+secondary-color = 'FFFFFF'
+
+[org/gnome/desktop/interface]
+enable-hot-corners = false
+clock-format = '24h'
+clock-show-date = true
+clock-show-weekday = true
+cursor-theme = "Yaru"
+text-scaling-factor = 1.0
+
+[org/gnome/desktop/wm/preferences]
+button-layout = 'appmenu:minimize,maximize,close'
+
+[org/gnome/desktop/sound]
+allow-volume-above-100-percent = true
+event-sounds = true
+theme-name = "freedesktop"
+
+[org/gnome/desktop/peripherals/keyboard]
+repeat = true
+repeat-interval = 30
+
+[org/gnome/desktop/peripherals/touchpad]
+tap-to-click = true
+send-events = true
+natural-scroll = true
+two-finger-scrolling-enabled = true
+disable-while-typing = true
+
+[org/gnome/desktop/peripherals/mouse]
+natural-scroll = false
+
+[org/gnome/desktop/privacy]
+remove-old-trash-files = true
+remove-old-temp-files = true
+old-files-age = 3
+
+[org/gtk/settings/file-chooser]
+sort-directories-first = true
+
+[org/gtk/gtk4/settings/file-chooser]
+sort-directories-first = true
+sort-order = 'ascending'
+
+[org/gnome/desktop/datetime]
+automatic-timezone = true
+
+[org/gnome/mutter]
+experimental-features = ['scale-monitor-framebuffer']
+workspaces-only-on-primary = false
+center-new-windows = true
+
+[org/gnome/software]
+allow-updates = false
+download-updates = false
+download-updates-notify = false
+
+[org/gnome/settings-daemon/plugins/color]
+active = true
+night-light-enabled = true
+
+[org/gnome/settings-daemon/plugins/power]
+power-button-action = 'nothing'
+sleep-inactive-battery-timeout = 900
+sleep-inactive-battery-type = 'suspend'
+
+[org/gnome/settings-daemon/plugins/media-keys]
+home = ['<Super>f']
+www = ['<Super>b']
+calculator = ['<Super>c']
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/']
+max-screencast-length = 0
+volume-step = 2
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
+binding = '<Super>t'
+command = '/usr/libexec/distrobox-quadlet-ptyxis.sh Host'
+name = 'Host Ptyxis'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1]
+binding = '<Ctrl><Alt>u'
+command = '/usr/libexec/distrobox-quadlet-ptyxis.sh ubuntu-toolbox'
+name = 'Ubuntu Ptyxis'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2]
+binding = '<Ctrl><Shift>Escape'
+command = 'flatpak run io.missioncenter.MissionCenter'
+name = 'Mission Center'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3]
+binding = '<Ctrl><Alt>f'
+command = '/usr/libexec/distrobox-quadlet-ptyxis.sh fedora-toolbox'
+name = 'Fedora Ptyxis'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4]
+binding = '<Ctrl><Shift>Space'
+command = '/opt/1Password/1password --quick-access'
+name = '1Password Quick Access'
+
+[org/gnome/nautilus/icon-view]
+default-zoom-level = 'small-plus'
+
+[org/gnome/nautilus/window-state]
+initial-size = (1210, 750)
+
+[com/github/stunkymonkey/nautilus-open-any-terminal]
+terminal = 'ptyxis'
+keybindings = ''
+new-tab = false
+flatpak = 'off'
+
+[org/gnome/shell/extensions/appindicator]
+tray-pos = 'left'
+
+[org/gnome/shell/extensions/search-light]
+shortcut-search = ['<Super>space']
+scale-width = 0.10
+scale-height = 0.15
+border-thickness = 1
+border-radius = 1.65
+border-color = (0.23, 0.23, 0.23, 1.0)
+background-color = (0.0, 0.0, 0.0, 0.8)
+
+[org/gnome/Ptyxis]
+interface-style = 'system'
+restore-session = false
+restore-window-size = true
+audible-bell = false
+profile-uuids = ['2871e8027773ae74d6c87a5f659bbc74']
+default-profile-uuid = '2871e8027773ae74d6c87a5f659bbc74'
+
+[org/gnome/Ptyxis/Profiles/2871e8027773ae74d6c87a5f659bbc74]
+palette = 'catppuccin-dynamic'
+
+[org/gnome/shell/extensions/vitals]
+alphabetize = true
+hot-sensors = ['_processor_usage_', '_memory_usage_', '__network-rx_max__', '__network-tx_max__']
+position-in-panel = 2
+show-storage = false
+show-system = true
+
+[org/gnome/shell/extensions/nightthemeswitcher/commands]
+enabled = true
+sunrise = 'toggle-color-preferences.sh light'
+sunset = 'toggle-color-preferences.sh dark'
