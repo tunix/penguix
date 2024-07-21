@@ -3,8 +3,15 @@ favorite-apps = ['com.brave.Browser.desktop', 'org.gnome.Nautilus.desktop', 'com
 enabled-extensions = ['appindicatorsupport@rgcjonas.gmail.com', 'blur-my-shell@aunetx', 'gsconnect@andyholmes.github.io', 'tailscale@joaophi.github.com', 'caffeine@patapon.info', 'nightthemeswitcher@romainvigier.fr', 'Vitals@CoreCoding.com', 'search-light@icedman.github.com']
 disable-user-extensions = false
 
+[org/gnome/system/location]
+enabled = true
+
 [org/gnome/shell/weather]
 automatic-location = true
+locations=[<(uint32 2, <('Izmir-Adnan Menderes Airport', 'LTBJ', false, [(0.66787933291426083, 0.47385689191646041)], @a(dd) [])>)>]
+
+[org/gnome/desktop/input-sources]
+sources=[('xkb', 'tr')]
 
 [org/gnome/desktop/background]
 picture-uri = 'file:///usr/share/backgrounds/bluefin/bluefin-summer-dynamic.xml'
@@ -20,6 +27,7 @@ clock-show-date = true
 clock-show-weekday = true
 cursor-theme = "Yaru"
 text-scaling-factor = 1.0
+monospace-font-name = 'Ubuntu Mono 12'
 
 [org/gnome/desktop/wm/preferences]
 button-layout = 'appmenu:minimize,maximize,close'
@@ -74,6 +82,7 @@ night-light-enabled = true
 
 [org/gnome/settings-daemon/plugins/power]
 power-button-action = 'nothing'
+sleep-inactive-ac-type = 'nothing'
 sleep-inactive-battery-timeout = 900
 sleep-inactive-battery-type = 'suspend'
 
@@ -116,6 +125,9 @@ default-zoom-level = 'small-plus'
 [org/gnome/nautilus/window-state]
 initial-size = (1210, 750)
 
+[org/gnome/tweaks]
+show-extensions-notice = false
+
 [com/github/stunkymonkey/nautilus-open-any-terminal]
 terminal = 'ptyxis'
 keybindings = ''
@@ -139,6 +151,7 @@ interface-style = 'system'
 restore-session = false
 restore-window-size = true
 audible-bell = false
+cursor-shape = 'underline'
 profile-uuids = ['2871e8027773ae74d6c87a5f659bbc74']
 default-profile-uuid = '2871e8027773ae74d6c87a5f659bbc74'
 
