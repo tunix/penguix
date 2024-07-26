@@ -5,7 +5,8 @@ set -ouex pipefail
 RELEASE="$(rpm -E %fedora)"
 
 rpm-ostree install \
-    system76-keyboard-configurator
+    system76-keyboard-configurator \
+    telnet
 
 systemctl disable pcscd.socket
 
