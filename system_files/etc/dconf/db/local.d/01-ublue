@@ -1,4 +1,4 @@
-[org/gnome/shell] 
+[org/gnome/shell]
 favorite-apps = ['com.brave.Browser.desktop', 'org.gnome.Nautilus.desktop', 'com.spotify.Client.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Software.desktop', 'org.gnome.Settings.desktop', 'org.telegram.desktop.desktop', 'com.slack.Slack.desktop', 'com.discordapp.Discord.desktop', 'md.obsidian.Obsidian.desktop']
 enabled-extensions = ['appindicatorsupport@rgcjonas.gmail.com', 'blur-my-shell@aunetx', 'gsconnect@andyholmes.github.io', 'tailscale@joaophi.github.com', 'caffeine@patapon.info', 'nightthemeswitcher@romainvigier.fr', 'Vitals@CoreCoding.com', 'search-light@icedman.github.com']
 disable-user-extensions = false
@@ -27,7 +27,7 @@ clock-show-date = true
 clock-show-weekday = true
 cursor-theme = "Yaru"
 text-scaling-factor = 1.0
-monospace-font-name = 'Ubuntu Mono 12'
+monospace-font-name = 'Ubuntu Mono 11'
 
 [org/gnome/desktop/wm/preferences]
 button-layout = 'appmenu:minimize,maximize,close'
