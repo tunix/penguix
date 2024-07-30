@@ -169,3 +169,8 @@ show-system = true
 enabled = true
 sunrise = 'toggle-color-preferences.sh light'
 sunset = 'toggle-color-preferences.sh dark'
+
+[org/gnome/shell/extensions/hidetopbar]
+enable-active-window = false
+mouse-sensitive = true
+mouse-sensitive-fullscreen-window = false
