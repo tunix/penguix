@@ -96,7 +96,7 @@ volume-step = 2
 
 [org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
 binding = '<Super>t'
-command = '/usr/libexec/distrobox-quadlet-ptyxis.sh Host'
+command = 'ptyxis --new-window'
 name = 'Host Ptyxis'
 
 [org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1]
