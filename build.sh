@@ -3,7 +3,10 @@
 set -ouex pipefail
 
 rpm-ostree install \
+    system76-drivers \
+    system76-firmware \
     system76-keyboard-configurator \
+    firmware-manager \
     telnet
 
 systemctl disable pcscd.socket
