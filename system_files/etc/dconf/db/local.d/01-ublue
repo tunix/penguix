@@ -26,7 +26,7 @@ clock-format = '24h'
 clock-show-date = true
 clock-show-weekday = true
 cursor-theme = "Yaru"
-text-scaling-factor = 1.0
+text-scaling-factor = 0.9
 monospace-font-name = 'Ubuntu Mono 11'
 
 [org/gnome/desktop/wm/preferences]
