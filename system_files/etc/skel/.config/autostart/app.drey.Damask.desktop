@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=app.drey.Damask
+Exec=flatpak run --command=damask app.drey.Damask --background
+X-Flatpak=app.drey.Damask
