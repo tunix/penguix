@@ -12,6 +12,8 @@ set -ouex pipefail
 /tmp/system76.sh
 /tmp/1password.sh
 /tmp/devops.sh
+/tmp/staging.sh
+/tmp/openvpn.sh
 
 systemctl enable podman.socket
 systemctl disable pcscd.socket
