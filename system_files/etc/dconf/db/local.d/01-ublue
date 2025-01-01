@@ -1,5 +1,5 @@
 [org/gnome/shell]
-favorite-apps = ['com.brave.Browser.desktop', 'org.gnome.Nautilus.desktop', 'com.spotify.Client.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Software.desktop', 'org.gnome.Settings.desktop', 'org.telegram.desktop.desktop', 'com.slack.Slack.desktop', 'com.discordapp.Discord.desktop', 'md.obsidian.Obsidian.desktop']
+favorite-apps = ['com.brave.Browser.desktop', 'org.gnome.Nautilus.desktop', 'com.spotify.Client.desktop', 'com.mitchellh.ghostty.desktop', 'org.gnome.Software.desktop', 'org.gnome.Settings.desktop', 'org.telegram.desktop.desktop', 'com.slack.Slack.desktop', 'com.discordapp.Discord.desktop', 'md.obsidian.Obsidian.desktop']
 enabled-extensions = ['appindicatorsupport@rgcjonas.gmail.com', 'blur-my-shell@aunetx', 'gsconnect@andyholmes.github.io', 'tailscale@joaophi.github.com', 'caffeine@patapon.info', 'nightthemeswitcher@romainvigier.fr', 'Vitals@CoreCoding.com', 'search-light@icedman.github.com']
 disable-user-extensions = false
 
@@ -91,31 +91,16 @@ sleep-inactive-battery-type = 'suspend'
 home = ['<Super>f']
 www = ['<Super>b']
 calculator = ['<Super>c']
-custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/']
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/']
 max-screencast-length = 0
 volume-step = 2
 
 [org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
 binding = '<Super>t'
-command = 'ptyxis --new-window'
-name = 'Host Ptyxis'
+command = 'ghostty'
+name = 'Start Ghostty'
 
 [org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1]
-binding = '<Ctrl><Alt>u'
-command = '/usr/libexec/distrobox-quadlet-ptyxis.sh ubuntu-toolbox'
-name = 'Ubuntu Ptyxis'
-
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2]
-binding = '<Ctrl><Shift>Escape'
-command = 'flatpak run io.missioncenter.MissionCenter'
-name = 'Mission Center'
-
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3]
-binding = '<Ctrl><Alt>f'
-command = '/usr/libexec/distrobox-quadlet-ptyxis.sh fedora-toolbox'
-name = 'Fedora Ptyxis'
-
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4]
 binding = '<Ctrl><Shift>Space'
 command = '/opt/1Password/1password --quick-access'
 name = '1Password Quick Access'
@@ -130,7 +115,7 @@ initial-size = (1210, 750)
 show-extensions-notice = false
 
 [com/github/stunkymonkey/nautilus-open-any-terminal]
-terminal = 'ptyxis'
+terminal = 'ghostty'
 keybindings = ''
 new-tab = false
 flatpak = 'off'
