@@ -34,3 +34,6 @@ rm /etc/yum.repos.d/system76.repo -f
 # Disable tuned & tuned-ppd
 systemctl mask tuned.service
 systemctl mask tuned-ppd.service
+
+# Enable system76 services
+systemctl enable com.system76.PowerDaemon.service system76-power-wake system76-firmware-daemon
