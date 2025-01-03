@@ -22,7 +22,11 @@ EOF
 rpm --import https://download.copr.fedorainfracloud.org/results/szydell/system76/pubkey.gpg
 
 dnf5 install -y \
-    system76-keyboard-configurator
+    system76-firmware \
+    firmware-manager \
+    system76-driver \
+    system76-keyboard-configurator \
+    system76-power
 
 # Clean up the yum repo (updates are baked into new images)
 rm /etc/yum.repos.d/system76.repo -f
