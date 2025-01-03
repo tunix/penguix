@@ -30,3 +30,7 @@ dnf5 install -y \
 
 # Clean up the yum repo (updates are baked into new images)
 rm /etc/yum.repos.d/system76.repo -f
+
+# Disable tuned & tuned-ppd
+systemctl mask tuned.service
+systemctl mask tuned-ppd.service
