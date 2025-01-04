@@ -79,6 +79,7 @@ download-updates-notify = false
 [org/gnome/settings-daemon/plugins/color]
 active = true
 night-light-enabled = true
+night-light-temperature = 2700
 
 [org/gnome/settings-daemon/plugins/power]
 power-button-action = 'nothing'
