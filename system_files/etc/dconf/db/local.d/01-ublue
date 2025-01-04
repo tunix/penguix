@@ -21,6 +21,7 @@ primary-color = '000000'
 secondary-color = 'FFFFFF'
 
 [org/gnome/desktop/interface]
+accent-color = 'teal'
 enable-hot-corners = false
 clock-format = '24h'
 clock-show-date = true
@@ -156,6 +157,14 @@ show-system = true
 enabled = true
 sunrise = 'toggle-color-preferences.sh light'
 sunset = 'toggle-color-preferences.sh dark'
+
+[org/gnome/shell/extensions/nightthemeswitcher/time]
+fullscreen-transition=false
+location=(38.355559800000002, 26.788658000000002)
+manual-schedule=false
+nightthemeswitcher-ondemand-keybinding=['<Shift><Super>t']
+sunrise=8.9038564982718711
+sunset=17.698289827436163
 
 [org/gnome/shell/extensions/hidetopbar]
 enable-active-window = false
