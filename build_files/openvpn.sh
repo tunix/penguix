@@ -2,6 +2,8 @@
 
 set -ouex pipefail
 
+echo "Installing OpenVPN Client & Indicator..."
+
 dnf5 -y copr enable \
     dsommers/openvpn3
 
