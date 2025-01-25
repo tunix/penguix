@@ -68,8 +68,6 @@ sort-order = 'ascending'
 automatic-timezone = true
 
 [org/gnome/mutter]
-# experimental-features = ['scale-monitor-framebuffer']
-experimental-features = []
 workspaces-only-on-primary = false
 center-new-windows = true
 
