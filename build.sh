@@ -12,7 +12,7 @@ set -ouex pipefail
 /tmp/system76.sh
 /tmp/1password.sh
 /tmp/devops.sh
-/tmp/staging.sh
+/tmp/ghostty.sh
 /tmp/openvpn.sh
 
 systemctl enable podman.socket
