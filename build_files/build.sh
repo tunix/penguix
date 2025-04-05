@@ -9,11 +9,11 @@ set -ouex pipefail
 # List of rpmfusion packages can be found here:
 # https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/39/x86_64/repoview/index.html&protocol=https&redirect=1
 
-/tmp/system76.sh
-/tmp/1password.sh
-/tmp/devops.sh
-/tmp/ghostty.sh
-/tmp/openvpn.sh
+/system76.sh
+/1password.sh
+/devops.sh
+/ghostty.sh
+/openvpn.sh
 
 systemctl enable podman.socket
 systemctl disable pcscd.socket
