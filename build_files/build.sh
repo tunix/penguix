@@ -12,7 +12,7 @@ set -ouex pipefail
 /ctx/system76.sh
 /ctx/1password.sh
 /ctx/devops.sh
-/ctx/ghostty.sh
+# /ctx/ghostty.sh
 /ctx/openvpn.sh
 
 systemctl enable podman.socket
