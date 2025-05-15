@@ -1,0 +1,10 @@
+[Unit]
+Description=Write configuration files to disk idempotently
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/openvpn3-admin init-config --write-configs
+
+[Install]
+WantedBy=multi-user.target
