@@ -13,3 +13,5 @@ dnf5 -y copr enable \
 dnf5 install -y \
     openvpn3-client \
     openvpn3-indicator
+
+systemctl enable openvpn-workaround.service
