@@ -2,6 +2,11 @@
 
 set -ouex pipefail
 
+if [[ "$HARDWARE" != *"system76"* ]]; then
+    echo "Skipping system76 related configuration..."
+    exit 0
+fi
+
 echo "Installing system76 packages..."
 
 dnf5 -y copr enable szydell/system76
