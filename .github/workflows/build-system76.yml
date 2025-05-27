@@ -1,5 +1,5 @@
 ---
-name: Build 
+name: Build System76 Image
 on:
   pull_request:
     branches:
