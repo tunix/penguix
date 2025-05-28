@@ -1,9 +1,20 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-# Thanks to bri for the inspiration! My script is mostly based on this example:
-# https://github.com/briorg/bluefin/blob/c62c30a04d42fd959ea770722c6b51216b4ec45b/scripts/1password.sh
+# taken from below URL:
+# https://github.com/blue-build/modules/blob/main/modules/bling/installers/1password.sh
 
 set -ouex pipefail
+
+#### Variables
+
+# Can be "beta" or "stable"
+RELEASE_CHANNEL="${ONEPASSWORD_RELEASE_CHANNEL:-stable}"
+
+# Must be over 1000
+GID_ONEPASSWORD="${GID_ONEPASSWORD:-1500}"
+
+# Must be over 1000
+GID_ONEPASSWORDCLI="${GID_ONEPASSWORDCLI:-1600}"
 
 echo "Installing 1Password"
 
@@ -22,8 +33,8 @@ mkdir -p /var/opt # -p just in case it exists
 # Setup repo
 cat << EOF > /etc/yum.repos.d/1password.repo
 [1password]
-name=1Password Stable Channel
-baseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch
+name=1Password ${RELEASE_CHANNEL^} Channel
+baseurl=https://downloads.1password.com/linux/rpm/${RELEASE_CHANNEL}/\$basearch
 enabled=1
 gpgcheck=1
 repo_gpgcheck=1
@@ -33,16 +44,35 @@ EOF
 # Import signing key
 rpm --import https://downloads.1password.com/linux/keys/1password.asc
 
-# Prepare 1Password groups
-# Normally, when after dnf installs the 1password RPM, an
-# 'after-install.sh' script runs to cofigure several things, including
-# the creation of a group. Under rpm-ostree, this didn't work quite as
-# expected, thus several steps were done to hack around and fix things.
-# Now with dnf5, there is a problem where 'after-install.sh' creates
-# groups which conflict with default user's GID. This now pre-creates
-# the groups, rather than fixing after RPM installation.
+# Now let's install the packages.
+rpm-ostree install 1password 1password-cli
 
-# I hardcode GIDs and cross fingers that nothing else steps on them.
+# Clean up the yum repo (updates are baked into new images)
+rm /etc/yum.repos.d/1password.repo -f
+
+# And then we do the hacky dance!
+mv /var/opt/1Password /usr/lib/1Password # move this over here
+
+# Create a symlink /usr/bin/1password => /opt/1Password/1password
+rm /usr/bin/1password
+ln -s /opt/1Password/1password /usr/bin/1password
+
+#####
+# The following is a bastardization of "after-install.sh"
+# which is normally packaged with 1password. You can compare with
+# /usr/lib/1Password/after-install.sh if you want to see.
+
+cd /usr/lib/1Password
+
+# chrome-sandbox requires the setuid bit to be specifically set.
+# See https://github.com/electron/electron/issues/17972
+chmod 4755 /usr/lib/1Password/chrome-sandbox
+
+# Normally, after-install.sh would create a group,
+# "onepassword", right about now. But if we do that during
+# the ostree build it'll disappear from the running system!
+# I'm going to work around that by hardcoding GIDs and
+# crossing my fingers that nothing else steps on them.
 # These numbers _should_ be okay under normal use, but
 # if there's a more specific range that I should use here
 # please submit a PR!
@@ -51,25 +81,51 @@ rpm --import https://downloads.1password.com/linux/keys/1password.asc
 # conflict with any real groups on the deployed system.
 # Normal user group GIDs on Fedora are sequential starting
 # at 1000, so let's skip ahead and set to something higher.
-GID_ONEPASSWORD="1790"
-GID_ONEPASSWORDCLI="1791"
-groupadd -g ${GID_ONEPASSWORD} onepassword
-groupadd -g ${GID_ONEPASSWORDCLI} onepassword-cli
 
-# Now let's install the packages.
-dnf5 install -y 1password 1password-cli
+# BrowserSupport binary needs setgid. This gives no extra permissions to the binary.
+# It only hardens it against environmental tampering.
+BROWSER_SUPPORT_PATH="/usr/lib/1Password/1Password-BrowserSupport"
 
-# This places the 1Password contents in an image safe location
-mv /var/opt/1Password /usr/lib/1Password # move this over here
+
+# Add .desktop file and icons
+if [ -d /usr/share/applications ]; then
+  # xdg-desktop-menu will only be available if xdg-utils is installed, which is likely but not guaranteed
+  if [ -n "$(which xdg-desktop-menu)" ]; then
+    xdg-desktop-menu install --mode system --novendor /usr/lib/1Password/resources/1password.desktop
+    xdg-desktop-menu forceupdate
+  else
+    install -m0644 /usr/lib/1Password/resources/1password.desktop /usr/share/applications
+  fi
+fi
+if [ -d /usr/share/icons ]; then
+  cp -rf /usr/lib/1Password/resources/icons/* /usr/share/icons/
+  # Update icon cache
+  gtk-update-icon-cache -f -t /usr/share/icons/hicolor/
+fi
+
+chgrp "${GID_ONEPASSWORD}" "${BROWSER_SUPPORT_PATH}"
+chmod g+s "${BROWSER_SUPPORT_PATH}"
+
+# onepassword-cli also needs its own group and setgid, like the other helpers.
+chgrp "${GID_ONEPASSWORDCLI}" /usr/bin/op
+chmod g+s /usr/bin/op
+
+# Dynamically create the required groups via sysusers.d
+# and set the GID based on the files we just chgrp'd
+cat >/usr/lib/sysusers.d/onepassword.conf <<EOF
+g onepassword ${GID_ONEPASSWORD}
+EOF
+cat >/usr/lib/sysusers.d/onepassword-cli.conf <<EOF
+g onepassword-cli ${GID_ONEPASSWORDCLI}
+EOF
+
+# remove the sysusers.d entries created by onepassword RPMs.
+# They don't magically set the GID like we need them to.
+rm -f /usr/lib/sysusers.d/30-rpmostree-pkg-group-onepassword.conf
+rm -f /usr/lib/sysusers.d/30-rpmostree-pkg-group-onepassword-cli.conf
 
 # Register path symlink
 # We do this via tmpfiles.d so that it is created by the live system.
 cat >/usr/lib/tmpfiles.d/onepassword.conf <<EOF
 L  /opt/1Password  -  -  -  -  /usr/lib/1Password
 EOF
-
-# No further hack SHOULD be needed since dnf5 does run the script
-# after-install.sh as expected and uses our pre-set groups.
-
-# Clean up the yum repo (updates are baked into new images)
-rm /etc/yum.repos.d/1password.repo -f
