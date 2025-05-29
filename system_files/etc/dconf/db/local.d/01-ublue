@@ -26,7 +26,6 @@ enable-hot-corners = false
 clock-format = '24h'
 clock-show-date = true
 clock-show-weekday = true
-color-scheme='prefer-light'
 cursor-theme = "Yaru"
 text-scaling-factor = 0.9
 monospace-font-name = 'JetBrains Mono Regular 11'
