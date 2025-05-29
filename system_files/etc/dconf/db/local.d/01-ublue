@@ -14,8 +14,8 @@ locations=[<(uint32 2, <('Izmir-Adnan Menderes Airport', 'LTBJ', false, [(0.6678
 sources=[('xkb', 'tr')]
 
 [org/gnome/desktop/background]
-picture-uri = 'file:///usr/share/backgrounds/bluefin/bluefin-summer-dynamic.xml'
-picture-uri-dark = 'file:///usr/share/backgrounds/bluefin/bluefin-summer-dynamic.xml'
+picture-uri = 'file:///usr/share/backgrounds/bluefin/chicken.jxl'
+picture-uri-dark = 'file:///usr/share/backgrounds/bluefin/chicken.jxl'
 picture-options = 'zoom'
 primary-color = '000000'
 secondary-color = 'FFFFFF'
