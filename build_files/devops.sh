@@ -2,5 +2,5 @@
 
 set -ouex pipefail
 
-dnf5 install -y \
+dnf install -y \
     telnet

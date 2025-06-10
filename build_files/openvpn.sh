@@ -4,13 +4,13 @@ set -ouex pipefail
 
 echo "Installing OpenVPN Client & Indicator..."
 
-dnf5 -y copr enable \
+dnf -y copr enable \
     dsommers/openvpn3
 
-dnf5 -y copr enable \
+dnf -y copr enable \
     grzegorz-gutowski/openvpn3-indicator
 
-dnf5 install -y \
+dnf install -y \
     openvpn3-client \
     openvpn3-indicator
 

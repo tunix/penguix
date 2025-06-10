@@ -9,9 +9,9 @@ fi
 
 echo "Installing system76 packages..."
 
-dnf5 -y copr enable szydell/system76
+dnf -y copr enable szydell/system76
 
-dnf5 install -y \
+dnf install -y \
     system76-firmware \
     firmware-manager \
     system76-driver \
