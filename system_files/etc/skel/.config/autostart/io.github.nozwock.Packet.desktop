@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=io.github.nozwock.Packet
+X-XDP-Autostart=io.github.nozwock.Packet
+Exec=flatpak run --command=packet io.github.nozwock.Packet --background
+X-Flatpak=io.github.nozwock.Packet
