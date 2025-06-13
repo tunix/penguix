@@ -13,7 +13,7 @@ set -ouex pipefail
 /ctx/1password.sh
 /ctx/devops.sh
 /ctx/openvpn.sh
-/ctx/akmod-intel-ipu6.sh
+/ctx/solaar.sh
 
 systemctl enable podman.socket
 systemctl disable pcscd.socket
