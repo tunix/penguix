@@ -6,5 +6,5 @@
 # Fibocom L860R+ FCC unlock mechanism
 #
 
-./opt/fcc_lenovo/DPR_Fcc_unlock_service
+./var/opt/fcc_lenovo/DPR_Fcc_unlock_service
 exit $?

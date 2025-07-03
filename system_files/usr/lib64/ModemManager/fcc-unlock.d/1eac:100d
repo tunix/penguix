@@ -6,6 +6,6 @@
 # Quectel EM160R-GL FCC Lock Mechanism
 #
 
-./opt/fcc_lenovo/DPR_Fcc_unlock_service
+./var/opt/fcc_lenovo/DPR_Fcc_unlock_service
 
 exit $?
