@@ -14,6 +14,4 @@ set -ouex pipefail
 /ctx/devops.sh
 /ctx/openvpn.sh
 /ctx/solaar.sh
-
-systemctl enable podman.socket
-systemctl disable pcscd.socket
+/ctx/lenovo.sh
