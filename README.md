@@ -9,7 +9,7 @@ Fork of [ublue-os/image-template](https://github.com/ublue-os/image-template) wh
 sudo bootc switch ghcr.io/tunix/penguix
 ```
 
-#### Notes
+## Notes
 
 1password script is taken from
 [BlueBuild](https://github.com/blue-build/modules/commit/1c24190588fdf834927638770be5ec695fd86c30).
