@@ -1,9 +1,7 @@
-# vim: set ft=make :
+# vim: set ft=just :
 ####################
 ### custom-apps.just
 ####################
-## Example application installation commands
-## These are simplified examples adapted from Bluefin
 
 # Install default applications via Homebrew
 [group('Apps')]
@@ -26,6 +24,13 @@ install-fonts:
     echo "Installing fonts via Homebrew..."
     brew bundle --file /usr/share/ublue-os/homebrew/fonts.Brewfile
 
+# Install k8s tools via Homebrew
+[group('Apps')]
+install-k8s-tools:
+    #!/usr/bin/env bash
+    echo "Installing k8s tools via Homebrew..."
+    brew bundle --file /usr/share/ublue-os/homebrew/k8s.Brewfile
+
 # Install all Brewfiles at once
 [group('Apps')]
 install-all-brew:
@@ -34,6 +39,7 @@ install-all-brew:
     brew bundle --file /usr/share/ublue-os/homebrew/default.Brewfile
     brew bundle --file /usr/share/ublue-os/homebrew/development.Brewfile
     brew bundle --file /usr/share/ublue-os/homebrew/fonts.Brewfile
+    brew bundle --file /usr/share/ublue-os/homebrew/k8s.Brewfile
 
 # Install JetBrains Toolbox for managing JetBrains IDEs
 [group('Apps')]
@@ -68,13 +74,3 @@ install-flatpak APP_ID:
     echo "Installing {{ APP_ID }} from Flathub..."
     flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     flatpak install -y flathub {{ APP_ID }}
-
-# Example: Install VSCode via Flatpak
-[group('Apps')]
-install-vscode:
-    ujust install-flatpak com.visualstudio.code
-
-# Example: Install GIMP via Flatpak
-[group('Apps')]
-install-gimp:
-    ujust install-flatpak org.gimp.GIMP

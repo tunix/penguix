@@ -1,6 +1,6 @@
-# finpilot
+# penguix
 
-A template for building custom bootc operating system images based on the lessons from [Universal Blue](https://universal-blue.org/) and [Bluefin](https://projectbluefin.io). It is designed to be used manually, but is optimized to be bootstraped by GitHub Copilot. After set up you'll have your own custom Linux. 
+A template for building custom bootc operating system images based on the lessons from [Universal Blue](https://universal-blue.org/) and [Bluefin](https://projectbluefin.io). It is designed to be used manually, but is optimized to be bootstraped by GitHub Copilot. After set up you'll have your own custom Linux.
 
 > Be the one who moves, not the one who is moved.
 
@@ -19,6 +19,7 @@ Use @castrojo/finpilot as a template, name the OS the repository name. Ensure th
 ## What's Included
 
 ### Build System
+
 - Automated builds via GitHub Actions on every commit
 - Awesome self hosted Renovate setup that keeps all your images and actions up to date.
 - Automatic cleanup of old images (90+ days) to keep it tidy
@@ -32,17 +33,20 @@ Use @castrojo/finpilot as a template, name the OS the repository name. Ensure th
   - See checklist below to enable these as they take some manual configuration
 
 ### Homebrew Integration
+
 - Pre-configured Brewfiles for easy package installation and customization
 - Includes curated collections: development tools, fonts, CLI utilities. Go nuts.
 - Users install packages at runtime with `brew bundle`, aliased to premade `ujust commands`
 - See [custom/brew/README.md](custom/brew/README.md) for details
 
 ### Flatpak Support
+
 - Ship your favorite flatpaks
 - Automatically installed on first boot after user setup
 - See [custom/flatpaks/README.md](custom/flatpaks/README.md) for details
 
 ### Rechunker
+
 - Optimizes container image layer distribution for better download resumability
 - Based on [hhd-dev/rechunk](https://github.com/hhd-dev/rechunk) v1.2.4
 - Disabled by default for faster initial builds
@@ -50,11 +54,13 @@ Use @castrojo/finpilot as a template, name the OS the repository name. Ensure th
 - Recommended for production deployments after initial testing
 
 ### ujust Commands
+
 - User-friendly command shortcuts via `ujust`
 - Pre-configured examples for app installation and system maintenance for you to customize
 - See [custom/ujust/README.md](custom/ujust/README.md) for details
 
 ### Build Scripts
+
 - Modular numbered scripts (10-, 20-, 30-) run in order
 - Example scripts included for third-party repositories and desktop replacement
 - Helper functions for safe COPR usage
@@ -81,23 +87,26 @@ Important: Change `finpilot` to your repository name in these 5 files:
 - Go to the "Actions" tab in your repository
 - Click "I understand my workflows, go ahead and enable them"
 
-Your first build will start automatically! 
+Your first build will start automatically!
 
 Note: Image signing is disabled by default. Your images will build successfully without any signing keys. Once you're ready for production, see "Optional: Enable Image Signing" below.
 
 ### 4. Customize Your Image
 
 Choose your base image in `Containerfile` (line 23):
+
 ```dockerfile
 FROM ghcr.io/ublue-os/bluefin:stable
 ```
 
 Add your packages in `build/10-build.sh`:
+
 ```bash
 dnf5 install -y package-name
 ```
 
 Customize your apps:
+
 - Add Brewfiles in `custom/brew/` ([guide](custom/brew/README.md))
 - Add Flatpaks in `custom/flatpaks/` ([guide](custom/flatpaks/README.md))
 - Add ujust commands in `custom/ujust/` ([guide](custom/ujust/README.md))
@@ -117,6 +126,7 @@ All changes should be made via pull requests:
 ### 6. Deploy Your Image
 
 Switch to your image:
+
 ```bash
 sudo bootc switch ghcr.io/your-username/your-repo-name:stable
 sudo systemctl reboot
@@ -136,11 +146,13 @@ Image signing is disabled by default to let you start building immediately. Howe
 ### Setup Instructions
 
 1. Generate signing keys:
+
 ```bash
 cosign generate-key-pair
 ```
 
 This creates two files:
+
 - `cosign.key` (private key) - Keep this secret
 - `cosign.pub` (public key) - Commit this to your repository
 
@@ -207,12 +219,14 @@ Ready to take your custom OS to production? Enable these features for enhanced s
 ### After Enabling Production Features
 
 Your workflow will:
+
 - Sign all images with your key
 - Generate and attach SBOMs
 - Optimize layers for better distribution
 - Provide full supply chain transparency
 
 Users can verify your images with:
+
 ```bash
 cosign verify --key cosign.pub ghcr.io/your-username/your-repo-name:stable
 ```
@@ -248,6 +262,7 @@ just run-vm-qcow2       # Test in browser-based VM
 ## Security
 
 This template provides security features for production use:
+
 - Optional SBOM generation (Software Bill of Materials) for supply chain transparency
 - Optional image signing with cosign for cryptographic verification
 - Automated security updates via Renovate

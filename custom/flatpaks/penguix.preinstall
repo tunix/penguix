@@ -1,0 +1,101 @@
+[Flatpak Preinstall app.drey.Damask]
+Branch=stable
+
+[Flatpak Preinstall be.alexandervanhee.gradia]
+Branch=stable
+
+[Flatpak Preinstall com.belmoussaoui.Decoder]
+Branch=stable
+
+[Flatpak Preinstall com.belmoussaoui.Obfuscate]
+Branch=stable
+
+[Flatpak Preinstall com.discordapp.Discord]
+Branch=stable
+
+[Flatpak Preinstall com.github.huluti.Curtail]
+Branch=stable
+
+[Flatpak Preinstall com.protonvpn.www]
+Branch=stable
+
+[Flatpak Preinstall com.rafaelmardojai.Blanket]
+Branch=stable
+
+[Flatpak Preinstall com.slack.Slack]
+Branch=stable
+
+[Flatpak Preinstall com.spotify.Client]
+Branch=stable
+
+[Flatpak Preinstall com.usebottles.bottles]
+Branch=stable
+
+[Flatpak Preinstall de.haeckerfelix.Fragments]
+Branch=stable
+
+[Flatpak Preinstall de.haeckerfelix.Shortwave]
+Branch=stable
+
+[Flatpak Preinstall dev.zed.Zed]
+Branch=stable
+
+[Flatpak Preinstall fr.handbrake.ghb]
+Branch=stable
+
+[Flatpak Preinstall in.srev.guiscrcpy]
+Branch=stable
+
+[Flatpak Preinstall io.beekeeperstudio.Studio]
+Branch=stable
+
+[Flatpak Preinstall io.github.getnf.embellish]
+Branch=stable
+
+[Flatpak Preinstall io.github.nozwock.Packet]
+Branch=stable
+
+[Flatpak Preinstall io.github.nroduit.Weasis]
+Branch=stable
+
+[Flatpak Preinstall io.github.vikdevelop.SaveDesktop]
+Branch=stable
+
+[Flatpak Preinstall io.gitlab.liferooter.TextPieces]
+Branch=stable
+
+[Flatpak Preinstall it.mijorus.gearlever]
+Branch=stable
+
+[Flatpak Preinstall md.obsidian.Obsidian]
+Branch=stable
+
+[Flatpak Preinstall org.gimp.GIMP]
+Branch=stable
+
+[Flatpak Preinstall org.gnome.Snapshot]
+Branch=stable
+
+[Flatpak Preinstall org.gnome.SoundRecorder]
+Branch=stable
+
+[Flatpak Preinstall org.gnome.design.Lorem]
+Branch=stable
+
+[Flatpak Preinstall org.gnome.gitlab.YaLTeR.VideoTrimmer]
+Branch=stable
+
+[Flatpak Preinstall org.gnome.seahorse.Application]
+Branch=stable
+
+[Flatpak Preinstall org.libreoffice.LibreOffice]
+Branch=stable
+
+[Flatpak Preinstall org.raspberrypi.rpi-imager]
+Branch=stable
+
+[Flatpak Preinstall org.telegram.desktop]
+Branch=stable
+
+[Flatpak Preinstall us.zoom.Zoom]
+Branch=stable

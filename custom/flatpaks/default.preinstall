@@ -4,10 +4,7 @@
 # See: https://docs.flatpak.org/en/latest/flatpak-command-reference.html#flatpak-preinstall
 
 # Web Browsers
-[Flatpak Preinstall org.mozilla.firefox]
-Branch=stable
-
-[Flatpak Preinstall org.mozilla.Thunderbird]
+[Flatpak Preinstall com.brave.Browser]
 Branch=stable
 
 # GNOME Core Applications
@@ -23,15 +20,6 @@ Branch=stable
 [Flatpak Preinstall org.gnome.Connections]
 Branch=stable
 
-[Flatpak Preinstall org.gnome.Contacts]
-Branch=stable
-
-[Flatpak Preinstall org.gnome.DejaDup]
-Branch=stable
-
-[Flatpak Preinstall org.gnome.FileRoller]
-Branch=stable
-
 [Flatpak Preinstall org.gnome.Firmware]
 Branch=stable
 
@@ -41,13 +29,13 @@ Branch=stable
 [Flatpak Preinstall org.gnome.Loupe]
 Branch=stable
 
-[Flatpak Preinstall org.gnome.Maps]
-Branch=stable
-
 [Flatpak Preinstall org.gnome.NautilusPreviewer]
 Branch=stable
 
 [Flatpak Preinstall org.gnome.Papers]
+Branch=stable
+
+[Flatpak Preinstall org.gnome.Podcasts]
 Branch=stable
 
 [Flatpak Preinstall org.gnome.SimpleScan]
@@ -69,9 +57,6 @@ Branch=stable
 Branch=stable
 
 # Graphics & Media
-[Flatpak Preinstall com.github.PintaProject.Pinta]
-Branch=stable
-
 [Flatpak Preinstall com.github.rafostar.Clapper]
 Branch=stable
 
