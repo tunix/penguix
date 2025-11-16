@@ -3,6 +3,8 @@
 # Tell build process to exit if there are any errors.
 set -oue pipefail
 
+source /ctx/build/copr-helpers.sh
+
 ### Install OpenVPN from Official Repository
 echo "::group:: Installing OpenVPN client & indicator..."
 
