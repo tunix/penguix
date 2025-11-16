@@ -32,9 +32,11 @@ echo "::endgroup::"
 echo "::group:: Execute runnable scripts..."
 
 for script in /ctx/build/*.sh; do
-    if [ -f "$script" ] && [ -x "$script" ]; then
-        echo "Executing $script..."
-        "$script"
+    if [[ "$(basename "$script")" != "10-build.sh" ]]; then
+        if [[ -x "$script" ]]; then
+            echo "Executing $script..."
+            "$script"
+        fi
     fi
 done
 
