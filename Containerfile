@@ -21,7 +21,8 @@ COPY custom /custom
 ###############################################################################
 
 # Base Image
-FROM ghcr.io/ublue-os/bluefin:stable-daily
+# FROM ghcr.io/ublue-os/bluefin:stable-daily
+FROM ghcr.io/ublue-os/bluefin
 
 ## Other possible base images include:
 # FROM ghcr.io/ublue-os/bazzite:latest
