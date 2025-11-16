@@ -12,10 +12,10 @@ copr_install_isolated "dsommers/openvpn3" openvpn3-client
 copr_install_isolated "grzegorz-gutowski/openvpn3-indicator" openvpn3-indicator
 
 # copy systemd service files for workarounds
-cp -r openvpn/systemd/*.service /usr/lib/systemd/system/
+cp -r /ctx/build/openvpn/systemd/*.service /usr/lib/systemd/system/
 
 # copy tmpfiles.d for workarounds
-cp -r tmpfiles.d/* /usr/lib/tmpfiles.d/
+cp -r /ctx/build/openvpn/tmpfiles.d/* /usr/lib/tmpfiles.d/
 
 # Apply fixes according to my comment at below GitHub issue
 # https://github.com/OpenVPN/openvpn3-linux/issues/229#issuecomment-2564890480
