@@ -4,7 +4,7 @@
 set -oue pipefail
 
 ### Install OpenVPN from Official Repository
-echo "Installing OpenVPN client & indicator..."
+echo "::group:: Installing OpenVPN client & indicator..."
 
 copr_install_isolated "dsommers/openvpn3" openvpn3-client
 copr_install_isolated "grzegorz-gutowski/openvpn3-indicator" openvpn3-indicator
@@ -25,3 +25,4 @@ systemctl enable openvpn-init-config.service
 setsebool -P dbus_access_tuntap_device=1
 
 echo "OpenVPN installed successfully"
+echo "::endgroup::"

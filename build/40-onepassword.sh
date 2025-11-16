@@ -4,7 +4,7 @@
 set -oue pipefail
 
 ### Install 1Password from Official Repository
-echo "Installing 1Password..."
+echo "::group:: Installing 1Password..."
 
 # Add 1Password RPM repository GPG key
 rpm --import https://downloads.1password.com/linux/keys/1password.asc
@@ -27,3 +27,4 @@ dnf5 install -y 1password 1password-cli
 rm -f /etc/yum.repos.d/1password.repo
 
 echo "1Password installed successfully"
+echo "::endgroup::"
