@@ -90,10 +90,10 @@ Branch=stable
 Branch=stable
 
 # GTK Themes (runtimes)
-[Flatpak Preinstall org.gtk.Gtk3theme.adw-gtk3]
-Branch=stable
-IsRuntime=true
+# [Flatpak Preinstall org.gtk.Gtk3theme.adw-gtk3]
+# Branch=stable
+# IsRuntime=true
 
-[Flatpak Preinstall org.gtk.Gtk3theme.adw-gtk3-dark]
-Branch=stable
-IsRuntime=true
+# [Flatpak Preinstall org.gtk.Gtk3theme.adw-gtk3-dark]
+# Branch=stable
+# IsRuntime=true
