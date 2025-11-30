@@ -3,12 +3,12 @@
 ### custom-desktop.just
 #######################
 
-# # Install GNOME extension
-# [group('Desktop')]
-# install-gnome-extension eid :
-#     #!/usr/bin/env bash
+# Enables touchpad history navigation scroll & wayland support for Brave Browser
+[group('Fixes')]
+brave-wayland-fixes:
+    mkdir -p $HOME/.var/app/com.brave.Browser/config
 
-# # Install GNOME extensions
-# [group('Desktop')]
-# install-gnome-extensions:
-#     ujust install-gnome-extension xxx
+    cat <<EOF > $HOME/.var/app/com.brave.Browser/config/brave-flags.conf
+    --enable-features=UseOzonePlatform,TouchpadOverscrollHistoryNavigation
+    --ozone-platform=wayland
+    EOF

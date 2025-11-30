@@ -3,10 +3,6 @@
 # Format: INI file with [Flatpak Preinstall NAME] groups
 # See: https://docs.flatpak.org/en/latest/flatpak-command-reference.html#flatpak-preinstall
 
-# Web Browsers
-[Flatpak Preinstall com.brave.Browser]
-Branch=stable
-
 # GNOME Core Applications
 [Flatpak Preinstall org.gnome.Calculator]
 Branch=stable
@@ -90,10 +86,10 @@ Branch=stable
 Branch=stable
 
 # GTK Themes (runtimes)
-# [Flatpak Preinstall org.gtk.Gtk3theme.adw-gtk3]
-# Branch=stable
-# IsRuntime=true
+[Flatpak Preinstall org.gtk.Gtk3theme.adw-gtk3]
+Branch=stable
+IsRuntime=true
 
-# [Flatpak Preinstall org.gtk.Gtk3theme.adw-gtk3-dark]
-# Branch=stable
-# IsRuntime=true
+[Flatpak Preinstall org.gtk.Gtk3theme.adw-gtk3-dark]
+Branch=stable
+IsRuntime=true

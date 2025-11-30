@@ -1,0 +1,44 @@
+[Flatpak Preinstall app.drey.Damask]
+Branch=stable
+
+[Flatpak Preinstall be.alexandervanhee.gradia]
+Branch=stable
+
+[Flatpak Preinstall com.belmoussaoui.Decoder]
+Branch=stable
+
+[Flatpak Preinstall com.belmoussaoui.Obfuscate]
+Branch=stable
+
+[Flatpak Preinstall com.github.huluti.Curtail]
+Branch=stable
+
+[Flatpak Preinstall de.haeckerfelix.Fragments]
+Branch=stable
+
+[Flatpak Preinstall de.haeckerfelix.Shortwave]
+Branch=stable
+
+[Flatpak Preinstall io.github.getnf.embellish]
+Branch=stable
+
+[Flatpak Preinstall io.github.vikdevelop.SaveDesktop]
+Branch=stable
+
+[Flatpak Preinstall it.mijorus.gearlever]
+Branch=stable
+
+[Flatpak Preinstall org.gimp.GIMP]
+Branch=stable
+
+[Flatpak Preinstall org.gnome.Snapshot]
+Branch=stable
+
+[Flatpak Preinstall org.gnome.SoundRecorder]
+Branch=stable
+
+[Flatpak Preinstall org.gnome.gitlab.YaLTeR.VideoTrimmer]
+Branch=stable
+
+[Flatpak Preinstall org.libreoffice.LibreOffice]
+Branch=stable

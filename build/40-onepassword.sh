@@ -26,5 +26,10 @@ dnf5 install -y 1password 1password-cli
 # Clean up repo file (required - repos don't work at runtime in bootc images)
 rm -f /etc/yum.repos.d/1password.repo
 
+# to be able to export files properly on Linux
+cat <<EOF >/etc/sysctl.d/99-onepassword.conf
+kernel.yama.ptrace_scope=1
+EOF
+
 echo "1Password installed successfully"
 echo "::endgroup::"
