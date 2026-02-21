@@ -1,0 +1,12 @@
+tap "hashicorp/tap"
+
+brew "argocd"
+brew "awscli"
+brew "dive"
+brew "helm"
+brew "k9s"
+brew "kafkactl"
+brew "kind"
+brew "kubectl"
+brew "lego"
+brew "terraform"

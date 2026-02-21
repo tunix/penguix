@@ -1,9 +1,9 @@
 ###############################################################################
 # PROJECT NAME CONFIGURATION
 ###############################################################################
-# Name: finpilot
+# Name: penguix
 #
-# IMPORTANT: Change "finpilot" above to your desired project name.
+# IMPORTANT: Change "penguix" above to your desired project name.
 # This name should be used consistently throughout the repository in:
 #   - Justfile: export image_name := env("IMAGE_NAME", "your-name-here")
 #   - README.md: # your-name-here (title)
@@ -45,7 +45,8 @@ COPY --from=ghcr.io/projectbluefin/common:latest /system_files /oci/common
 COPY --from=ghcr.io/ublue-os/brew:latest /system_files /oci/brew
 
 # Base Image - GNOME included
-FROM ghcr.io/ublue-os/silverblue-main:latest
+# FROM ghcr.io/ublue-os/silverblue-main:latest
+FROM ghcr.io/ublue-os/bluefin-dx:stable
 
 ## Alternative base images, no desktop included (uncomment to use):
 # FROM ghcr.io/ublue-os/base-main:latest    
@@ -63,7 +64,7 @@ FROM ghcr.io/ublue-os/silverblue-main:latest
 ## Uncomment the following line if one desires to make /opt immutable and be able to be used
 ## by the package manager.
 
-# RUN rm /opt && mkdir /opt
+RUN rm /opt && mkdir /opt
 
 ### MODIFICATIONS
 ## Make modifications desired in your image and install packages by modifying the build scripts.

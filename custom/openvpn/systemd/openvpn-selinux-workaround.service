@@ -1,0 +1,20 @@
+[Unit]
+Description=Workaround openvpn for SELinux permissions
+ConditionFileIsExecutable=/usr/bin/openvpn3
+After=local-fs.target
+
+[Service]
+Type=oneshot
+# Copy if it doesn't exist
+ExecStartPre=/usr/bin/bash -c "[ -x /usr/local/bin/overrides/openvpn3 ] || /usr/bin/cp /usr/bin/openvpn3 /usr/local/bin/overrides/openvpn3"
+# This is faster than using .mount unit. Also allows for the previous line/cleanup
+ExecStartPre=/usr/bin/mount --bind /usr/local/bin/overrides/openvpn3 /usr/bin/openvpn3
+# Fix SELinux label
+ExecStart=/usr/sbin/restorecon /usr/bin/openvpn3
+# Clean-up after ourselves
+ExecStop=/usr/bin/umount /usr/bin/openvpn3
+ExecStop=/usr/bin/rm /usr/local/bin/overrides/openvpn3
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

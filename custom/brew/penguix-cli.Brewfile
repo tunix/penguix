@@ -1,0 +1,8 @@
+brew "btop"
+brew "httpie"
+brew "lazygit"
+brew "neovim"
+brew "ripgrep"
+brew "sd"
+brew "the_silver_searcher"
+brew "zellij"
