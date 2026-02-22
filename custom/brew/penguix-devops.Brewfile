@@ -1,5 +1,6 @@
 tap "hashicorp/tap"
 
+brew "ansible"
 brew "argocd"
 brew "awscli"
 brew "dive"
