@@ -1,0 +1,31 @@
+# Settings daemon: color (night light), power, media keys
+
+[org/gnome/settings-daemon/plugins/color]
+active = true
+night-light-enabled = true
+night-light-temperature = 2700
+
+[org/gnome/settings-daemon/plugins/power]
+power-button-action = 'nothing'
+sleep-inactive-ac-timeout = 0
+sleep-inactive-ac-type = 'nothing'
+sleep-inactive-battery-timeout = 900
+sleep-inactive-battery-type = 'suspend'
+
+[org/gnome/settings-daemon/plugins/media-keys]
+home = ['<Super>f']
+www = ['<Super>b']
+calculator = ['<Super>c']
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/']
+max-screencast-length = 0
+volume-step = 2
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
+binding = '<Super>t'
+command = 'flatpak run com.mitchellh.ghostty'
+name = 'Start Ghostty'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1]
+binding = '<Ctrl><Shift>Space'
+command = '/opt/1Password/1password --quick-access'
+name = '1Password Quick Access'

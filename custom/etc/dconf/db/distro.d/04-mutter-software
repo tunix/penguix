@@ -1,0 +1,10 @@
+# Mutter (window manager) and GNOME Software
+
+[org/gnome/mutter]
+workspaces-only-on-primary = false
+center-new-windows = true
+
+[org/gnome/software]
+allow-updates = false
+download-updates = false
+download-updates-notify = false

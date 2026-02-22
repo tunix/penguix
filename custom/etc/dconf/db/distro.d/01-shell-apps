@@ -1,0 +1,16 @@
+# GNOME Shell: favorites, extensions, location, weather, input sources
+
+[org/gnome/shell]
+favorite-apps = ['com.brave.Browser.desktop', 'org.gnome.Nautilus.desktop', 'com.spotify.Client.desktop', 'com.mitchellh.ghostty.desktop', 'io.github.kolunmi.Bazaar.desktop', 'org.gnome.Settings.desktop', 'org.telegram.desktop.desktop', 'com.slack.Slack.desktop', 'com.discordapp.Discord.desktop', 'md.obsidian.Obsidian.desktop']
+enabled-extensions = ['appindicatorsupport@rgcjonas.gmail.com', 'blur-my-shell@aunetx', 'gsconnect@andyholmes.github.io', 'tailscale@joaophi.github.com', 'caffeine@patapon.info', 'nightthemeswitcher@romainvigier.fr', 'Vitals@CoreCoding.com', 'search-light@icedman.github.com']
+disable-user-extensions = false
+
+[org/gnome/system/location]
+enabled = true
+
+[org/gnome/shell/weather]
+automatic-location = true
+locations=[<(uint32 2, <('Izmir-Adnan Menderes Airport', 'LTBJ', false, [(0.66787933291426083, 0.47385689191646041)], @a(dd) [])>)>]
+
+[org/gnome/desktop/input-sources]
+sources=[('xkb', 'tr')]

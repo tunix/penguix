@@ -1,0 +1,45 @@
+# Desktop: background, interface, WM, sound, peripherals, privacy
+
+[org/gnome/desktop/background]
+picture-uri = 'file:///usr/share/backgrounds/bluefin/chicken.jxl'
+picture-uri-dark = 'file:///usr/share/backgrounds/bluefin/chicken.jxl'
+picture-options = 'zoom'
+primary-color = '000000'
+secondary-color = 'FFFFFF'
+
+[org/gnome/desktop/interface]
+accent-color = 'teal'
+enable-hot-corners = false
+clock-format = '24h'
+clock-show-date = true
+clock-show-weekday = true
+cursor-theme = "Yaru"
+text-scaling-factor = 0.9
+monospace-font-name = 'JetBrains Mono Regular 11'
+
+[org/gnome/desktop/wm/preferences]
+button-layout = 'appmenu:minimize,maximize,close'
+
+[org/gnome/desktop/sound]
+allow-volume-above-100-percent = true
+event-sounds = true
+theme-name = "freedesktop"
+
+[org/gnome/desktop/peripherals/keyboard]
+repeat = true
+repeat-interval = 30
+
+[org/gnome/desktop/peripherals/touchpad]
+tap-to-click = true
+send-events = true
+natural-scroll = true
+two-finger-scrolling-enabled = true
+disable-while-typing = true
+
+[org/gnome/desktop/peripherals/mouse]
+natural-scroll = false
+
+[org/gnome/desktop/privacy]
+remove-old-trash-files = true
+remove-old-temp-files = true
+old-files-age = 3

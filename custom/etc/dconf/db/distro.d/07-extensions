@@ -1,0 +1,46 @@
+# GNOME Shell extensions: appindicator, search-light, vitals, nightthemeswitcher, hidetopbar, blur-my-shell
+
+[org/gnome/shell/extensions/appindicator]
+tray-pos = 'left'
+
+[org/gnome/shell/extensions/search-light]
+shortcut-search = ['<Super>space']
+scale-width = 0.10
+scale-height = 0.15
+border-thickness = 1
+border-radius = 1.65
+border-color = (0.23, 0.23, 0.23, 1.0)
+background-color = (0.0, 0.0, 0.0, 0.8)
+
+[org/gnome/shell/extensions/vitals]
+alphabetize = true
+hot-sensors = ['_processor_usage_', '_memory_usage_', '__network-rx_max__', '__network-tx_max__']
+position-in-panel = 2
+show-storage = false
+show-system = true
+
+[org/gnome/shell/extensions/nightthemeswitcher/commands]
+enabled = true
+sunrise = 'toggle-color-preferences.sh light'
+sunset = 'toggle-color-preferences.sh dark'
+
+[org/gnome/shell/extensions/nightthemeswitcher/time]
+fullscreen-transition=false
+location=(38.355559800000002, 26.788658000000002)
+manual-schedule=false
+nightthemeswitcher-ondemand-keybinding=['<Shift><Super>t']
+sunrise=8.9038564982718711
+sunset=17.698289827436163
+
+[org/gnome/shell/extensions/hidetopbar]
+enable-active-window = false
+mouse-sensitive = true
+mouse-sensitive-fullscreen-window = false
+
+[org/gnome/shell/extensions/blur-my-shell/panel]
+force-light-text=true
+override-background=true
+override-background-dynamically=false
+static-blur=false
+style-panel=2
+unblur-in-overview=false

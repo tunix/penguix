@@ -12,3 +12,8 @@ brave-wayland-fixes:
     --enable-features=UseOzonePlatform,TouchpadOverscrollHistoryNavigation
     --ozone-platform=wayland
     EOF
+
+# Sync's dconf settings for local user
+[group('Desktop')]
+dconf-sync:
+    dconf update
