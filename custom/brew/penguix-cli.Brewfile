@@ -1,4 +1,5 @@
 brew "btop"
+brew "direnv"
 brew "httpie"
 brew "lazygit"
 brew "neovim"
