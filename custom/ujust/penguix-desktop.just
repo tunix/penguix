@@ -16,4 +16,4 @@ brave-wayland-fixes:
 # Sync's dconf settings for local user
 [group('Desktop')]
 dconf-sync:
-    dconf update
+    dconf reset -f /
