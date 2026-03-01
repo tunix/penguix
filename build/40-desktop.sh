@@ -7,7 +7,8 @@ set -oue pipefail
 echo "::group:: Configuring desktop environment..."
 
 cp -r /ctx/custom/etc /
-cp -r /ctx/custom/usr /
+cp -r /ctx/custom/var /
+# cp -r /ctx/custom/usr /
 
 echo "Desktop environment configured successfully"
 echo "::endgroup::"
