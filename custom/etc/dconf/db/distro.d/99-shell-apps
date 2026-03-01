@@ -1,8 +1,8 @@
 # GNOME Shell: favorites, extensions, location, weather, input sources
 
 [org/gnome/shell]
-favorite-apps = ['com.brave.Browser.desktop', 'org.gnome.Nautilus.desktop', 'com.spotify.Client.desktop', 'com.mitchellh.ghostty.desktop', 'io.github.kolunmi.Bazaar.desktop', 'org.gnome.Settings.desktop', 'org.telegram.desktop.desktop', 'com.slack.Slack.desktop', 'com.discordapp.Discord.desktop', 'md.obsidian.Obsidian.desktop']
-enabled-extensions = ['appindicatorsupport@rgcjonas.gmail.com', 'blur-my-shell@aunetx', 'gsconnect@andyholmes.github.io', 'tailscale@joaophi.github.com', 'caffeine@patapon.info', 'nightthemeswitcher@romainvigier.fr', 'search-light@icedman.github.com']
+favorite-apps = ['org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'com.spotify.Client.desktop', 'com.mitchellh.ghostty.desktop', 'io.github.kolunmi.Bazaar.desktop', 'org.gnome.Settings.desktop', 'org.telegram.desktop.desktop', 'com.slack.Slack.desktop', 'com.discordapp.Discord.desktop', 'md.obsidian.Obsidian.desktop', 'cursor.desktop']
+enabled-extensions = ['appindicatorsupport@rgcjonas.gmail.com', 'blur-my-shell@aunetx', 'gsconnect@andyholmes.github.io', 'tailscale@joaophi.github.com', 'search-light@icedman.github.com', 'nightthemeswitcher@romainvigier.fr', 'grand-theft-focus@zalckos.github.com', 'solaar-extension@sidevesh', 'tilingshell@ferrarodomenico.com', 'caffeine@patapon.info']
 disable-user-extensions = ['dash-to-dock@micxgx.gmail.com', 'logomenu@aryan_k']
 
 [org/gnome/system/location]
