@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Tell build process to exit if there are any errors.
-set -oue pipefail
+set -ouex pipefail
 
 ### Configuring desktop environment
 echo "::group:: Configuring desktop environment..."
