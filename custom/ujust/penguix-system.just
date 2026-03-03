@@ -3,7 +3,7 @@
 ### penguix-system.just
 #######################
 
-user := env_var("USER)
+user := env_var("USER")
 
 # Sets shell for user
 [group('System')]
