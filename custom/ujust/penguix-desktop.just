@@ -13,7 +13,20 @@ brave-wayland-fixes:
     --ozone-platform=wayland
     EOF
 
-# Sync's dconf settings for local user
+# Syncs dconf settings for local user
 [group('Desktop')]
 dconf-sync:
     dconf reset -f /
+
+# Syncs skel for local user
+[group('Desktop')]
+sync-skel:
+    SRC=/etc/skel
+    DEST=$HOME
+
+    if [ ! -d "$SRC" ]; then
+        echo "$SRC not found" >&2
+        exit 1
+    fi
+
+    rsync -avz "$SRC/" "$DEST/"
