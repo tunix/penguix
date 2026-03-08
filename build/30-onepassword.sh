@@ -21,7 +21,7 @@ gpgkey=https://downloads.1password.com/linux/keys/1password.asc
 EOF
 
 # Install 1Password
-dnf5 install -y 1password 1password-cli
+dnf install -y 1password 1password-cli
 
 # Clean up repo file (required - repos don't work at runtime in bootc images)
 rm -f /etc/yum.repos.d/1password.repo
