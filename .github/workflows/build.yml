@@ -142,7 +142,7 @@ jobs:
       - name: Generate SBOM
         id: generate-sbom
         env:
-          IMAGE: ${{ env.IMAGE_NAME }}
+          IMAGE: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
           DEFAULT_TAG: ${{ env.DEFAULT_TAG }}
           SYFT_CMD: ${{ steps.setup-syft.outputs.cmd }}
         run: |
