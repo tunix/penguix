@@ -119,6 +119,9 @@ jobs:
           oci: false
 
       - name: Rechunk Image
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          DEFAULT_TAG: ${{ env.DEFAULT_TAG }}
         run: |
           sudo podman run --rm \
             --privileged \
@@ -126,8 +129,8 @@ jobs:
             -v /var/lib/containers:/var/lib/containers \
             "quay.io/centos-bootc/centos-bootc:stream10" \
             /usr/libexec/bootc-base-imagectl rechunk --max-layers 67 \
-            "{{env.IMAGE_NAME}}:${{ env.DEFAULT_TAG }}" \
-            "{{env.IMAGE_NAME}}:${{ env.DEFAULT_TAG }}" || exit 1
+            "$IMAGE_NAME:$DEFAULT_TAG" \
+            "$IMAGE_NAME:$DEFAULT_TAG" || exit 1
 
       # Tag for registry
       - name: Tag for registry
