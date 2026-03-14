@@ -120,7 +120,7 @@ jobs:
 
       - name: Rechunk Image
         run: |
-          podman run --rm \
+          sudo podman run --rm \
             --privileged \
             -t \
             -v /var/lib/containers:/var/lib/containers \
