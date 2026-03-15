@@ -24,8 +24,8 @@ sync-skel:
 	#!/usr/bin/env bash
 
 	set -euo pipefail
-	
-    SRC=/etc/skel
+
+	SRC=/etc/skel
 	DEST=$HOME
 
 	if [ ! -d "$SRC" ]; then
