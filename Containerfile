@@ -46,7 +46,7 @@ COPY --from=ghcr.io/ublue-os/brew:latest@sha256:ca91068f51ce663d495ccfc829352d66
 
 # Base Image - GNOME included
 # FROM ghcr.io/ublue-os/silverblue-main:latest
-FROM ghcr.io/ublue-os/bluefin-dx:stable
+FROM ghcr.io/ublue-os/bluefin-dx:stable@sha256:49bafb2ebc8ab3f7e159cd741151910fa89fce5bf5cae4c0f0c1c78b7f0f37a3
 
 ## Alternative base images, no desktop included (uncomment to use):
 # FROM ghcr.io/ublue-os/base-main:latest    
