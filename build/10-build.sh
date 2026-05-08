@@ -59,6 +59,9 @@ echo "::group:: System Configuration"
 
 # Enable/disable systemd services
 systemctl enable podman.socket
+systemctl disable systemd-remount-fs.service
+systemctl disable zfs-import-cache.service
+systemctl disable systemd-udev-settle.service
 # Example: systemctl mask unwanted-service
 
 echo "::endgroup::"
