@@ -22,6 +22,11 @@ sudo bootc switch --transport registry ghcr.io/YOUR_USERNAME/YOUR_REPO:stable
 sudo systemctl reboot
 ```
 
+### 5. Enable Renovate (Required)
+- [ ] Go to [github.com/apps/renovate](https://github.com/apps/renovate) and click **Install**
+- [ ] Select your repository and install the app
+- [ ] Renovate will create a PR to pin your GitHub Actions to SHAs
+
 ## Optional: Production Features
 
 ### Enable Signing (Recommended)
