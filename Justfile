@@ -111,6 +111,12 @@ build $target_image=image_name $tag=default_tag:
         echo "Warning: image-versions.yml not found or yq not installed. Using Containerfile defaults."
     fi
 
+    # Image identity ARGs - these define how bootc/ublue ecosystem recognizes the image
+    # Override via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG
+    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${IMAGE_NAME:-${target_image}}")
+    BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${IMAGE_VENDOR:-projectbluefin}")
+    BUILD_ARGS+=("--build-arg" "UBLUE_IMAGE_TAG=${UBLUE_IMAGE_TAG:-${tag}}")
+
     # Add GitHub token as build secret if available (for CI/CD)
     if [[ -n "${GITHUB_TOKEN:-}" ]]; then
         echo "Adding GitHub token as build secret"

@@ -47,15 +47,16 @@
 
 ### 1. Rename ALL instances of `finpilot`
 
-**Source of truth**: `Containerfile` line 9: `# Name: finpilot`
+**Source of truth**: `Containerfile` line 4: `# Name: finpilot`
 
 **Files to update:**
-- `Containerfile` (line 9)
+- `Containerfile` (line 4 and line 26: `ARG IMAGE_NAME="finpilot"`)
+- `Containerfile` (line 27: `ARG IMAGE_VENDOR="projectbluefin"`)
 - `Justfile` (line 1)
 - `README.md` (line 1)
 - `artifacthub-repo.yml` (line 5)
 - `custom/ujust/README.md` (~line 175)
-- `.github/workflows/ghcr-pruner.yml` (line 22)
+- `.github/workflows/clean.yml` (line 23: `packages: finpilot`)
 
 ### 2. Create "What's Different" section in README
 
@@ -107,7 +108,8 @@ Signing is DISABLED by default. First builds succeed immediately. Enable later f
 ```
 ├── Containerfile          # Main build definition (multi-stage build with OCI imports)
 ├── Justfile              # Local build automation (image name, build commands)
-├── build/                # Build-time scripts (10-build.sh, 20-chrome.sh, etc.)
+├── build/                # Build-time scripts (00-image-info.sh, 10-build.sh, etc.)
+│   ├── 00-image-info.sh  # Image metadata generation (image-info.json, os-release)
 │   ├── 10-build.sh      # Main build script (copy custom files, install packages)
 │   ├── 20-*.sh.example  # Example third-party repos (rename to use)
 │   ├── 30-*.sh.example  # Example desktop replacement (rename to use)
@@ -132,10 +134,14 @@ Signing is DISABLED by default. First builds succeed immediately. Enable later f
 │   └── rclone/          # Upload configs (Cloudflare R2, AWS S3, etc.)
 ├── .github/              # GitHub configuration and CI/CD
 │   ├── workflows/       # GitHub Actions workflows
-│   │   ├── build.yml               # Builds :stable on main
-│   │   ├── clean.yml               # Deletes images >90 days old
-│   │   ├── renovate.yml            # Renovate bot updates (6h interval)
-│   │   ├── validate-*.yml          # Pre-merge validation checks
+│   │   ├── build-image.yml       # Builds :stable on main
+│   │   ├── pr-validation.yml     # PR validation (shellcheck, hadolint, pre-commit)
+│   │   ├── clean.yml             # Deletes images >90 days old
+│   │   ├── renovate.yml          # Renovate bot updates (6h interval)
+│   │   ├── validate-brewfiles.yml    # Validates Brewfile syntax
+│   │   ├── validate-flatpaks.yml     # Validates Flatpak app IDs
+│   │   ├── validate-justfiles.yml    # Validates Justfile syntax
+│   │   ├── validate-renovate.yml     # Validates Renovate config
 │   │   └── ...
 │   ├── copilot-instructions.md  # THIS FILE - Instructions for Copilot
 │   ├── SETUP_CHECKLIST.md       # Quick setup checklist for users
@@ -174,6 +180,8 @@ This template follows the **Bluefin architecture pattern** from @projectbluefin/
 
 ### Build-time vs Runtime
 - **Build-time** (`build/`): Baked into container. Use `dnf5 install`. Services, configs, system packages.
+  - `00-image-info.sh` generates `/usr/share/ublue-os/image-info.json` and customizes `/usr/lib/os-release`
+  - `10-build.sh` copies custom files and installs packages
 - **Runtime** (`custom/`): User installs after deployment. Use Brewfiles, Flatpaks. CLI tools, GUI apps, dev environments.
 
 ### Bluefin Convention Compliance
@@ -192,7 +200,7 @@ This template follows the **Bluefin architecture pattern** from @projectbluefin/
 
 ### Validation Workflows
 The repository includes automated validation on pull requests:
-- **validate-shellcheck.yml** - Runs shellcheck on all `build/*.sh` scripts
+- **pr-validation.yml** - Consolidated validation: shellcheck, hadolint, pre-commit (via `projectbluefin/actions`)
 - **validate-brewfiles.yml** - Validates Homebrew Brewfile syntax
 - **validate-flatpaks.yml** - Checks Flatpak app IDs exist on Flathub
 - **validate-justfiles.yml** - Validates just file syntax
@@ -231,7 +239,8 @@ dnf5 install -y vim git htop neovim tmux
 - For third-party repos, see example scripts: `build/20-onepassword.sh.example`
 
 **Script Naming Convention**:
-- `10-build.sh` - Main build script (always runs first)
+- `00-image-info.sh` - Image metadata generation (image-info.json, os-release)
+- `10-build.sh` - Main build script (copy custom files, install packages)
 - `20-*.sh` - Additional scripts (run in numerical order)
 - `30-*.sh` - Desktop environment changes
 - `.example` suffix - Rename to `.sh` to activate

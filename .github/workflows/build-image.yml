@@ -55,6 +55,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Preflight
+        id: preflight
+        uses: projectbluefin/actions/bootc-build/preflight@v1
+        with:
+          registry: ghcr.io
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          image-name: ${{ env.IMAGE_NAME }}
+
       - name: Setup runner
         uses: projectbluefin/actions/bootc-build/setup-runner@v1
         with:

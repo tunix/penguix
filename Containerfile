@@ -43,6 +43,13 @@ ARG BREW_IMAGE_SHA=""
 ARG FEDORA_MAJOR_VERSION="44"
 ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/silverblue"
 ARG BASE_IMAGE_REF="${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}"
+
+# Image identity - these define how bootc, fastfetch, and the ublue ecosystem
+# recognize your image. Change these to match your project name.
+ARG IMAGE_NAME="finpilot"
+ARG IMAGE_VENDOR="projectbluefin"
+ARG UBLUE_IMAGE_TAG="stable"
+ARG BASE_IMAGE_NAME="silverblue"
 FROM ${COMMON_IMAGE}@${COMMON_IMAGE_SHA} AS common
 FROM ${BREW_IMAGE}@${BREW_IMAGE_SHA} AS brew
 
@@ -62,12 +69,23 @@ COPY --from=brew /system_files /oci/brew
 # "image:tag@sha256:..." for CI builds with pinned digest.
 FROM ${BASE_IMAGE_REF}
 
+# Re-declare ARGs for this stage (Docker requires ARG re-declaration per stage)
+ARG IMAGE_NAME
+ARG IMAGE_VENDOR
+ARG UBLUE_IMAGE_TAG
+ARG BASE_IMAGE_NAME
+ARG FEDORA_MAJOR_VERSION
+
 ## Alternative base images, no desktop included (uncomment to use):
 # FROM quay.io/fedora-ostree-desktops/base-main:${FEDORA_MAJOR_VERSION}
 # FROM quay.io/centos-bootc/centos-bootc:stream10
 
 ## Alternative GNOME OS base image (uncomment to use):
 # FROM quay.io/gnome_infrastructure/gnome-build-meta:gnomeos-nightly
+
+# Per-build metadata - redeclare separately so they don't bust the base cache
+ARG SHA_HEAD_SHORT=""
+ARG VERSION=""
 
 ### /opt
 ## Some bootable images, like Fedora, have /opt symlinked to /var/opt, in order to
@@ -97,6 +115,7 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=secret,id=GITHUB_TOKEN \
     --mount=type=tmpfs,dst=/boot \
     --mount=type=tmpfs,dst=/tmp \
+    /ctx/build/00-image-info.sh && \
     /ctx/build/10-build.sh
 
 ### /opt
