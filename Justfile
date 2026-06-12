@@ -134,9 +134,22 @@ build $target_image=image_name $tag=default_tag:
     LABELS+=("--label" "io.artifacthub.package.keywords=bootc,ublue,universal-blue")
     LABELS+=("--label" "io.artifacthub.package.license=Apache-2.0")
 
+    # Registry layer cache - speeds up rebuilds by reusing unchanged layers from GHCR
+    # Cache write (REGISTRY_CACHE_WRITE=1) is set by CI for non-PR builds only
+    # PR builds and local builds are read-only to prevent cache poisoning
+    CACHE_ARGS=()
+    cache_ref="ghcr.io/${IMAGE_VENDOR:-projectbluefin}/${target_image}"
+    if skopeo list-tags "docker://${cache_ref}" >/dev/null 2>&1; then
+        CACHE_ARGS+=("--cache-from" "${cache_ref}")
+        if [[ "${REGISTRY_CACHE_WRITE:-0}" == "1" ]]; then
+            CACHE_ARGS+=("--cache-to" "${cache_ref}")
+        fi
+    fi
+
     podman build \
         "${BUILD_ARGS[@]}" \
         "${LABELS[@]}" \
+        "${CACHE_ARGS[@]}" \
         --pull=newer \
         --tag "${target_image}:${tag}" \
         .
