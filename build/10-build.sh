@@ -43,8 +43,13 @@ echo "::endgroup::"
 
 echo "::group:: Install Packages"
 
-# Install packages using dnf5
-# Example: dnf5 install -y tmux
+# Enable DNF cache retention so the buildah cache mount actually persists
+# between builds. Without this, DNF cleans the cache after each transaction.
+dnf5 config-manager setopt keepcache=1
+
+# Install a minimal package to verify the cache is working
+# This ensures the DNF cache is populated for future builds
+dnf5 install -y tmux
 
 # Example using COPR with isolated pattern:
 # copr_install_isolated "ublue-os/staging" package-name
