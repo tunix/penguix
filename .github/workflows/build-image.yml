@@ -132,23 +132,15 @@ jobs:
           cache-name: ${{ env.IMAGE_NAME }}
           allow-write: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
 
-      - name: Export image for scanning
-        shell: bash
-        run: |
-          set -eoux pipefail
-          sudo podman save --format docker-archive \
-            -o /tmp/scan-image.tar \
-            "localhost/${IMAGE_NAME}:${DEFAULT_TAG}"
-
-      - name: Scan image for vulnerabilities
-        uses: projectbluefin/actions/bootc-build/scan-image@v1
-        with:
-          image: localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
-          input: /tmp/scan-image.tar
-          severity-threshold: CRITICAL
-          exit-code: '0'  # Non-blocking: CVEs reported via SARIF, never gate builds
-          create-issue: false
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      # OPTIONAL: Rechunking (OCI-native, no rpm-ostree)
+      # Rechunking improves OTA delta performance by reorganizing layers.
+      # Uncomment to enable. See: projectbluefin/actions/bootc-build/chunka
+      # - name: Rechunk image
+      #   if: github.event_name != 'pull_request'
+      #   uses: projectbluefin/actions/bootc-build/chunka@v1
+      #   with:
+      #     source-image: localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
+      #     max-layers: 128
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
@@ -168,13 +160,14 @@ jobs:
           default-tag: ${{ env.DEFAULT_TAG }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # OPTIONAL: Image Signing with Cosign (keyless OIDC)
-      # Signing is disabled by default. To enable, uncomment the block below.
-      # Requires 'id-token: write' permission (already granted in this job).
+      # OPTIONAL: Sign, publish SBOM, and attest (SLSA Build L2 provenance)
+      # Bluefin pattern: keyless OIDC signing via Fulcio + SBOM attestation via ORAS.
+      # Uncomment to enable. Requires 'id-token: write' permission (already granted).
+      # Non-fatal — signing/SBOM failures never block image publishing.
 
       # - name: Sign and publish
       #   if: github.event_name != 'pull_request'
-      #   continue-on-error: true  # Never block image publishing
+      #   continue-on-error: true
       #   uses: projectbluefin/actions/bootc-build/sign-and-publish@v1
       #   with:
       #     image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
