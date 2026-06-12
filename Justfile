@@ -101,13 +101,15 @@ build $target_image=image_name $tag=default_tag:
         common_image_sha=$(yq -r '.images[] | select(.name == "common") | .digest' image-versions.yml)
         brew_image=$(yq -r '.images[] | select(.name == "brew") | .image + ":" + .tag' image-versions.yml)
         brew_image_sha=$(yq -r '.images[] | select(.name == "brew") | .digest' image-versions.yml)
-        base_image=$(yq -r '.images[] | select(.name == "base") | .image + ":" + .tag' image-versions.yml)
+        base_image=$(yq -r '.images[] | select(.name == "base") | .image' image-versions.yml)
+        fedora_version=$(yq -r '.images[] | select(.name == "base") | .tag' image-versions.yml)
         base_image_sha=$(yq -r '.images[] | select(.name == "base") | .digest' image-versions.yml)
 
         BUILD_ARGS+=("--build-arg" "COMMON_IMAGE=${common_image}")
         BUILD_ARGS+=("--build-arg" "COMMON_IMAGE_SHA=${common_image_sha}")
         BUILD_ARGS+=("--build-arg" "BREW_IMAGE=${brew_image}")
         BUILD_ARGS+=("--build-arg" "BREW_IMAGE_SHA=${brew_image_sha}")
+        BUILD_ARGS+=("--build-arg" "FEDORA_MAJOR_VERSION=${fedora_version}")
         BUILD_ARGS+=("--build-arg" "BASE_IMAGE=${base_image}")
         BUILD_ARGS+=("--build-arg" "BASE_IMAGE_SHA=${base_image_sha}")
     else

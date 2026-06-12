@@ -40,7 +40,9 @@ ARG COMMON_IMAGE="ghcr.io/projectbluefin/common:latest"
 ARG COMMON_IMAGE_SHA=""
 ARG BREW_IMAGE="ghcr.io/ublue-os/brew:latest"
 ARG BREW_IMAGE_SHA=""
-ARG BASE_IMAGE="ghcr.io/ublue-os/silverblue-main:latest"
+ARG FEDORA_MAJOR_VERSION="42"
+ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/silverblue"
+ARG BASE_IMAGE_REF="${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}"
 ARG BASE_IMAGE_SHA=""
 
 # Import OCI container resources as separate stages
@@ -58,11 +60,11 @@ COPY image-versions.yml /image-versions.yml
 COPY --from=common /system_files /oci/common
 COPY --from=brew /system_files /oci/brew
 
-# Base Image - GNOME included
-FROM ${BASE_IMAGE}@${BASE_IMAGE_SHA}
+# Base Image - GNOME included (Fedora official OSTree desktop)
+FROM ${BASE_IMAGE_REF}@${BASE_IMAGE_SHA}
 
 ## Alternative base images, no desktop included (uncomment to use):
-# FROM ghcr.io/ublue-os/base-main:latest
+# FROM quay.io/fedora-ostree-desktops/base-main:${FEDORA_MAJOR_VERSION}
 # FROM quay.io/centos-bootc/centos-bootc:stream10
 
 ## Alternative GNOME OS base image (uncomment to use):
