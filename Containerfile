@@ -43,9 +43,6 @@ ARG BREW_IMAGE_SHA=""
 ARG FEDORA_MAJOR_VERSION="44"
 ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/silverblue"
 ARG BASE_IMAGE_REF="${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}"
-ARG BASE_IMAGE_SHA=""
-
-# Import OCI container resources as separate stages
 FROM ${COMMON_IMAGE}@${COMMON_IMAGE_SHA} AS common
 FROM ${BREW_IMAGE}@${BREW_IMAGE_SHA} AS brew
 
@@ -61,7 +58,9 @@ COPY --from=common /system_files /oci/common
 COPY --from=brew /system_files /oci/brew
 
 # Base Image - GNOME included (Fedora official OSTree desktop)
-FROM ${BASE_IMAGE_REF}@${BASE_IMAGE_SHA}
+# BASE_IMAGE_REF is passed as build arg: "image:tag" for local builds,
+# "image:tag@sha256:..." for CI builds with pinned digest.
+FROM ${BASE_IMAGE_REF}
 
 ## Alternative base images, no desktop included (uncomment to use):
 # FROM quay.io/fedora-ostree-desktops/base-main:${FEDORA_MAJOR_VERSION}
