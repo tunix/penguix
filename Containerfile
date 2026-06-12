@@ -131,6 +131,19 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
 ## build strict (no /opt there). This is for downstream images/stuff like k0s.
 RUN rm -rf /opt && ln -s /var/opt /opt
 
+### CLEANUP
+## Remove build artifacts before linting (bluefin clean-stage pattern)
+RUN dnf5 config-manager setopt keepcache=0 && \
+    dnf5 versionlock clear && \
+    systemctl disable flatpak-add-fedora-repos.service 2>/dev/null || true && \
+    systemctl mask flatpak-add-fedora-repos.service 2>/dev/null || true && \
+    rm -f /usr/lib/systemd/system/flatpak-add-fedora-repos.service && \
+    rm -rf /run/* /tmp/* && \
+    mkdir -p /run /tmp && \
+    rm -rf /boot/* && mkdir -p /boot && \
+    rm -rf /var/log/* /var/cache/ldconfig/* /var/lib/dnf/repos/* /var/lib/dnf/system-repo.lock && \
+    rm -f /.gitkeep
+
 ### INIT
 ## Required for bootc images
 CMD ["/sbin/init"]
