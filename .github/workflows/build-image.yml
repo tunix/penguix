@@ -75,44 +75,21 @@ jobs:
           action: restore
           cache-name: ${{ env.IMAGE_NAME }}
 
-      - name: Get current date
-        id: date
-        run: |
-          echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
-
-      - name: Get version
-        id: version
-        shell: bash
-        run: |
-          VERSION="${{ env.DEFAULT_TAG }}-$(date +%Y%m%d)"
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Version: ${VERSION}"
-
-      - name: Generate default tag
-        id: default-tag
-        shell: bash
-        run: |
-          DEFAULT_TAG=$(just generate-default-tag "${{ env.DEFAULT_TAG }}")
-          echo "default_tag=${DEFAULT_TAG}" >> $GITHUB_OUTPUT
-          echo "Default tag: ${DEFAULT_TAG}"
-
-      - name: Generate tags
-        id: generate-tags
-        shell: bash
-        env:
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          PR_NUMBER: ${{ github.event.number }}
-        run: |
-          alias_tags=$(just generate-build-tags \
-            "${{ env.DEFAULT_TAG }}" \
-            "${{ steps.version.outputs.version }}" \
-            "${GITHUB_EVENT_NAME}" \
-            "${PR_NUMBER}")
-
-          echo "Tags: ${alias_tags}"
-          echo "alias_tags=${alias_tags}" >> $GITHUB_OUTPUT
+      - name: Detect changes
+        id: detect-changes
+        uses: projectbluefin/actions/bootc-build/detect-changes@v1
+        with:
+          filters: |
+            image:
+              - 'Containerfile'
+              - 'build/**'
+              - 'custom/**'
+              - 'image-versions.yml'
+              - 'Justfile'
+            nvidia: []
 
       - name: Build image
+        if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         id: build-image
         uses: nick-fields/retry@v4
         env:
@@ -126,11 +103,41 @@ jobs:
           command: |
             sudo "$(command -v just)" build "${IMAGE_NAME}" "${DEFAULT_TAG}"
 
-      - name: Tag images
-        if: github.event_name != 'pull_request'
+      - name: Get current date
+        if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
+        id: date
+        run: |
+          echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
+
+      - name: Get version label
+        if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
+        id: version
         shell: bash
         env:
-          ALIAS_TAGS: ${{ steps.generate-tags.outputs.alias_tags }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          DEFAULT_TAG: ${{ env.DEFAULT_TAG }}
+        run: |
+          VERSION_LABEL=$(sudo podman inspect "localhost/${IMAGE_NAME}:${DEFAULT_TAG}" \
+            --format '{{index .Config.Labels "org.opencontainers.image.version"}}')
+          echo "version=${VERSION_LABEL}" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION_LABEL}"
+
+      - name: Generate tags
+        if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
+        id: generate-tags
+        uses: projectbluefin/actions/bootc-build/generate-tags@v1
+        with:
+          base-name: ${{ env.IMAGE_NAME }}
+          stream-name: ${{ env.DEFAULT_TAG }}
+          version-label: ${{ steps.version.outputs.version }}
+          event-name: ${{ github.event_name }}
+          pr-number: ${{ github.event.number }}
+
+      - name: Tag images
+        if: (steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request') && github.event_name != 'pull_request'
+        shell: bash
+        env:
+          ALIAS_TAGS: ${{ steps.generate-tags.outputs.tags }}
         run: |
           sudo -E "$(command -v just)" tag-images "${IMAGE_NAME}" \
                           "${DEFAULT_TAG}" \
@@ -163,13 +170,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push to GHCR
-        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: (steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request') && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         id: push
         uses: projectbluefin/actions/bootc-build/push-image@v1
         with:
           image-name: ${{ env.IMAGE_NAME }}
-          tags: ${{ steps.generate-tags.outputs.alias_tags }}
-          default-tag: ${{ steps.default-tag.outputs.default_tag }}
+          tags: ${{ steps.generate-tags.outputs.tags }}
+          default-tag: ${{ steps.generate-tags.outputs.default-tag }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # OPTIONAL: Sign, publish SBOM, and attest (SLSA Build L2 provenance)
@@ -190,14 +197,14 @@ jobs:
       #     github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Export image to OCI dir (PR only)
-        if: github.event_name == 'pull_request'
+        if: steps.detect-changes.outputs.should_build == 'true' && github.event_name == 'pull_request'
         shell: bash
         run: |
           mkdir -p "${IMAGE_NAME}_build"
           sudo podman save --format oci-dir -o "${IMAGE_NAME}_build" "${IMAGE_NAME}:${DEFAULT_TAG}"
 
       - name: Upload OCI dir as artifact
-        if: github.event_name == 'pull_request'
+        if: steps.detect-changes.outputs.should_build == 'true' && github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.IMAGE_NAME }}-build
@@ -206,7 +213,7 @@ jobs:
           retention-days: 1
 
       - name: PR testing instructions
-        if: github.event_name == 'pull_request'
+        if: steps.detect-changes.outputs.should_build == 'true' && github.event_name == 'pull_request'
         run: |
           {
             echo "### Test this PR build"
@@ -222,7 +229,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build telemetry summary
-        if: always()
+        if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         shell: bash
         run: |
           IMAGE_SIZE=$(sudo podman image inspect "localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}" \

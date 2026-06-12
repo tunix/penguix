@@ -135,41 +135,6 @@ build $target_image=image_name $tag=default_tag:
         --tag "${target_image}:${tag}" \
         .
 
-# Generate OCI image tags based on stream, version, and event context
-# Bluefin pattern: single source of truth for tag generation
-[group('Image')]
-generate-build-tags $tag="stable" $version="" $github_event="" $pr_number="":
-    #!/usr/bin/bash
-    set -eou pipefail
-
-    BUILD_TAGS=()
-    COMMIT_TAGS=()
-
-    # Build tags (non-PR events)
-    if [[ "${tag}" =~ stable ]]; then
-        BUILD_TAGS+=("${tag}" "${tag}-${version}" "${version}")
-    else
-        BUILD_TAGS+=("${tag}" "${tag}-${version}")
-    fi
-
-    # PR commit tags
-    if [[ "${github_event}" == "pull_request" && -n "${pr_number}" ]]; then
-        SHA_SHORT="$(git rev-parse --short HEAD)"
-        COMMIT_TAGS+=("pr-${pr_number}-${tag}-${version}")
-        COMMIT_TAGS+=("${SHA_SHORT}-${tag}-${version}")
-        alias_tags=("${COMMIT_TAGS[@]}")
-    else
-        alias_tags=("${BUILD_TAGS[@]}")
-    fi
-
-    echo "${alias_tags[*]}"
-
-# Generate default tag for the image
-[group('Image')]
-generate-default-tag $tag="stable":
-    #!/usr/bin/bash
-    echo "${tag}"
-
 # Tag images with the generated alias tags
 # Bluefin pattern: separate tagging from pushing
 [group('Image')]
