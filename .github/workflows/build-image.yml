@@ -158,7 +158,7 @@ jobs:
                           "${ALIAS_TAGS}"
 
       - name: Save DNF cache
-        if: always() && !cancelled()
+        if: always() && !cancelled() && github.event_name != 'pull_request'
         uses: projectbluefin/actions/bootc-build/dnf-cache@v1
         with:
           action: save
