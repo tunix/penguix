@@ -7,6 +7,7 @@ on:
     paths:
       - Containerfile
       - Justfile
+      - image-versions.yml
       - build/**
       - custom/**
       - iso/**
@@ -60,6 +61,12 @@ jobs:
           storage-backend: btrfs
           update-podman: "true"
           install-tools: '["just"]'
+
+      - name: Install yq
+        shell: bash
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
 
       - name: Restore DNF cache
         id: dnf-cache-restore
