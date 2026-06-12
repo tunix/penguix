@@ -132,17 +132,18 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
 RUN rm -rf /opt && ln -s /var/opt /opt
 
 ### CLEANUP
-## Remove build artifacts before linting (bluefin clean-stage pattern)
+## Remove build artifacts before linting
 RUN dnf5 config-manager setopt keepcache=0 && \
     dnf5 versionlock clear && \
     systemctl disable flatpak-add-fedora-repos.service 2>/dev/null || true && \
     systemctl mask flatpak-add-fedora-repos.service 2>/dev/null || true && \
     rm -f /usr/lib/systemd/system/flatpak-add-fedora-repos.service && \
-    rm -rf /run/* /tmp/* && \
-    mkdir -p /run /tmp && \
-    rm -rf /boot/* && mkdir -p /boot && \
-    rm -rf /var/log/* /var/cache/ldconfig/* /var/lib/dnf/repos/* /var/lib/dnf/system-repo.lock && \
-    rm -f /.gitkeep
+    rm -f /.gitkeep && \
+    find /var/* -maxdepth 0 -type d ! -name cache -exec rm -fr {} + && \
+    find /var/cache/* -maxdepth 0 -type d ! -name libdnf5 ! -name rpm-ostree -exec rm -fr {} + && \
+    rm -rf /tmp && mkdir -p /tmp && \
+    rm -rf /boot && mkdir -p /boot && \
+    rm -rf /run && mkdir -p /run
 
 ### INIT
 ## Required for bootc images
