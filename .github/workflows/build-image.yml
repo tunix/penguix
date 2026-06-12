@@ -107,7 +107,7 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 300
           command: |
-            sudo -E "$(command -v just)" build
+            sudo IMAGE_NAME="${IMAGE_NAME}" DEFAULT_TAG="${DEFAULT_TAG}" "$(command -v just)" build
 
       - name: Save DNF cache
         if: always() && !cancelled()
