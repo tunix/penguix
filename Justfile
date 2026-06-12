@@ -117,11 +117,77 @@ build $target_image=image_name $tag=default_tag:
         BUILD_ARGS+=("--secret" "id=GITHUB_TOKEN,env=GITHUB_TOKEN")
     fi
 
+    # Labels for ArtifactHub and OCI metadata
+    LABELS=()
+    LABELS+=("--label" "org.opencontainers.image.title=${target_image}")
+    LABELS+=("--label" "org.opencontainers.image.version=${tag}")
+    LABELS+=("--label" "containers.bootc=1")
+    LABELS+=("--label" "org.opencontainers.image.created=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)")
+    LABELS+=("--label" "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}/blob/${GITHUB_SHA:-}/Containerfile")
+    LABELS+=("--label" "io.artifacthub.package.deprecated=false")
+    LABELS+=("--label" "io.artifacthub.package.keywords=bootc,ublue,universal-blue")
+    LABELS+=("--label" "io.artifacthub.package.license=Apache-2.0")
+
     podman build \
         "${BUILD_ARGS[@]}" \
+        "${LABELS[@]}" \
         --pull=newer \
         --tag "${target_image}:${tag}" \
         .
+
+# Generate OCI image tags based on stream, version, and event context
+# Bluefin pattern: single source of truth for tag generation
+[group('Image')]
+generate-build-tags $tag="stable" $version="" $github_event="" $pr_number="":
+    #!/usr/bin/bash
+    set -eou pipefail
+
+    BUILD_TAGS=()
+    COMMIT_TAGS=()
+
+    # Build tags (non-PR events)
+    if [[ "${tag}" =~ stable ]]; then
+        BUILD_TAGS+=("${tag}" "${tag}-${version}" "${version}")
+    else
+        BUILD_TAGS+=("${tag}" "${tag}-${version}")
+    fi
+
+    # PR commit tags
+    if [[ "${github_event}" == "pull_request" && -n "${pr_number}" ]]; then
+        SHA_SHORT="$(git rev-parse --short HEAD)"
+        COMMIT_TAGS+=("pr-${pr_number}-${tag}-${version}")
+        COMMIT_TAGS+=("${SHA_SHORT}-${tag}-${version}")
+        alias_tags=("${COMMIT_TAGS[@]}")
+    else
+        alias_tags=("${BUILD_TAGS[@]}")
+    fi
+
+    echo "${alias_tags[*]}"
+
+# Generate default tag for the image
+[group('Image')]
+generate-default-tag $tag="stable":
+    #!/usr/bin/bash
+    echo "${tag}"
+
+# Tag images with the generated alias tags
+# Bluefin pattern: separate tagging from pushing
+[group('Image')]
+tag-images $image_name="" $default_tag="" $tags="":
+    #!/usr/bin/bash
+    set -eou pipefail
+
+    IMAGE=$(podman inspect "localhost/${image_name}:${default_tag}" | jq -r '.[].Id')
+    podman untag "localhost/${image_name}:${default_tag}"
+
+    for tag in ${tags}; do
+        podman tag "${IMAGE}" "${image_name}:${tag}"
+    done
+
+    # Re-apply default tag so local operations can still find it
+    podman tag "${IMAGE}" "${image_name}:${default_tag}"
+
+    echo "Tagged ${image_name} with: ${tags}"
 
 # Command: _rootful_load_image
 # Description: This script checks if the current user is root or running under sudo. If not, it attempts to resolve the image tag using podman inspect.

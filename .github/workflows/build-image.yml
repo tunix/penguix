@@ -80,35 +80,37 @@ jobs:
         run: |
           echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
 
-      - name: Image metadata
-        uses: docker/metadata-action@v5
-        id: metadata
-        with:
-          images: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ env.DEFAULT_TAG }}
-            type=raw,value=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}}
-            type=raw,value={{date 'YYYYMMDD'}}
-            type=sha,enable=${{ github.event_name == 'pull_request' }}
-            type=ref,event=pr
-          labels: |
-            io.artifacthub.package.readme-url=https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}/${{ github.sha }}/README.md
-            org.opencontainers.image.created=${{ steps.date.outputs.date }}
-            org.opencontainers.image.description=${{ env.IMAGE_DESC }}
-            org.opencontainers.image.documentation=https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}/${{ github.sha }}/README.md
-            org.opencontainers.image.source=https://github.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}/blob/${{ github.sha }}/Containerfile
-            org.opencontainers.image.title=${{ env.IMAGE_NAME }}
-            org.opencontainers.image.url=https://github.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}/tree/${{ github.sha }}
-            org.opencontainers.image.vendor=${{ github.repository_owner }}
-            org.opencontainers.image.version=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}}
-            io.artifacthub.package.deprecated=false
-            io.artifacthub.package.keywords=${{ env.IMAGE_KEYWORDS }}
-            io.artifacthub.package.license=Apache-2.0
-            io.artifacthub.package.logo-url=${{ env.IMAGE_LOGO_URL }}
-            io.artifacthub.package.prerelease=false
-            containers.bootc=1
-          sep-tags: " "
-          sep-annotations: " "
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          VERSION="${{ env.DEFAULT_TAG }}-$(date +%Y%m%d)"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}"
+
+      - name: Generate default tag
+        id: default-tag
+        shell: bash
+        run: |
+          DEFAULT_TAG=$(just generate-default-tag "${{ env.DEFAULT_TAG }}")
+          echo "default_tag=${DEFAULT_TAG}" >> $GITHUB_OUTPUT
+          echo "Default tag: ${DEFAULT_TAG}"
+
+      - name: Generate tags
+        id: generate-tags
+        shell: bash
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          alias_tags=$(just generate-build-tags \
+            "${{ env.DEFAULT_TAG }}" \
+            "${{ steps.version.outputs.version }}" \
+            "${GITHUB_EVENT_NAME}" \
+            "${PR_NUMBER}")
+
+          echo "Tags: ${alias_tags}"
+          echo "alias_tags=${alias_tags}" >> $GITHUB_OUTPUT
 
       - name: Build image
         id: build-image
@@ -123,6 +125,16 @@ jobs:
           retry_wait_seconds: 300
           command: |
             sudo "$(command -v just)" build "${IMAGE_NAME}" "${DEFAULT_TAG}"
+
+      - name: Tag images
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          ALIAS_TAGS: ${{ steps.generate-tags.outputs.alias_tags }}
+        run: |
+          sudo -E "$(command -v just)" tag-images "${IMAGE_NAME}" \
+                          "${DEFAULT_TAG}" \
+                          "${ALIAS_TAGS}"
 
       - name: Save DNF cache
         if: always() && !cancelled()
@@ -156,8 +168,8 @@ jobs:
         uses: projectbluefin/actions/bootc-build/push-image@v1
         with:
           image-name: ${{ env.IMAGE_NAME }}
-          tags: ${{ steps.metadata.outputs.tags }}
-          default-tag: ${{ env.DEFAULT_TAG }}
+          tags: ${{ steps.generate-tags.outputs.alias_tags }}
+          default-tag: ${{ steps.default-tag.outputs.default_tag }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # OPTIONAL: Sign, publish SBOM, and attest (SLSA Build L2 provenance)
