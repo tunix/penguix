@@ -137,7 +137,6 @@ Signing is DISABLED by default. First builds succeed immediately. Enable later f
 │   │   ├── build-image.yml       # Builds :stable on main
 │   │   ├── pr-validation.yml     # PR validation (shellcheck, hadolint, pre-commit)
 │   │   ├── clean.yml             # Deletes images >90 days old
-│   │   ├── renovate.yml          # Renovate bot updates (6h interval)
 │   │   ├── validate-brewfiles.yml    # Validates Brewfile syntax
 │   │   ├── validate-flatpaks.yml     # Validates Flatpak app IDs
 │   │   ├── validate-justfiles.yml    # Validates Justfile syntax
@@ -146,7 +145,8 @@ Signing is DISABLED by default. First builds succeed immediately. Enable later f
 │   ├── copilot-instructions.md  # THIS FILE - Instructions for Copilot
 │   ├── SETUP_CHECKLIST.md       # Quick setup checklist for users
 │   ├── commit-convention.md     # Conventional commits guide
-│   └── renovate.json5           # Renovate configuration
+│   ├── renovate.json5           # Renovate configuration (project-specific)
+├── renovate.json               # Renovate configuration (base, extends best-practices)
 ├── .pre-commit-config.yaml   # Pre-commit hooks (optional local use)
 └── .gitignore                # Prevents committing secrets (cosign.key, etc.)
 ```
@@ -375,7 +375,7 @@ FROM quay.io/fedora/fedora-bootc:42       # Upstream Fedora
 
 **Tags**: `:stable` (recommended), `:latest` (bleeding edge), `-nvidia` variants available
 
-**Renovate**: Base image SHA and OCI container tags are auto-updated by Renovate bot every 6 hours (see `.github/renovate.json5`)
+**Renovate**: Base image SHA and OCI container tags are auto-updated by the Renovate GitHub App (see `.github/renovate.json5`)
 
 **OCI Container Resources:**
 - **@ublue-os/base-main** - Base system configuration
@@ -564,7 +564,7 @@ bootc switch --mutate-in-place --transport registry ghcr.io/USERNAME/REPO:stable
 **Workflows**:
 - `build-image.yml` - Builds `:stable` on main
 - `pr-validation.yml` - PR validation (shellcheck, hadolint, pre-commit)
-- `renovate.yml` - Monitors base image updates (every 6 hours)
+- `renovate-automerge.yml` - Auto-merges Renovate PRs after validation passes
 - `clean.yml` - Deletes images >90 days (weekly)
 - `validate-*.yml` - Pre-merge validation (shellcheck, Brewfile, Flatpak, etc.)
 
@@ -576,8 +576,9 @@ bootc switch --mutate-in-place --transport registry ghcr.io/USERNAME/REPO:stable
 - `:sha-abc123` - Git commit SHA (short)
 
 **Renovate Bot**: 
+- Uses the Renovate GitHub App (free for open source)
 - Automatically updates base image SHAs in `Containerfile`
-- Runs every 6 hours (configured in `.github/renovate.json5`)
+- Runs on the app's own schedule (no per-repo workflow needed)
 - Creates PRs for updates - review and merge to keep images current
 
 ### 8. Understanding the Multi-Stage Build Architecture
@@ -969,6 +970,7 @@ When user requests customization, check in this order:
 
 **Do NOT modify unless specifically requested or necessary**:
 - `.github/renovate.json5` - Renovate configuration (auto-updates)
+- `renovate.json` - Renovate base configuration (auto-updates)
 - `.github/workflows/validate-*.yml` - Validation workflows
 - `.gitignore` - Prevents committing secrets
 - `build/copr-helpers.sh` - Helper functions (stable patterns)

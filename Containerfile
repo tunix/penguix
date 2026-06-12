@@ -143,7 +143,7 @@ RUN dnf5 config-manager setopt keepcache=0 && \
     find /var/cache/* -maxdepth 0 -type d ! -name libdnf5 ! -name rpm-ostree -exec rm -fr {} + && \
     rm -rf /tmp && mkdir -p /tmp && \
     rm -rf /boot && mkdir -p /boot && \
-    rm -rf /run && mkdir -p /run
+    find /run/* -maxdepth 0 -exec rm -rf {} +
 
 ### INIT
 ## Required for bootc images

@@ -54,40 +54,39 @@
       "matchUpdateTypes": ["pin", "pinDigest"]
     },
     {
-      "description": "Auto-merge digest updates for base image and trigger build",
       "automerge": true,
       "matchManagers": ["dockerfile"],
-      "matchUpdateTypes": ["digest"],
-      "matchFileNames": ["Containerfile"],
-      "labels": ["renovate", "automerge"],
+      "matchUpdateTypes": ["digest"]
     },
     {
-      "description": "Disable automerge for all rechunk updates to allow manual review",
       "matchUpdateTypes": ["major", "minor", "patch", "digest", "pinDigest"],
       "matchPackageNames": ["ghcr.io/hhd-dev/rechunk"],
       "automerge": false
     },
     {
-      "description": "Enable GitHub Actions updates since they are now pinned with SHA",
-      "enabled": true,
-      "matchUpdateTypes": ["digest", "pinDigest", "pin", "major", "minor", "patch"],
-      "matchDepTypes": ["action"],
-      "matchFileNames": [".github/workflows/**.yaml", ".github/workflows/**.yml"],
+      // common is a first-party trusted image; automerge digest updates immediately.
+      // No schedule — critical fixes must land without the default weekly delay.
+      "matchUpdateTypes": ["pin", "digest", "pinDigest"],
+      "matchDepNames": ["ghcr.io/projectbluefin/common"],
+      "automerge": true,
+      "schedule": ["at any time"]
     },
     {
-      "description": "Auto-merge GitHub Actions digest/SHA pin updates (low-risk)",
+      "matchDepNames": ["quay.io/fedora-ostree-desktops/silverblue"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
       "automerge": true,
       "matchUpdateTypes": ["digest", "pinDigest", "pin"],
       "matchDepTypes": ["action"],
     },
     {
-      "description": "Auto-merge projectbluefin/actions updates (trusted composite actions)",
       "automerge": true,
       "matchUpdateTypes": ["digest", "pinDigest", "pin", "minor", "patch"],
       "matchPackageNames": ["projectbluefin/actions"],
     },
     {
-      "description": "Auto-merge digest updates for OCI containers in image-versions.yml",
       "automerge": true,
       "matchUpdateTypes": ["digest", "pinDigest"],
       "matchDepNames": [
@@ -96,13 +95,11 @@
       ],
     },
     {
-      "description": "Risk-tier labels: low-risk for action SHA pins (lint validation sufficient)",
       "matchManagers": ["github-actions"],
       "matchUpdateTypes": ["pinDigest", "digest"],
       "addLabels": ["renovate/low-risk"]
     },
     {
-      "description": "Risk-tier labels: high-risk for base image and OCI containers",
       "matchDepNames": [
         "quay.io/fedora-ostree-desktops/silverblue",
         "ghcr.io/projectbluefin/common",
