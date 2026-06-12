@@ -94,6 +94,32 @@ build $target_image=image_name $tag=default_tag:
         BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
     fi
 
+    # Read image versions from image-versions.yml for reproducible builds
+    if [[ -f "image-versions.yml" ]] && command -v yq &>/dev/null; then
+        echo "Reading image versions from image-versions.yml..."
+        common_image=$(yq -r '.images[] | select(.name == "common") | .image + ":" + .tag' image-versions.yml)
+        common_image_sha=$(yq -r '.images[] | select(.name == "common") | .digest' image-versions.yml)
+        brew_image=$(yq -r '.images[] | select(.name == "brew") | .image + ":" + .tag' image-versions.yml)
+        brew_image_sha=$(yq -r '.images[] | select(.name == "brew") | .digest' image-versions.yml)
+        base_image=$(yq -r '.images[] | select(.name == "base") | .image + ":" + .tag' image-versions.yml)
+        base_image_sha=$(yq -r '.images[] | select(.name == "base") | .digest' image-versions.yml)
+
+        BUILD_ARGS+=("--build-arg" "COMMON_IMAGE=${common_image}")
+        BUILD_ARGS+=("--build-arg" "COMMON_IMAGE_SHA=${common_image_sha}")
+        BUILD_ARGS+=("--build-arg" "BREW_IMAGE=${brew_image}")
+        BUILD_ARGS+=("--build-arg" "BREW_IMAGE_SHA=${brew_image_sha}")
+        BUILD_ARGS+=("--build-arg" "BASE_IMAGE=${base_image}")
+        BUILD_ARGS+=("--build-arg" "BASE_IMAGE_SHA=${base_image_sha}")
+    else
+        echo "Warning: image-versions.yml not found or yq not installed. Using Containerfile defaults."
+    fi
+
+    # Add GitHub token as build secret if available (for CI/CD)
+    if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+        echo "Adding GitHub token as build secret"
+        BUILD_ARGS+=("--secret" "id=GITHUB_TOKEN,env=GITHUB_TOKEN")
+    fi
+
     podman build \
         "${BUILD_ARGS[@]}" \
         --pull=newer \
