@@ -85,7 +85,25 @@ Your first build will start automatically!
 
 Note: Image signing is disabled by default. Your images will build successfully without any signing keys. Once you're ready for production, see "Optional: Enable Image Signing" below.
 
-### 4. Customize Your Image
+### 4. Enable Renovate (Required)
+
+Renovate automatically updates dependencies and GitHub Actions. By default, it cannot update workflow files (`.github/workflows/*.yml`) because the default `GITHUB_TOKEN` lacks `workflows:write` permission.
+
+**One-time setup:**
+
+1. Go to GitHub Settings → Developer Settings → Personal access tokens → Fine-grained tokens
+2. Create a new token:
+   - **Token name**: `renovate`
+   - **Repository access**: Select "Only select repositories" → choose your repo
+   - **Permissions → Repository → Contents**: Read and write
+   - **Permissions → Repository → Workflows**: Read and write
+3. Click "Generate token" and copy the value
+4. Go to your repository → Settings → Secrets and variables → Actions
+5. Add a new secret: **`RENOVATE_PAT`** (paste the token value)
+
+Renovate will now automatically update all files including workflows. Without this token, Renovate still works — it just cannot update workflow files.
+
+### 5. Customize Your Image
 
 Choose your base image in `Containerfile` (line 48):
 ```dockerfile
@@ -105,19 +123,19 @@ Customize your apps:
 - Add Flatpaks in `custom/flatpaks/` ([guide](custom/flatpaks/README.md))
 - Add ujust commands in `custom/ujust/` ([guide](custom/ujust/README.md))
 
-### 5. Development Workflow
+### 6. Development Workflow
 
 All changes should be made via pull requests:
 
 1. Open a pull request on GitHub with the change you want.
-3. The PR will automatically trigger:
+2. The PR will automatically trigger:
    - Build validation
    - Brewfile, Flatpak, Justfile, and shellcheck validation
    - Test image build
-4. Once checks pass, merge the PR
-5. Merging triggers publishes a `:stable` image
+3. Once checks pass, merge the PR
+4. Merging triggers publishes a `:stable` image
 
-### 6. Deploy Your Image
+### 7. Deploy Your Image
 
 Switch to your image:
 ```bash

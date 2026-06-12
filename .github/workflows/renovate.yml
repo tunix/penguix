@@ -26,7 +26,8 @@ jobs:
         uses: renovatebot/github-action@0984fb80fc633b17e57f3e8b6c007fe0dc3e0d62 # v40.3.6
         with:
           configurationFile: .github/renovate.json5
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # PAT required for workflow file updates (GITHUB_TOKEN lacks workflows:write)
+          token: ${{ secrets.RENOVATE_PAT }}
         env:
           RENOVATE_REPOSITORIES: ${{ github.repository }}
           LOG_LEVEL: 'debug'
