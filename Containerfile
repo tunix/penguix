@@ -23,32 +23,46 @@
 #
 # 1. Context Stage (ctx) - Combines resources from:
 #    - Local build scripts and custom files
-#    - @projectbluefin/common - Desktop configuration shared with Aurora 
+#    - @projectbluefin/common - Desktop configuration shared with Aurora
 #    - @ublue-os/brew - Homebrew integration
 #
 # 2. Base Image Options:
 #    - `ghcr.io/ublue-os/silverblue-main:latest` (Fedora and GNOME)
-#    - `ghcr.io/ublue-os/base-main:latest` (Fedora and no desktop 
-#    - `quay.io/centos-bootc/centos-bootc:stream10 (CentOS-based)` 
+#    - `ghcr.io/ublue-os/base-main:latest` (Fedora and no desktop
+#    - `quay.io/centos-bootc/centos-bootc:stream10 (CentOS-based)`
 #
 # See: https://docs.projectbluefin.io/contributing/ for architecture diagram
 ###############################################################################
+
+# Image version pins - digests read from image-versions.yml at build time
+# These ARGs are populated by the build pipeline for reproducibility
+ARG COMMON_IMAGE="ghcr.io/projectbluefin/common:latest"
+ARG COMMON_IMAGE_SHA=""
+ARG BREW_IMAGE="ghcr.io/ublue-os/brew:latest"
+ARG BREW_IMAGE_SHA=""
+ARG BASE_IMAGE="ghcr.io/ublue-os/silverblue-main:latest"
+ARG BASE_IMAGE_SHA=""
+
+# Import OCI container resources as separate stages
+FROM ${COMMON_IMAGE}@${COMMON_IMAGE_SHA} AS common
+FROM ${BREW_IMAGE}@${BREW_IMAGE_SHA} AS brew
 
 # Context stage - combine local and imported OCI container resources
 FROM scratch AS ctx
 
 COPY build /build
 COPY custom /custom
+COPY image-versions.yml /image-versions.yml
+
 # Copy from OCI containers to distinct subdirectories to avoid conflicts
-# Note: Renovate can automatically update these :latest tags to SHA-256 digests for reproducibility
-COPY --from=ghcr.io/projectbluefin/common:latest@sha256:b8fe93b16674a547b4cf38493af19caa484d9575956fc3be04ca3d10faec23ff /system_files /oci/common
-COPY --from=ghcr.io/ublue-os/brew:latest@sha256:2eca44f5b4b58b8271a625d61c2c063b7c8776f68d004ae67563e2a79450be9c /system_files /oci/brew
+COPY --from=common /system_files /oci/common
+COPY --from=brew /system_files /oci/brew
 
 # Base Image - GNOME included
-FROM ghcr.io/ublue-os/silverblue-main:latest@sha256:c4491852e05bea9a19c7ff22f3a5247803ec87e4fb954d31ac2d786ad6128fec
+FROM ${BASE_IMAGE}@${BASE_IMAGE_SHA}
 
 ## Alternative base images, no desktop included (uncomment to use):
-# FROM ghcr.io/ublue-os/base-main:latest    
+# FROM ghcr.io/ublue-os/base-main:latest
 # FROM quay.io/centos-bootc/centos-bootc:stream10
 
 ## Alternative GNOME OS base image (uncomment to use):
@@ -77,11 +91,22 @@ FROM ghcr.io/ublue-os/silverblue-main:latest@sha256:c4491852e05bea9a19c7ff22f3a5
 ## Scripts are run in numerical order (10-build.sh, 20-example.sh, etc.)
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-    --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/log \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+    --mount=type=cache,dst=/var/cache/rpm-ostree \
+    --mount=type=secret,id=GITHUB_TOKEN \
+    --mount=type=tmpfs,dst=/boot \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/build/10-build.sh
-    
+
+### /opt
+## Makes /opt writeable by default. Needs to be here to make the main image
+## build strict (no /opt there). This is for downstream images/stuff like k0s.
+RUN rm -rf /opt && ln -s /var/opt /opt
+
+### INIT
+## Required for bootc images
+CMD ["/sbin/init"]
+
 ### LINTING
-## Verify final image and contents are correct.
-RUN bootc container lint
+## Verify final image and contents are correct. --fatal-warnings catches issues.
+RUN bootc container lint --fatal-warnings
