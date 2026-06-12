@@ -95,5 +95,21 @@
         "ghcr.io/ublue-os/brew"
       ],
     },
+    {
+      "description": "Risk-tier labels: low-risk for action SHA pins (lint validation sufficient)",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["pinDigest", "digest"],
+      "addLabels": ["renovate/low-risk"]
+    },
+    {
+      "description": "Risk-tier labels: high-risk for base image and OCI containers",
+      "matchDepNames": [
+        "quay.io/fedora-ostree-desktops/silverblue",
+        "ghcr.io/projectbluefin/common",
+        "ghcr.io/ublue-os/brew",
+        "quay.io/coreos/chunkah"
+      ],
+      "addLabels": ["renovate/high-risk"]
+    },
   ]
 }

@@ -562,7 +562,8 @@ bootc switch --mutate-in-place --transport registry ghcr.io/USERNAME/REPO:stable
 - `main` - Production only. Builds `:stable` images. Never push directly.
 
 **Workflows**:
-- `build.yml` - Builds `:stable` on main
+- `build-image.yml` - Builds `:stable` on main
+- `pr-validation.yml` - PR validation (shellcheck, hadolint, pre-commit)
 - `renovate.yml` - Monitors base image updates (every 6 hours)
 - `clean.yml` - Deletes images >90 days (weekly)
 - `validate-*.yml` - Pre-merge validation (shellcheck, Brewfile, Flatpak, etc.)
@@ -657,8 +658,8 @@ COSIGN_PASSWORD="" cosign generate-key-pair
 # Value: <paste entire contents of cosign.key>
 
 # Uncomment signing sections in:
-# - .github/workflows/build.yml
-# - .github/workflows/build-testing.yml
+# - .github/workflows/build-image.yml
+# - .github/workflows/build-image-testing.yml
 ```
 
 **NEVER commit `cosign.key`**. Already in `.gitignore`.
@@ -975,7 +976,7 @@ When user requests customization, check in this order:
 - `cosign.pub` - Public signing key (regenerate if changing keys)
 
 **Modify with extreme caution**:
-- `.github/workflows/build.yml` - Core build workflow
+- `.github/workflows/build-image.yml` - Core build workflow
 - `.github/workflows/clean.yml` - Image cleanup
 - `Justfile` - Local build automation (users rely on these commands)
 

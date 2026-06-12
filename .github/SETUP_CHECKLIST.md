@@ -28,6 +28,6 @@ sudo systemctl reboot
 ```bash
 cosign generate-key-pair
 # Add cosign.key to GitHub Secrets as SIGNING_SECRET
-# Uncomment signing in .github/workflows/build.yml
+# Uncomment signing in .github/workflows/build-image.yml
 ```
 

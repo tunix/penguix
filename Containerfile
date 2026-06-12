@@ -76,6 +76,10 @@ ARG UBLUE_IMAGE_TAG
 ARG BASE_IMAGE_NAME
 ARG FEDORA_MAJOR_VERSION
 
+# Configure DNF for optimal container builds
+RUN dnf5 config-manager setopt keepcache=1
+RUN dnf5 config-manager setopt install_weak_deps=0
+
 ## Alternative base images, no desktop included (uncomment to use):
 # FROM quay.io/fedora-ostree-desktops/base-main:${FEDORA_MAJOR_VERSION}
 # FROM quay.io/centos-bootc/centos-bootc:stream10

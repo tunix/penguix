@@ -43,10 +43,6 @@ echo "::endgroup::"
 
 echo "::group:: Install Packages"
 
-# Enable DNF cache retention so the buildah cache mount actually persists
-# between builds. Without this, DNF cleans the cache after each transaction.
-dnf5 config-manager setopt keepcache=1
-
 # Install a minimal package to verify the cache is working
 # This ensures the DNF cache is populated for future builds
 dnf5 install -y tmux

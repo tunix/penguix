@@ -162,8 +162,8 @@ This creates two files:
    - Commit and push the change
 
 4. Enable signing in the workflow:
-   - Edit `.github/workflows/build.yml`
-   - Find the "OPTIONAL: Image Signing with Cosign" section.
+   - Edit `.github/workflows/build-image.yml`
+   - Find the "OPTIONAL: Sign, publish SBOM, and attest" section.
    - Uncomment the steps to install Cosign and sign the image (remove the `#` from the beginning of each line in that section).
    - Commit and push the change
 
@@ -189,9 +189,9 @@ Ready to take your custom OS to production? Enable these features for enhanced s
   - Requires image signing to be enabled first
   - To enable:
     1. First complete image signing setup above
-    2. Edit `.github/workflows/build.yml`
-    3. Find the "OPTIONAL: SBOM Attestation" section around line 232
-    4. Uncomment the "Add SBOM Attestation" step
+    2. Edit `.github/workflows/build-image.yml`
+    3. Find the "OPTIONAL: Sign, publish SBOM, and attest" section
+    4. Uncomment the step
     5. Commit and push
   - Status: **Disabled by default** (requires signing first)
 
@@ -200,9 +200,9 @@ Ready to take your custom OS to production? Enable these features for enhanced s
   - Reduces update sizes by 5-10x
   - Improves download resumability with evenly sized layers
   - To enable:
-    1. Edit `.github/workflows/build.yml`
-    2. Find the "Build Image" step
-    3. Add a rechunk step after the build (see example below)
+    1. Edit `.github/workflows/build-image.yml`
+    2. Find the "OPTIONAL: Rechunking" section
+    3. Uncomment the rechunk step
   - Status: **Not enabled by default** (optional optimization)
 
 #### Adding Image Rechunking
