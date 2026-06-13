@@ -14,10 +14,10 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Cleanup old images
-        uses: projectbluefin/actions/bootc-build/ghcr-cleanup@v1
+        uses: projectbluefin/actions/bootc-build/ghcr-cleanup@74c4356b36dd94c0eadf15bbe63a26b58a0e7468 # v1
         with:
           # IMPORTANT: Update this to match your image name from Containerfile (line 4)
           # This should match the "# Name: your-repo-name" comment in your Containerfile
