@@ -22,6 +22,7 @@ git push origin main
 - [ ] Enable **Settings → General → Pull Requests → Allow auto-merge**
 - [ ] Configure branch protection for `main`:
   - Settings → Branches → Add rule
+  - Set **Branch name pattern** to `main`
   - Enable "Require a pull request before merging"
   - Enable "Require status checks to pass before merging"
   - Add `validate` as a required status check
