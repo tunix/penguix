@@ -77,8 +77,7 @@ ARG BASE_IMAGE_NAME
 ARG FEDORA_MAJOR_VERSION
 
 # Configure DNF for optimal container builds
-RUN dnf5 config-manager setopt keepcache=1
-RUN dnf5 config-manager setopt install_weak_deps=0
+RUN dnf5 config-manager setopt keepcache=1 install_weak_deps=0
 
 ## Alternative base images, no desktop included (uncomment to use):
 # FROM quay.io/fedora-ostree-desktops/base-main:${FEDORA_MAJOR_VERSION}
