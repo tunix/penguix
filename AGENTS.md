@@ -146,7 +146,7 @@ Signing is DISABLED by default. First builds succeed immediately. Enable later f
 │   ├── copilot-instructions.md  # THIS FILE - Instructions for Copilot
 │   ├── SETUP_CHECKLIST.md       # Quick setup checklist for users
 │   ├── commit-convention.md     # Conventional commits guide
-├── renovate.json               # Renovate configuration (extends best-practices)
+├── renovate.js               # Renovate configuration (extends best-practices)
 ├── .pre-commit-config.yaml   # Pre-commit hooks (optional local use)
 └── .gitignore                # Prevents committing secrets (cosign.key, etc.)
 ```
@@ -375,7 +375,7 @@ FROM quay.io/fedora/fedora-bootc:42       # Upstream Fedora
 
 **Tags**: `:stable` (recommended), `:latest` (bleeding edge), `-nvidia` variants available
 
-**Renovate**: OCI container digests and GitHub Actions are auto-updated by Renovate (see `renovate.json`)
+**Renovate**: OCI container digests and GitHub Actions are auto-updated by Renovate (see `renovate.js`)
 
 **OCI Container Resources:**
 - **@ublue-os/base-main** - Base system configuration
@@ -711,7 +711,7 @@ COSIGN_PASSWORD="" cosign generate-key-pair
 | ujust commands not working | Wrong install location | Files must be in `custom/ujust/` and copied to `/usr/share/ublue-os/just/` |
 | Flatpaks not installed | Expected behavior | Flatpaks install post-first-boot, not in ISO/container |
 | Local build fails | Wrong environment | Must run on bootc-based system or have podman installed |
-| Renovate not creating PRs | Configuration issue | Check `renovate.json` syntax and `RENOVATE_TOKEN` scopes |
+| Renovate not creating PRs | Configuration issue | Check `renovate.js` syntax and `RENOVATE_TOKEN` scopes |
 | Third-party repo not working | Repo file persists | Remove repo file at end of script (see examples) |
 
 ---
@@ -972,7 +972,7 @@ When user requests customization, check in this order:
 ### Files to AVOID Modifying
 
 **Do NOT modify unless specifically requested or necessary**:
-- `renovate.json` - Renovate configuration (auto-updates)
+- `renovate.js` - Renovate configuration (auto-updates)
 - `.github/workflows/renovate.yml` - Self-hosted Renovate runner (managed by projectbluefin/actions)
 - `.github/workflows/validate-*.yml` - Validation workflows
 - `.gitignore` - Prevents committing secrets
