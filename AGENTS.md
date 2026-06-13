@@ -85,7 +85,7 @@ Here are the changes from [Base Image Name]. This image is based on [Bluefin/Baz
 *Last updated: [date]*
 ```
 
-**Maintenance requirement**: 
+**Maintenance requirement**:
 - **ALWAYS update this section when you modify packages or configuration**
 - Keep descriptions brief and user-focused (explain "why", not just "what")
 - Write for typical Linux users, not developers
@@ -226,13 +226,13 @@ System packages are installed at build-time and baked into the container image. 
 dnf5 install -y vim git htop neovim tmux
 ```
 
-**When to use**: 
+**When to use**:
 - System utilities and services
 - Dependencies required for other build-time operations
 - Packages that need to be available immediately on first boot
 - Services that need to be enabled with `systemctl enable`
 
-**Important**: 
+**Important**:
 - Always use `dnf5` (never `dnf`, `yum`, or `rpm-ostree`)
 - Always add `-y` flag for non-interactive installs
 - For COPR repositories, use `copr_install_isolated` pattern and disable after use
@@ -418,7 +418,7 @@ COPY --from=ghcr.io/ublue-os/brew:latest /system_files /files/brew
 - You want additional system integration beyond what the base image provides
 - You're building a Bluefin derivative and want to maintain brand consistency
 
-**Important**: 
+**Important**:
 - These are **commented out by default** as template examples
 - Uncomment only if you specifically want these additional system files
 - The files are copied into the `ctx` stage and made available to your build scripts
@@ -575,7 +575,7 @@ bootc switch --mutate-in-place --transport registry ghcr.io/USERNAME/REPO:stable
 - `:pr-123` - Pull request builds (for testing)
 - `:sha-abc123` - Git commit SHA (short)
 
-**Renovate Bot**: 
+**Renovate Bot**:
 - Self-hosted via `projectbluefin/actions/reusable-renovate.yml`
 - Requires `RENOVATE_TOKEN` secret (Classic PAT with `repo` + `workflow` scopes)
 - Automatically updates tracked OCI image digests and GitHub Actions
@@ -1132,6 +1132,6 @@ Assisted-by: Claude 3.5 Sonnet via GitHub Copilot
 
 ---
 
-**Last Updated**: 2025-11-14  
-**Template Version**: finpilot (Enhanced with comprehensive Copilot instructions)  
+**Last Updated**: 2025-11-14
+**Template Version**: finpilot (Enhanced with comprehensive Copilot instructions)
 **Maintainer**: Universal Blue Community
