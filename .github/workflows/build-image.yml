@@ -1,16 +1,6 @@
 ---
 name: Build and Push Image
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - Containerfile
-      - Justfile
-      - image-versions.yml
-      - build/**
-      - custom/**
-      - iso/**
   push:
     branches:
       - main
@@ -211,14 +201,14 @@ jobs:
       #     github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Export image to OCI dir (PR only)
-        if: steps.detect-changes.outputs.should_build == 'true' && github.event_name == 'pull_request'
+        if: false
         shell: bash
         run: |
           mkdir -p "${IMAGE_NAME}_build"
           sudo podman save --format oci-dir -o "${IMAGE_NAME}_build" "${IMAGE_NAME}:${DEFAULT_TAG}"
 
       - name: Upload OCI dir as artifact
-        if: steps.detect-changes.outputs.should_build == 'true' && github.event_name == 'pull_request'
+        if: false
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.IMAGE_NAME }}-build
@@ -227,7 +217,7 @@ jobs:
           retention-days: 1
 
       - name: PR testing instructions
-        if: steps.detect-changes.outputs.should_build == 'true' && github.event_name == 'pull_request'
+        if: false
         run: |
           {
             echo "### Test this PR build"
