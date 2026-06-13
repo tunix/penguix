@@ -27,7 +27,7 @@ Use @projectbluefin/finpilot as a template, name the OS the repository name. Ens
 ### Build System
 
 - Automated builds via GitHub Actions on every commit
-- Renovate GitHub App for automated dependency updates
+- Self-hosted Renovate for automated dependency updates
 - Automatic cleanup of old images (90+ days) to keep it tidy
 - Pull request workflow - test changes before merging to main
   - PRs build and validate before merge
@@ -92,13 +92,20 @@ Note: Image signing is disabled by default. Your images will build successfully 
 
 ### 4. Enable Renovate (Required)
 
-Renovate automatically updates dependencies and GitHub Actions. This template uses the **Renovate GitHub App** (free for open source), which has full permissions including `workflows:write` — no secrets needed.
+Renovate automatically updates dependencies and GitHub Actions (including workflow files). This template uses a self-hosted Renovate runner via `projectbluefin/actions`.
 
 **One-time setup:**
 
-1. Go to [github.com/apps/renovate](https://github.com/apps/renovate) and click **Install**
-2. Select your repository and install the app
-3. Renovate will automatically create a PR to pin your GitHub Actions to SHAs and keep all dependencies up to date
+1. Go to GitHub → Settings → Developer settings → **Personal access tokens** → **Tokens (classic)**
+2. Click **Generate new token (classic)**
+3. Set a note like `renovate-finpilot`
+4. Select scopes: **`repo`** (full control) and **`workflow`** (update workflows)
+5. Click **Generate token** and copy the value
+6. Go to your repository → Settings → Secrets and variables → Actions
+7. Add a new secret: **`RENOVATE_TOKEN`** (paste the token value)
+8. Optional but recommended: enable **Settings → General → Pull Requests → Allow auto-merge** so Renovate can merge low-risk updates after checks pass
+
+Renovate will run every 6 hours and on config changes. It pins GitHub Actions to SHAs and updates tracked image digests automatically.
 
 ### 5. Customize Your Image
 

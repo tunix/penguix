@@ -15,17 +15,18 @@ git add .
 git commit -m "feat: initial customization"
 git push origin main
 ```
+### 4. Enable Renovate (Required)
+- [ ] Create a **Classic PAT** (Settings → Developer settings → Personal access tokens → Tokens (classic))
+  - Scopes: `repo` (full control) + `workflow` (update workflows)
+- [ ] Add the token as repository secret **`RENOVATE_TOKEN`** (Settings → Secrets and variables → Actions)
+- [ ] Optional: enable **Settings → General → Pull Requests → Allow auto-merge**
+- [ ] Renovate will create a PR to pin your GitHub Actions to SHAs
 
-### 4. Deploy
+### 5. Deploy
 ```bash
 sudo bootc switch --transport registry ghcr.io/YOUR_USERNAME/YOUR_REPO:stable
 sudo systemctl reboot
 ```
-
-### 5. Enable Renovate (Required)
-- [ ] Go to [github.com/apps/renovate](https://github.com/apps/renovate) and click **Install**
-- [ ] Select your repository and install the app
-- [ ] Renovate will create a PR to pin your GitHub Actions to SHAs
 
 ## Optional: Production Features
 
@@ -35,4 +36,3 @@ cosign generate-key-pair
 # Add cosign.key to GitHub Secrets as SIGNING_SECRET
 # Uncomment signing in .github/workflows/build-image.yml
 ```
-

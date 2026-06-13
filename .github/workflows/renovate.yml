@@ -1,0 +1,19 @@
+name: Renovate
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'renovate.json'
+      - '.github/workflows/renovate.yml'
+
+jobs:
+  renovate:
+    name: Run Renovate
+    uses: projectbluefin/actions/.github/workflows/reusable-renovate.yml@db363a8c88830d11de92f53e73560460f7ff8211 # v1
+    secrets:
+      renovate_token: ${{ secrets.RENOVATE_TOKEN }}

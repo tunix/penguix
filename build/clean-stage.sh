@@ -21,12 +21,35 @@ rm -f "${CLEAN_ROOT}/usr/lib/systemd/system/flatpak-add-fedora-repos.service"
 rm -rf "${CLEAN_ROOT}/.gitkeep"
 find "${CLEAN_ROOT}/var"/* -maxdepth 0 -type d \! -name cache -exec rm -fr {} \;
 find "${CLEAN_ROOT}/var/cache"/* -maxdepth 0 -type d \! -name libdnf5 \! -name rpm-ostree -exec rm -fr {} \;
-rm -rf "${CLEAN_ROOT:?}/tmp" && mkdir -p "${CLEAN_ROOT:?}/tmp"
-# shellcheck disable=SC2114
-rm -rf "${CLEAN_ROOT:?}/boot" && mkdir -p "${CLEAN_ROOT:?}/boot"
-# Clear /run — dnf5 and SELinux policy tooling leave artifacts here during build.
-# /run is a tmpfs at runtime; anything baked into the image is junk and will
-# trip bootc container lint's nonempty-run-tmp check.
-rm -rf "${CLEAN_ROOT:?}/run" && mkdir -p "${CLEAN_ROOT:?}/run"
+
+# Clear tmpfs-backed runtime directories without deleting the directories
+# themselves. Buildah may have bind mounts in these paths during RUN, so
+# replacing the mountpoint can fail with EBUSY.
+for runtime_dir in tmp boot; do
+    mkdir -p "${CLEAN_ROOT:?}/${runtime_dir}"
+    find "${CLEAN_ROOT:?}/${runtime_dir}" -mindepth 1 -maxdepth 1 -print0 | \
+        while IFS= read -r -d '' entry; do
+            if mountpoint -q "${entry}" 2>/dev/null; then
+                continue
+            fi
+            rm -rf "${entry}"
+        done
+done
+
+# /run can contain nested bind mounts created by the build container. Walk it
+# depth-first so we can remove image-owned files like /run/dnf while leaving
+# mounted files and any directories that still contain them alone.
+mkdir -p "${CLEAN_ROOT:?}/run"
+find "${CLEAN_ROOT:?}/run" -mindepth 1 -depth -print0 | \
+    while IFS= read -r -d '' entry; do
+        if mountpoint -q "${entry}" 2>/dev/null; then
+            continue
+        fi
+        if [[ -d "${entry}" ]]; then
+            rmdir "${entry}" 2>/dev/null || true
+            continue
+        fi
+        rm -f "${entry}"
+    done
 
 echo "::endgroup::"

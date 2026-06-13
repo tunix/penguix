@@ -137,6 +137,7 @@ Signing is DISABLED by default. First builds succeed immediately. Enable later f
 │   │   ├── build-image.yml       # Builds :stable on main
 │   │   ├── pr-validation.yml     # PR validation (shellcheck, hadolint, pre-commit)
 │   │   ├── clean.yml             # Deletes images >90 days old
+│   │   ├── renovate.yml          # Self-hosted Renovate runner (6h schedule)
 │   │   ├── validate-brewfiles.yml    # Validates Brewfile syntax
 │   │   ├── validate-flatpaks.yml     # Validates Flatpak app IDs
 │   │   ├── validate-justfiles.yml    # Validates Justfile syntax
@@ -145,8 +146,7 @@ Signing is DISABLED by default. First builds succeed immediately. Enable later f
 │   ├── copilot-instructions.md  # THIS FILE - Instructions for Copilot
 │   ├── SETUP_CHECKLIST.md       # Quick setup checklist for users
 │   ├── commit-convention.md     # Conventional commits guide
-│   ├── renovate.json5           # Renovate configuration (project-specific)
-├── renovate.json               # Renovate configuration (base, extends best-practices)
+├── renovate.json               # Renovate configuration (extends best-practices)
 ├── .pre-commit-config.yaml   # Pre-commit hooks (optional local use)
 └── .gitignore                # Prevents committing secrets (cosign.key, etc.)
 ```
@@ -375,7 +375,7 @@ FROM quay.io/fedora/fedora-bootc:42       # Upstream Fedora
 
 **Tags**: `:stable` (recommended), `:latest` (bleeding edge), `-nvidia` variants available
 
-**Renovate**: Base image SHA and OCI container tags are auto-updated by the Renovate GitHub App (see `.github/renovate.json5`)
+**Renovate**: OCI container digests and GitHub Actions are auto-updated by Renovate (see `renovate.json`)
 
 **OCI Container Resources:**
 - **@ublue-os/base-main** - Base system configuration
@@ -564,7 +564,7 @@ bootc switch --mutate-in-place --transport registry ghcr.io/USERNAME/REPO:stable
 **Workflows**:
 - `build-image.yml` - Builds `:stable` on main
 - `pr-validation.yml` - PR validation (shellcheck, hadolint, pre-commit)
-- `renovate-automerge.yml` - Auto-merges Renovate PRs after validation passes
+- `renovate.yml` - Self-hosted Renovate runner (6h schedule, via projectbluefin/actions)
 - `clean.yml` - Deletes images >90 days (weekly)
 - `validate-*.yml` - Pre-merge validation (shellcheck, Brewfile, Flatpak, etc.)
 
@@ -576,9 +576,10 @@ bootc switch --mutate-in-place --transport registry ghcr.io/USERNAME/REPO:stable
 - `:sha-abc123` - Git commit SHA (short)
 
 **Renovate Bot**: 
-- Uses the Renovate GitHub App (free for open source)
-- Automatically updates base image SHAs in `Containerfile`
-- Runs on the app's own schedule (no per-repo workflow needed)
+- Self-hosted via `projectbluefin/actions/reusable-renovate.yml`
+- Requires `RENOVATE_TOKEN` secret (Classic PAT with `repo` + `workflow` scopes)
+- Automatically updates tracked OCI image digests and GitHub Actions
+- Runs every 6 hours and on config changes
 - Creates PRs for updates - review and merge to keep images current
 
 ### 8. Understanding the Multi-Stage Build Architecture
@@ -638,6 +639,8 @@ cp /ctx/oci/brew/*.sh /usr/local/bin/
 ```
 
 **Renovate Integration:**
+- Self-hosted via `projectbluefin/actions/reusable-renovate.yml`
+- Requires `RENOVATE_TOKEN` secret (Classic PAT with `repo` + `workflow` scopes)
 - Renovate monitors OCI container tags (`:latest`)
 - Automatically updates to SHA digests for reproducibility
 - Example: `:latest` → `@sha256:abc123...`
@@ -708,7 +711,7 @@ COSIGN_PASSWORD="" cosign generate-key-pair
 | ujust commands not working | Wrong install location | Files must be in `custom/ujust/` and copied to `/usr/share/ublue-os/just/` |
 | Flatpaks not installed | Expected behavior | Flatpaks install post-first-boot, not in ISO/container |
 | Local build fails | Wrong environment | Must run on bootc-based system or have podman installed |
-| Renovate not creating PRs | Configuration issue | Check `.github/renovate.json5` syntax |
+| Renovate not creating PRs | Configuration issue | Check `renovate.json` syntax and `RENOVATE_TOKEN` scopes |
 | Third-party repo not working | Repo file persists | Remove repo file at end of script (see examples) |
 
 ---
@@ -969,8 +972,8 @@ When user requests customization, check in this order:
 ### Files to AVOID Modifying
 
 **Do NOT modify unless specifically requested or necessary**:
-- `.github/renovate.json5` - Renovate configuration (auto-updates)
-- `renovate.json` - Renovate base configuration (auto-updates)
+- `renovate.json` - Renovate configuration (auto-updates)
+- `.github/workflows/renovate.yml` - Self-hosted Renovate runner (managed by projectbluefin/actions)
 - `.github/workflows/validate-*.yml` - Validation workflows
 - `.gitignore` - Prevents committing secrets
 - `build/copr-helpers.sh` - Helper functions (stable patterns)

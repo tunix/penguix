@@ -128,11 +128,10 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
 
 ### CLEANUP
 ## Use Bluefin's clean-stage.sh to remove build artifacts before linting.
-## /run, /tmp, and /boot are mounted as tmpfs so host bind-mounts (e.g.
-## /run/systemd/resolve/stub-resolv.conf) are hidden and the script can safely
-## clear those directories.
+## /run is deliberately not mounted as tmpfs here: clean-stage.sh must remove
+## image-layer files such as /run/dnf so bootc lint's nonempty-run-tmp check
+## passes. The script tolerates busy Buildah bind mounts while clearing contents.
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-    --mount=type=tmpfs,dst=/run \
     --mount=type=tmpfs,dst=/tmp \
     --mount=type=tmpfs,dst=/boot \
     /ctx/build/clean-stage.sh
