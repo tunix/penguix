@@ -103,7 +103,13 @@ Renovate automatically updates dependencies and GitHub Actions (including workfl
 5. Click **Generate token** and copy the value
 6. Go to your repository → Settings → Secrets and variables → Actions
 7. Add a new secret: **`RENOVATE_TOKEN`** (paste the token value)
-8. Optional but recommended: enable **Settings → General → Pull Requests → Allow auto-merge** so Renovate can merge low-risk updates after checks pass
+8. Enable **Settings → General → Pull Requests → Allow auto-merge** so Renovate can merge low-risk updates after checks pass
+9. **Configure branch protection for `main`** (required for automerge to work):
+   - Go to Settings → Branches → Add rule (or edit existing rule for `main`)
+   - Enable **"Require a pull request before merging"**
+   - Enable **"Require status checks to pass before merging"**
+   - Add `validate` as a required status check
+   - Enable **"Require branches to be up to date before merging"** (recommended)
 
 Renovate will run every 6 hours and on config changes. It pins GitHub Actions to SHAs and updates tracked image digests automatically.
 

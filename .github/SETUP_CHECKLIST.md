@@ -19,7 +19,13 @@ git push origin main
 - [ ] Create a **Classic PAT** (Settings → Developer settings → Personal access tokens → Tokens (classic))
   - Scopes: `repo` (full control) + `workflow` (update workflows)
 - [ ] Add the token as repository secret **`RENOVATE_TOKEN`** (Settings → Secrets and variables → Actions)
-- [ ] Optional: enable **Settings → General → Pull Requests → Allow auto-merge**
+- [ ] Enable **Settings → General → Pull Requests → Allow auto-merge**
+- [ ] Configure branch protection for `main`:
+  - Settings → Branches → Add rule
+  - Enable "Require a pull request before merging"
+  - Enable "Require status checks to pass before merging"
+  - Add `validate` as a required status check
+  - Enable "Require branches to be up to date before merging"
 - [ ] Renovate will create a PR to pin your GitHub Actions to SHAs
 
 ### 5. Deploy
