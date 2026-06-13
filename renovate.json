@@ -5,7 +5,7 @@
   ],
   "prHourlyLimit": 10,
   "prConcurrentLimit": 20,
-  "recreateClosed": true,
+  "recreateWhen": "always",
   "rebaseWhen": "never",
   "customManagers": [
     {
