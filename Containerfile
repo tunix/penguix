@@ -126,24 +126,21 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/build/10-build.sh
 
+### CLEANUP
+## Use Bluefin's clean-stage.sh to remove build artifacts before linting.
+## /run, /tmp, and /boot are mounted as tmpfs so host bind-mounts (e.g.
+## /run/systemd/resolve/stub-resolv.conf) are hidden and the script can safely
+## clear those directories.
+RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/run \
+    --mount=type=tmpfs,dst=/tmp \
+    --mount=type=tmpfs,dst=/boot \
+    /ctx/build/clean-stage.sh
+
 ### /opt
 ## Makes /opt writeable by default. Needs to be here to make the main image
 ## build strict (no /opt there). This is for downstream images/stuff like k0s.
 RUN rm -rf /opt && ln -s /var/opt /opt
-
-### CLEANUP
-## Remove build artifacts before linting
-RUN dnf5 config-manager setopt keepcache=0 && \
-    dnf5 versionlock clear && \
-    systemctl disable flatpak-add-fedora-repos.service 2>/dev/null || true && \
-    systemctl mask flatpak-add-fedora-repos.service 2>/dev/null || true && \
-    rm -f /usr/lib/systemd/system/flatpak-add-fedora-repos.service && \
-    rm -f /.gitkeep && \
-    find /var/* -maxdepth 0 -type d ! -name cache -exec rm -fr {} + && \
-    find /var/cache/* -maxdepth 0 -type d ! -name libdnf5 ! -name rpm-ostree -exec rm -fr {} + && \
-    rm -rf /tmp && mkdir -p /tmp && \
-    rm -rf /boot && mkdir -p /boot && \
-    find /run/* -maxdepth 0 -exec rm -rf {} +
 
 ### INIT
 ## Required for bootc images
