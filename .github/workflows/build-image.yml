@@ -14,9 +14,6 @@ on:
 permissions: {}
 
 env:
-  IMAGE_DESC: "My Customized Universal Blue Image"
-  IMAGE_KEYWORDS: "bootc,ublue,universal-blue"
-  IMAGE_LOGO_URL: "https://avatars.githubusercontent.com/u/120078124?s=200&v=4"
   IMAGE_NAME: "${{ github.event.repository.name }}"
   IMAGE_VENDOR: "${{ github.repository_owner }}"
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"
@@ -37,7 +34,6 @@ jobs:
       contents: read
       packages: write
       id-token: write
-      security-events: write
 
     steps:
       - name: Prepare environment
@@ -108,12 +104,6 @@ jobs:
           command: |
             sudo -E "$(command -v just)" build "${IMAGE_NAME}" "${DEFAULT_TAG}"
 
-      - name: Get current date
-        if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
-        id: date
-        run: |
-          echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
-
       - name: Get version label
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         id: version
@@ -139,7 +129,7 @@ jobs:
           pr-number: ${{ github.event.number }}
 
       - name: Tag images
-        if: (steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request') && github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request'
         shell: bash
         env:
           ALIAS_TAGS: ${{ steps.generate-tags.outputs.tags }}
@@ -176,7 +166,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push to GHCR
-        if: (steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request') && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         id: push
         uses: projectbluefin/actions/bootc-build/push-image@6231015b336556d2ff0adc1d1e59514bf19dcb42 # v1
         with:
