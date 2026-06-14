@@ -74,8 +74,9 @@ sudoif command *args:
 #   $target_image - The tag you want to apply to the image (default: $image_name).
 #   $tag - The tag for the image (default: $default_tag).
 #
-# The script constructs the version string using the tag and the current date.
-# If the git working directory is clean, it also includes the short SHA of the current HEAD.
+# The script constructs the version string using the Fedora major version, tag,
+# and the current date. If the git working directory is clean, it also includes
+# the short SHA of the current HEAD.
 #
 # just build $target_image $tag
 #
@@ -89,7 +90,19 @@ sudoif command *args:
 build $target_image=image_name $tag=default_tag:
     #!/usr/bin/env bash
 
+    # Fedora major version: env var first, then Containerfile default
+    fedora_version="${FEDORA_MAJOR_VERSION:-$(grep -m1 '^ARG FEDORA_MAJOR_VERSION=' Containerfile | cut -d'"' -f2)}"
+
+    # Bluefin-style version string: <fedora-version>.<date> for stable,
+    # <tag>-<fedora-version>.<date> for everything else.
+    if [[ "${tag}" =~ stable ]]; then
+        ver="${fedora_version}.$(date +%Y%m%d)"
+    else
+        ver="${tag}-${fedora_version}.$(date +%Y%m%d)"
+    fi
+
     BUILD_ARGS=()
+    BUILD_ARGS+=("--build-arg" "VERSION=${ver}")
     if [[ -z "$(git status -s)" ]]; then
         BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
     fi
@@ -126,7 +139,7 @@ build $target_image=image_name $tag=default_tag:
     # Labels for ArtifactHub and OCI metadata
     LABELS=()
     LABELS+=("--label" "org.opencontainers.image.title=${target_image}")
-    LABELS+=("--label" "org.opencontainers.image.version=${tag}")
+    LABELS+=("--label" "org.opencontainers.image.version=${ver}")
     LABELS+=("--label" "org.opencontainers.image.description=${IMAGE_DESC:-My Customized Universal Blue Image}")
     LABELS+=("--label" "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}/blob/${GITHUB_SHA:-}/Containerfile")
     LABELS+=("--label" "org.opencontainers.image.url=https://github.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}")

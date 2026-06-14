@@ -578,7 +578,7 @@ bootc switch --mutate-in-place --transport registry ghcr.io/USERNAME/REPO:stable
 - `:sha-abc123` - Git commit SHA (short)
 
 **Renovate Bot**:
-- Self-hosted via `projectbluefin/actions/reusable-renovate.yml`
+- Self-hosted via `.github/workflows/renovate.yml`
 - Requires `RENOVATE_TOKEN` secret (Classic PAT with `repo` + `workflow` scopes)
 - Automatically updates tracked OCI image digests and GitHub Actions
 - Runs every 6 hours and on config changes
@@ -641,7 +641,7 @@ cp /ctx/oci/brew/*.sh /usr/local/bin/
 ```
 
 **Renovate Integration:**
-- Self-hosted via `projectbluefin/actions/reusable-renovate.yml`
+- Self-hosted via `.github/workflows/renovate.yml`
 - Requires `RENOVATE_TOKEN` secret (Classic PAT with `repo` + `workflow` scopes)
 - Renovate monitors OCI container tags (`:latest`)
 - Automatically updates to SHA digests for reproducibility
@@ -665,7 +665,6 @@ COSIGN_PASSWORD="" cosign generate-key-pair
 
 # Uncomment signing sections in:
 # - .github/workflows/build-image.yml
-# - .github/workflows/build-image-testing.yml
 ```
 
 **NEVER commit `cosign.key`**. Already in `.gitignore`.

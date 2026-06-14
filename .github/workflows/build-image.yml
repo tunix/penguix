@@ -1,5 +1,13 @@
 ---
 name: Build and Push Image
+
+# PR builds are disabled by default to save CI minutes. To enable them, add:
+#   pull_request:
+#     branches:
+#       - main
+#     paths-ignore:
+#       - "**.md"
+#       - ".github/workflows/*validate*.yml"
 on:
   push:
     branches:
@@ -32,7 +40,7 @@ jobs:
   build:
     name: Build and push image
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 360
     permissions:
       contents: read
       packages: write
@@ -87,7 +95,6 @@ jobs:
               - 'custom/**'
               - 'image-versions.yml'
               - 'Justfile'
-            nvidia: []
 
       - name: Build image
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
