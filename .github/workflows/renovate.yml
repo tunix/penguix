@@ -17,6 +17,9 @@ jobs:
   renovate:
     name: Renovate
     runs-on: ubuntu-latest
+    # Skip gracefully when RENOVATE_TOKEN has not been configured yet.
+    # Template forks work out-of-the-box before the secret is added.
+    if: ${{ secrets.RENOVATE_TOKEN != '' }}
     permissions:
       contents: read
     steps:
