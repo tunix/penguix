@@ -202,38 +202,6 @@ jobs:
       #     push-attestation: true
       #     github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Export image to OCI dir (PR only)
-        if: false
-        shell: bash
-        run: |
-          mkdir -p "${IMAGE_NAME}_build"
-          sudo podman save --format oci-dir -o "${IMAGE_NAME}_build" "${IMAGE_NAME}:${DEFAULT_TAG}"
-
-      - name: Upload OCI dir as artifact
-        if: false
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: ${{ env.IMAGE_NAME }}-build
-          path: ${{ env.IMAGE_NAME }}_build
-          if-no-files-found: warn
-          retention-days: 1
-
-      - name: PR testing instructions
-        if: false
-        run: |
-          {
-            echo "### Test this PR build"
-            echo ""
-            echo "Download the \`.oci\` artifact, unzip it, then:"
-            echo '```bash'
-            echo "sudo bootc switch --transport oci /absolute/path/to/${{ env.IMAGE_NAME }}_build"
-            echo '```'
-            echo "To go back:"
-            echo '```bash'
-            echo "sudo bootc switch ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
       - name: Build telemetry summary
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         shell: bash
