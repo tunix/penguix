@@ -38,8 +38,10 @@ sudo systemctl reboot
 ## Optional: Production Features
 
 ### Enable Signing (Recommended)
-```bash
-cosign generate-key-pair
-# Add cosign.key to GitHub Secrets as SIGNING_SECRET
-# Uncomment signing in .github/workflows/build-image.yml
-```
+
+This template uses keyless OIDC signing — no keys or secrets are required.
+
+- [ ] Edit `.github/workflows/build-image.yml`
+- [ ] Find the "OPTIONAL: Sign and attest" section
+- [ ] Uncomment the `Sign and publish` step
+- [ ] Commit and push

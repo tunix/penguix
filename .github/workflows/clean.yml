@@ -19,7 +19,7 @@ jobs:
       - name: Cleanup old images
         uses: projectbluefin/actions/bootc-build/ghcr-cleanup@6231015b336556d2ff0adc1d1e59514bf19dcb42 # v1
         with:
-          # IMPORTANT: Update this to match your image name from Containerfile (line 4)
+          # IMPORTANT: Update this to match your image name from Containerfile (# Name: comment)
           # This should match the "# Name: your-repo-name" comment in your Containerfile
           # Example: If your Containerfile has "# Name: my-custom-os", use "my-custom-os" here
           packages: finpilot

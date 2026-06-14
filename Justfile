@@ -3,6 +3,7 @@ export DEFAULT_TAG := env("DEFAULT_TAG", "stable")
 export FEDORA_MAJOR_VERSION := env("FEDORA_MAJOR_VERSION", "44")
 export BASE_IMAGE := env("BASE_IMAGE", "quay.io/fedora-ostree-desktops/silverblue")
 export PODMAN := env("PODMAN", "podman")
+export REPO_ORG := env("GITHUB_REPOSITORY_OWNER", "projectbluefin")
 export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest@sha256:7ae88b8d6f2cabfa971d7836b96d6cac19cd1384e658031bd154f9687e929905")
 
 alias build-vm := build-qcow2
@@ -116,7 +117,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
 
     # Avoid tag collisions when rebuilding on the same day
     if command -v skopeo &>/dev/null; then
-        skopeo list-tags "docker://ghcr.io/${IMAGE_VENDOR:-projectbluefin}/${target_image}" >/tmp/repotags.json 2>/dev/null \
+        skopeo list-tags "docker://ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}" >/tmp/repotags.json 2>/dev/null \
             || echo '{"Tags":[]}' >/tmp/repotags.json
         if [[ $(jq "any(.Tags[]; contains(\"${ver}\"))" /tmp/repotags.json) == "true" ]]; then
             POINT=1
@@ -156,7 +157,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     # Image identity ARGs - these define how bootc/ublue ecosystem recognizes the image
     # Override via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG
     BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${IMAGE_NAME:-${target_image}}")
-    BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${IMAGE_VENDOR:-projectbluefin}")
+    BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${IMAGE_VENDOR:-${REPO_ORG}}")
     BUILD_ARGS+=("--build-arg" "UBLUE_IMAGE_TAG=${UBLUE_IMAGE_TAG:-${tag}}")
 
     # Add GitHub token as build secret if available (for CI/CD)
@@ -172,7 +173,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     LABELS+=("--label" "org.opencontainers.image.description=${IMAGE_DESC:-My Customized Universal Blue Image}")
     LABELS+=("--label" "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}/blob/${GITHUB_SHA:-}/Containerfile")
     LABELS+=("--label" "org.opencontainers.image.url=https://github.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}")
-    LABELS+=("--label" "org.opencontainers.image.vendor=${IMAGE_VENDOR:-projectbluefin}")
+    LABELS+=("--label" "org.opencontainers.image.vendor=${IMAGE_VENDOR:-${REPO_ORG}}")
     LABELS+=("--label" "org.opencontainers.image.created=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)")
     LABELS+=("--label" "io.artifacthub.package.readme-url=https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}/refs/heads/main/README.md")
     LABELS+=("--label" "io.artifacthub.package.logo-url=${IMAGE_LOGO_URL:-https://avatars.githubusercontent.com/u/120078124?s=200&v=4}")
@@ -185,7 +186,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     # Cache write (REGISTRY_CACHE_WRITE=1) is set by CI for non-PR builds only
     # PR builds and local builds are read-only to prevent cache poisoning
     CACHE_ARGS=()
-    cache_ref="ghcr.io/${IMAGE_VENDOR:-projectbluefin}/${target_image}"
+    cache_ref="ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}"
     if skopeo list-tags "docker://${cache_ref}" >/dev/null 2>&1; then
         CACHE_ARGS+=("--cache-from" "${cache_ref}")
         if [[ "${REGISTRY_CACHE_WRITE:-0}" == "1" ]]; then
@@ -323,27 +324,27 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
 _rebuild-bib $target_image $tag $type $config: (build target_image tag) && (_build-bib target_image tag type config)
 
 # Build a QCOW2 virtual machine image
-[group('Build Virtal Machine Image')]
+[group('Build Virtual Machine Image')]
 build-qcow2 $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_build-bib target_image tag "qcow2" "iso/disk.toml")
 
 # Build a RAW virtual machine image
-[group('Build Virtal Machine Image')]
+[group('Build Virtual Machine Image')]
 build-raw $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_build-bib target_image tag "raw" "iso/disk.toml")
 
 # Build an ISO virtual machine image
-[group('Build Virtal Machine Image')]
+[group('Build Virtual Machine Image')]
 build-iso $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_build-bib target_image tag "iso" "iso/iso.toml")
 
 # Rebuild a QCOW2 virtual machine image
-[group('Build Virtal Machine Image')]
+[group('Build Virtual Machine Image')]
 rebuild-qcow2 $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_rebuild-bib target_image tag "qcow2" "iso/disk.toml")
 
 # Rebuild a RAW virtual machine image
-[group('Build Virtal Machine Image')]
+[group('Build Virtual Machine Image')]
 rebuild-raw $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_rebuild-bib target_image tag "raw" "iso/disk.toml")
 
 # Rebuild an ISO virtual machine image
-[group('Build Virtal Machine Image')]
+[group('Build Virtual Machine Image')]
 rebuild-iso $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_rebuild-bib target_image tag "iso" "iso/iso.toml")
 
 # Run a virtual machine with the specified image type and configuration
@@ -389,19 +390,19 @@ _run-vm $target_image $tag $type $config:
     podman run "${run_args[@]}"
 
 # Run a virtual machine from a QCOW2 image
-[group('Run Virtal Machine')]
+[group('Run Virtual Machine')]
 run-vm-qcow2 $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_run-vm target_image tag "qcow2" "iso/disk.toml")
 
 # Run a virtual machine from a RAW image
-[group('Run Virtal Machine')]
+[group('Run Virtual Machine')]
 run-vm-raw $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_run-vm target_image tag "raw" "iso/disk.toml")
 
 # Run a virtual machine from an ISO
-[group('Run Virtal Machine')]
+[group('Run Virtual Machine')]
 run-vm-iso $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_run-vm target_image tag "iso" "iso/iso.toml")
 
 # Run a virtual machine using systemd-vmspawn
-[group('Run Virtal Machine')]
+[group('Run Virtual Machine')]
 spawn-vm rebuild="0" type="qcow2" ram="6G":
     #!/usr/bin/env bash
 
@@ -424,7 +425,7 @@ lint:
     set -eoux pipefail
     # Check if shellcheck is installed
     if ! command -v shellcheck &> /dev/null; then
-        echo "shellcheck could not be found. Please install it."
+        echo "shfmt could not be found. Please install it."
         exit 1
     fi
     # Run shellcheck on all Bash scripts
@@ -436,7 +437,7 @@ format:
     set -eoux pipefail
     # Check if shfmt is installed
     if ! command -v shfmt &> /dev/null; then
-        echo "shellcheck could not be found. Please install it."
+        echo "shfmt could not be found. Please install it."
         exit 1
     fi
     # Run shfmt on all Bash scripts

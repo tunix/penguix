@@ -47,16 +47,15 @@
 
 ### 1. Rename ALL instances of `finpilot`
 
-**Source of truth**: `Containerfile` line 4: `# Name: finpilot`
+**Source of truth**: `Containerfile` `# Name: finpilot` comment near the top
 
 **Files to update:**
-- `Containerfile` (line 4 and line 26: `ARG IMAGE_NAME="finpilot"`)
-- `Containerfile` (line 27: `ARG IMAGE_VENDOR="projectbluefin"`)
-- `Justfile` (line 1)
-- `README.md` (line 1)
-- `artifacthub-repo.yml` (line 5)
-- `custom/ujust/README.md` (~line 175)
-- `.github/workflows/clean.yml` (line 23: `packages: finpilot`)
+- `Containerfile` (`ARG IMAGE_NAME="finpilot"` and `ARG IMAGE_VENDOR="projectbluefin"`)
+- `Justfile` (`export IMAGE_NAME := env("IMAGE_NAME", "finpilot")`)
+- `README.md` (title)
+- `artifacthub-repo.yml` (`repositoryID: finpilot`)
+- `custom/ujust/README.md` (bootc switch example)
+- `.github/workflows/clean.yml` (`packages: finpilot`)
 
 ### 2. Create "What's Different" section in README
 
@@ -164,13 +163,11 @@ This template follows the **Bluefin architecture pattern** from @projectbluefin/
 1. **Context Stage (ctx)** - Combines resources from multiple sources:
    - Local build scripts (`/build`)
    - Local custom files (`/custom`)
-   - **@projectbluefin/common** - Desktop configuration shared with Aurora (`/oci/common`)
-   - **@projectbluefin/branding** - Branding assets (`/oci/branding`)
-   - **@ublue-os/artwork** - Artwork shared with Aurora and Bazzite (`/oci/artwork`)
+   - **@projectbluefin/common** - Desktop configuration shared with Aurora (`/oci/common`; includes branding/artwork content)
    - **@ublue-os/brew** - Homebrew integration (`/oci/brew`)
 
 2. **Base Image Options:**
-   - `ghcr.io/ublue-os/silverblue-main:42` (Fedora-based, default)
+   - `quay.io/fedora-ostree-desktops/silverblue:44` (Fedora-based, default)
    - `quay.io/centos-bootc/centos-bootc:stream10` (CentOS-based)
 
 **OCI Container Resources:**
@@ -327,8 +324,8 @@ Branch=stable
 | Add user command | Create shortcut (NO dnf5) | `custom/ujust/*.just` |
 | Add third-party repo | Use example scripts | `build/20-*.sh.example` (rename) |
 | Replace desktop | Use example script | `build/30-cosmic-desktop.sh.example` |
-| Switch base image | Update FROM line | `Containerfile` line 38 |
-| Add OCI containers | Uncomment COPY --from= lines | `Containerfile` lines 13-18 (ctx stage) |
+| Switch base image | Update FROM line | `Containerfile` `FROM ${BASE_IMAGE_REF}` line |
+| Add OCI containers | Uncomment/add COPY --from= lines | `Containerfile` ctx stage |
 | Test locally | `just build && just build-qcow2 && just run-vm-qcow2` | Terminal |
 | Deploy (production) | `sudo bootc switch ghcr.io/user/repo:stable` | Terminal |
 | Enable service | `systemctl enable service.name` | `build/10-build.sh` |
@@ -345,24 +342,23 @@ Branch=stable
 
 This template uses a **multi-stage build** following the @projectbluefin/distroless pattern.
 
-**Stage 1: Context (ctx) - Line 39**
+**Stage 1: Context (ctx)**
 Combines resources from multiple OCI containers:
 ```dockerfile
 FROM scratch AS ctx
 
 COPY build /build
 COPY custom /custom
+COPY image-versions.yml /image-versions.yml
+
 # Import from OCI containers - Renovate updates :latest to SHA-256 digests
-COPY --from=ghcr.io/ublue-os/base-main:latest /system_files /oci/base
-COPY --from=ghcr.io/projectbluefin/common:latest /system_files /oci/common
-COPY --from=ghcr.io/projectbluefin/branding:latest /system_files /oci/branding
-COPY --from=ghcr.io/ublue-os/artwork:latest /system_files /oci/artwork
-COPY --from=ghcr.io/ublue-os/brew:latest /system_files /oci/brew
+COPY --from=common /system_files /oci/common
+COPY --from=brew /system_files /oci/brew
 ```
 
-**Stage 2: Base Image - Line 52**
+**Stage 2: Base Image**
 ```dockerfile
-FROM ghcr.io/ublue-os/silverblue-main:latest  # Default (Fedora-based)
+FROM quay.io/fedora-ostree-desktops/silverblue:44  # Default (Fedora-based)
 # OR
 FROM quay.io/centos-bootc/centos-bootc:stream10  # CentOS-based
 ```
@@ -380,35 +376,29 @@ FROM quay.io/fedora/fedora-bootc:42       # Upstream Fedora
 **Renovate**: OCI container digests and GitHub Actions are auto-updated by Renovate (see `renovate.json`)
 
 **OCI Container Resources:**
-- **@ublue-os/base-main** - Base system configuration
-- **@projectbluefin/common** - Desktop configuration shared with Aurora
-- **@projectbluefin/branding** - Branding assets
-- **@ublue-os/artwork** - Artwork shared with Aurora and Bazzite
+- **@projectbluefin/common** - Desktop configuration shared with Aurora (includes branding/artwork content)
 - **@ublue-os/brew** - Homebrew integration
 
 **File Locations in Build Scripts:**
 - Local build scripts: `/ctx/build/`
 - Local custom files: `/ctx/custom/`
-- Base files: `/ctx/oci/base/`
 - Common files: `/ctx/oci/common/`
-- Branding files: `/ctx/oci/branding/`
-- Artwork files: `/ctx/oci/artwork/`
 - Brew files: `/ctx/oci/brew/`
 
 ### 2. OCI Containers for Additional System Files
 
-**File**: `Containerfile` (ctx stage, lines 6-18)
+**File**: `Containerfile` (ctx stage)
 
-Following the `@projectbluefin/distroless` pattern, you can layer in additional system files from OCI containers. These are commented out by default in the template.
+Following the `@projectbluefin/distroless` pattern, you can layer in additional system files from OCI containers.
 
 **Available OCI Containers**:
 ```dockerfile
-# Artwork and Branding from projectbluefin/common
-COPY --from=ghcr.io/projectbluefin/common:latest /system_files/bluefin /files/bluefin
-COPY --from=ghcr.io/projectbluefin/common:latest /system_files/shared /files/shared
+# Desktop configuration (includes Bluefin wallpapers, themes, branding assets,
+# ujust completions, and udev rules) from projectbluefin/common
+COPY --from=ghcr.io/projectbluefin/common:latest /system_files /oci/common
 
 # Homebrew system files from ublue-os/brew
-COPY --from=ghcr.io/ublue-os/brew:latest /system_files /files/brew
+COPY --from=ghcr.io/ublue-os/brew:latest /system_files /oci/brew
 ```
 
 **What's included**:
@@ -601,20 +591,19 @@ This template implements a **multi-stage build pattern** following @projectbluef
 FROM scratch AS ctx
 COPY build /build                    # Local build scripts
 COPY custom /custom                  # Local customizations
+COPY image-versions.yml /image-versions.yml
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files /oci/common
-COPY --from=ghcr.io/projectbluefin/branding:latest /system_files /oci/branding
-COPY --from=ghcr.io/ublue-os/artwork:latest /system_files /oci/artwork
 COPY --from=ghcr.io/ublue-os/brew:latest /system_files /oci/brew
 ```
 
 This stage combines:
-- **Local resources** (build scripts, custom files)
+- **Local resources** (build scripts, custom files, image version pins)
 - **OCI container resources** from upstream projects
-- Resources are copied to **distinct subdirectories** to avoid conflicts
+- Resources are copied to **distinct subdirectories** (`/oci/*`) to avoid conflicts
 
 **Stage 2: Final Image**
 ```dockerfile
-FROM ghcr.io/ublue-os/silverblue-main:42
+FROM quay.io/fedora-ostree-desktops/silverblue:44
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     /ctx/build/10-build.sh
@@ -630,11 +619,8 @@ The final stage:
 Build scripts can access files from OCI containers:
 ```bash
 #!/usr/bin/env bash
-# Example: Copy branding files
-cp -r /ctx/oci/branding/* /usr/share/branding/
-
-# Example: Copy common desktop config
-cp /ctx/oci/common/config.yaml /etc/myapp/
+# Example: Copy common desktop config (branding/artwork content lives inside common)
+cp -r /ctx/oci/common/* /usr/share/
 
 # Example: Use brew files
 cp /ctx/oci/brew/*.sh /usr/local/bin/
@@ -652,22 +638,16 @@ cp /ctx/oci/brew/*.sh /usr/local/bin/
 
 ### 9. Image Signing (Optional, Recommended for Production)
 
-**Default**: DISABLED (commented out in workflows) to allow first builds.
+**Default**: DISABLED (commented out in workflow) to allow first builds.
+
+This template uses **keyless OIDC signing** via Cosign and GitHub Actions. No static keys, `SIGNING_SECRET`, or `cosign.pub` files are required.
+
 ```bash
-# Generate keys
-COSIGN_PASSWORD="" cosign generate-key-pair
-# Creates: cosign.key (SECRET), cosign.pub (COMMIT)
-
-# Add to GitHub
-# Settings → Secrets and Variables → Actions → New secret
-# Name: SIGNING_SECRET
-# Value: <paste entire contents of cosign.key>
-
-# Uncomment signing sections in:
+# Uncomment the "Sign and publish" step in:
 # - .github/workflows/build-image.yml
 ```
 
-**NEVER commit `cosign.key`**. Already in `.gitignore`.
+**NEVER commit `cosign.key` or any signing keys to the repository**. `cosign.key` is listed in `.gitignore` as a safety net.
 
 ---
 
@@ -699,9 +679,9 @@ COSIGN_PASSWORD="" cosign generate-key-pair
 
 | Symptom | Cause | Solution |
 |---------|-------|----------|
-| Build fails: "permission denied" | Signing misconfigured | Verify signing commented out OR `SIGNING_SECRET` set |
+| Build fails: "permission denied" | Signing misconfigured | Verify signing step is uncommented and `id-token: write` permission is granted |
 | Build fails: "package not found" | Typo or unavailable | Check spelling, verify on RPMfusion, add COPR if needed |
-| Build fails: "base image not found" | Invalid FROM line | Check syntax in `Containerfile` line 24 |
+| Build fails: "base image not found" | Invalid FROM line | Check syntax in `Containerfile` `FROM ${BASE_IMAGE_REF}` line |
 | Build fails: "shellcheck error" | Script syntax error | Run `shellcheck build/*.sh` locally, fix errors |
 | PR validation fails: Brewfile | Invalid Brewfile syntax | Check Ruby syntax, ensure packages exist |
 | PR validation fails: Flatpak | Invalid app ID | Verify app ID exists on https://flathub.org/ |
@@ -864,12 +844,13 @@ pre-commit run --all-files
 ## Advanced Topics
 
 ### /opt Immutability
-Some packages (Chrome, Docker Desktop) write to `/opt`. On Fedora, it's symlinked to `/var/opt` (mutable). To make immutable:
+Some packages (Chrome, Docker Desktop) write to `/opt`. On Fedora, it's symlinked to `/var/opt` (mutable). To make `/opt` an immutable real directory in the image, replace the `RUN rm -rf /opt && ln -s /var/opt /opt` line under `### /opt` near the bottom of the `Containerfile` with:
 
-Uncomment `Containerfile` line 20:
 ```dockerfile
 RUN rm /opt && mkdir /opt
 ```
+
+The default keeps `/opt` symlinked to `/var/opt` (runtime mutable).
 
 ### Multi-Architecture
 - Local `just` commands support your platform
@@ -980,7 +961,6 @@ When user requests customization, check in this order:
 - `.gitignore` - Prevents committing secrets
 - `build/copr-helpers.sh` - Helper functions (stable patterns)
 - `LICENSE` - Repository license
-- `cosign.pub` - Public signing key (regenerate if changing keys)
 
 **Modify with extreme caution**:
 - `.github/workflows/build-image.yml` - Core build workflow

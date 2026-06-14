@@ -177,7 +177,7 @@ jobs:
       # - name: Rechunk image
       #   if: github.event_name != 'pull_request'
       #   id: rechunk-image
-      #   uses: projectbluefin/actions/bootc-build/chunka@v1
+      #   uses: projectbluefin/actions/bootc-build/chunka@6231015b336556d2ff0adc1d1e59514bf19dcb42 # v1
       #   with:
       #     source-image: localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
       #     max-layers: 128
@@ -200,23 +200,23 @@ jobs:
           default-tag: ${{ steps.generate-tags.outputs.default-tag }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # OPTIONAL: Sign, publish SBOM, and attest (SLSA Build L2 provenance)
-      # Bluefin pattern: keyless OIDC signing via Fulcio + SBOM attestation via ORAS.
+      # OPTIONAL: Sign and attest (SLSA Build L2 provenance)
+      # Bluefin pattern: keyless OIDC signing via Fulcio.
       # Uncomment to enable. Requires 'id-token: write' permission (already granted).
-      # Non-fatal — signing/SBOM failures never block image publishing.
+      # Non-fatal — signing failures never block image publishing.
 
-      - name: Sign and publish
-        if: github.event_name != 'pull_request'
-        continue-on-error: true
-        uses: projectbluefin/actions/bootc-build/sign-and-publish@6231015b336556d2ff0adc1d1e59514bf19dcb42 # v1
-        with:
-          image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
-          digest: ${{ steps.push.outputs.digest }}
-          signing-mode: keyless
-          generate-sbom: false
-          push-attestation: true
-          certificate-identity-regexp: https://github.com/${{ github.repository }}/.github/workflows/
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Sign and publish
+      #   if: github.event_name != 'pull_request'
+      #   continue-on-error: true
+      #   uses: projectbluefin/actions/bootc-build/sign-and-publish@6231015b336556d2ff0adc1d1e59514bf19dcb42 # v1
+      #   with:
+      #     image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
+      #     digest: ${{ steps.push.outputs.digest }}
+      #     signing-mode: keyless
+      #     generate-sbom: false
+      #     push-attestation: true
+      #     certificate-identity-regexp: https://github.com/${{ github.repository }}/.github/workflows/
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build telemetry summary
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'

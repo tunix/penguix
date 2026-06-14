@@ -87,25 +87,12 @@ ARG FEDORA_MAJOR_VERSION
 ARG SHA_HEAD_SHORT=""
 ARG VERSION=""
 
-### /opt
-## Some bootable images, like Fedora, have /opt symlinked to /var/opt, in order to
-## make it mutable/writable for users. However, some packages write files to this directory,
-## thus its contents might be wiped out when bootc deploys an image, making it troublesome for
-## some packages. Eg, google-chrome, docker-desktop.
-##
-## Uncomment the following line if one desires to make /opt immutable and be able to be used
-## by the package manager.
-
-# RUN rm /opt && mkdir /opt
-
 ### MODIFICATIONS
 ## Make modifications desired in your image and install packages by modifying the build scripts.
 ## The following RUN directive mounts the ctx stage which includes:
 ##   - Local build scripts from /build
 ##   - Local custom files from /custom
-##   - Files from @projectbluefin/common at /oci/common
-##   - Files from @projectbluefin/branding at /oci/branding
-##   - Files from @ublue-os/artwork at /oci/artwork
+##   - Files from @projectbluefin/common at /oci/common (includes branding/artwork content)
 ##   - Files from @ublue-os/brew at /oci/brew
 ## Scripts are run in numerical order (10-build.sh, 20-example.sh, etc.)
 
@@ -138,6 +125,9 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
 ### /opt
 ## Makes /opt writeable by default. Needs to be here to make the main image
 ## build strict (no /opt there). This is for downstream images/stuff like k0s.
+## If you need /opt as an immutable real directory for build-time packages
+## (e.g. google-chrome, docker-desktop), replace the next line with:
+##   RUN rm /opt && mkdir /opt
 RUN rm -rf /opt && ln -s /var/opt /opt
 
 ### INIT
