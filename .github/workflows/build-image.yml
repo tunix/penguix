@@ -75,6 +75,7 @@ jobs:
         with:
           action: restore
           cache-name: ${{ env.IMAGE_NAME }}
+          cache-bust: ${{ hashFiles('**/Containerfile') }}
 
       - name: Detect changes
         id: detect-changes
@@ -154,6 +155,7 @@ jobs:
           action: save
           cache-name: ${{ env.IMAGE_NAME }}
           allow-write: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
+          cache-bust: ${{ hashFiles('**/Containerfile') }}
 
       # OPTIONAL: Rechunking (OCI-native, no rpm-ostree)
       # Rechunking improves OTA delta performance by reorganizing layers.

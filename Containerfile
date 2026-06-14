@@ -76,9 +76,6 @@ ARG UBLUE_IMAGE_TAG
 ARG BASE_IMAGE_NAME
 ARG FEDORA_MAJOR_VERSION
 
-# Configure DNF for optimal container builds
-RUN dnf5 config-manager setopt keepcache=1 install_weak_deps=0
-
 ## Alternative base images, no desktop included (uncomment to use):
 # FROM quay.io/fedora-ostree-desktops/base-main:${FEDORA_MAJOR_VERSION}
 # FROM quay.io/centos-bootc/centos-bootc:stream10
@@ -123,7 +120,10 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=secret,id=GITHUB_TOKEN \
     --mount=type=tmpfs,dst=/boot \
     --mount=type=tmpfs,dst=/tmp \
-    /ctx/build/10-build.sh
+    bash -euo pipefail -c ' \
+        dnf5 config-manager setopt keepcache=1 install_weak_deps=0 && \
+        /ctx/build/10-build.sh \
+    '
 
 ### CLEANUP
 ## Use Bluefin's clean-stage.sh to remove build artifacts before linting.
