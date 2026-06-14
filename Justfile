@@ -127,12 +127,17 @@ build $target_image=image_name $tag=default_tag:
     LABELS=()
     LABELS+=("--label" "org.opencontainers.image.title=${target_image}")
     LABELS+=("--label" "org.opencontainers.image.version=${tag}")
-    LABELS+=("--label" "containers.bootc=1")
-    LABELS+=("--label" "org.opencontainers.image.created=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)")
+    LABELS+=("--label" "org.opencontainers.image.description=${IMAGE_DESC:-My Customized Universal Blue Image}")
     LABELS+=("--label" "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}/blob/${GITHUB_SHA:-}/Containerfile")
-    LABELS+=("--label" "io.artifacthub.package.deprecated=false")
-    LABELS+=("--label" "io.artifacthub.package.keywords=bootc,ublue,universal-blue")
+    LABELS+=("--label" "org.opencontainers.image.url=https://github.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}")
+    LABELS+=("--label" "org.opencontainers.image.vendor=${IMAGE_VENDOR:-${GITHUB_REPOSITORY_OWNER:-projectbluefin}}")
+    LABELS+=("--label" "org.opencontainers.image.created=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)")
+    LABELS+=("--label" "io.artifacthub.package.readme-url=https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}/refs/heads/main/README.md")
+    LABELS+=("--label" "io.artifacthub.package.logo-url=${IMAGE_LOGO_URL:-https://avatars.githubusercontent.com/u/120078124?s=200&v=4}")
+    LABELS+=("--label" "io.artifacthub.package.keywords=${IMAGE_KEYWORDS:-bootc,ublue,universal-blue}")
     LABELS+=("--label" "io.artifacthub.package.license=Apache-2.0")
+    LABELS+=("--label" "io.artifacthub.package.deprecated=false")
+    LABELS+=("--label" "containers.bootc=1")
 
     # Registry layer cache - speeds up rebuilds by reusing unchanged layers from GHCR
     # Cache write (REGISTRY_CACHE_WRITE=1) is set by CI for non-PR builds only
