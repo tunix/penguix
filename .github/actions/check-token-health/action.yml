@@ -1,7 +1,7 @@
 # Token Health Check — composite action
 #
 # Usage:
-#   - uses: projectbluefin/actions/actions/check-token-health@<sha>
+#   - uses: ./.github/actions/check-token-health
 #     with:
 #       token: ${{ secrets.RENOVATE_TOKEN }}
 #       token_name: RENOVATE_TOKEN

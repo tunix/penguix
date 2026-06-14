@@ -8,7 +8,7 @@ on:
     branches:
       - main
     paths:
-      - 'renovate.json'
+      - '.github/renovate.json'
       - '.github/workflows/renovate.yml'
 
 permissions: {}
@@ -26,7 +26,7 @@ jobs:
           persist-credentials: false
 
       - name: Validate RENOVATE_TOKEN
-        uses: ./actions/check-token-health
+        uses: ./.github/actions/check-token-health
         with:
           token: ${{ secrets.RENOVATE_TOKEN }}
           token_name: RENOVATE_TOKEN

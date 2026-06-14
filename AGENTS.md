@@ -146,7 +146,9 @@ Signing is DISABLED by default. First builds succeed immediately. Enable later f
 │   ├── copilot-instructions.md  # THIS FILE - Instructions for Copilot
 │   ├── SETUP_CHECKLIST.md       # Quick setup checklist for users
 │   ├── commit-convention.md     # Conventional commits guide
-├── renovate.json               # Renovate configuration (extends best-practices)
+│   ├── renovate.json            # Renovate configuration (extends best-practices)
+│   ├── actions/                 # Repository-local composite actions
+│   │   └── check-token-health/  # Validates GitHub tokens before use
 ├── .pre-commit-config.yaml   # Pre-commit hooks (optional local use)
 └── .gitignore                # Prevents committing secrets (cosign.key, etc.)
 ```
@@ -972,7 +974,7 @@ When user requests customization, check in this order:
 ### Files to AVOID Modifying
 
 **Do NOT modify unless specifically requested or necessary**:
-- `renovate.json` - Renovate configuration (auto-updates)
+- `.github/renovate.json` - Renovate configuration (auto-updates)
 - `.github/workflows/renovate.yml` - Self-hosted Renovate runner (managed by projectbluefin/actions)
 - `.github/workflows/validate-*.yml` - Validation workflows
 - `.gitignore` - Prevents committing secrets
