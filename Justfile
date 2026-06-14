@@ -144,10 +144,12 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
         common_image_sha=$(yq -r '.images[] | select(.name == "common") | .digest' image-versions.yml)
         brew_image=$(yq -r '.images[] | select(.name == "brew") | .image + ":" + .tag' image-versions.yml)
         brew_image_sha=$(yq -r '.images[] | select(.name == "brew") | .digest' image-versions.yml)
-        BUILD_ARGS+=("--build-arg" "COMMON_IMAGE=${common_image}")
-        BUILD_ARGS+=("--build-arg" "COMMON_IMAGE_SHA=${common_image_sha}")
-        BUILD_ARGS+=("--build-arg" "BREW_IMAGE=${brew_image}")
-        BUILD_ARGS+=("--build-arg" "BREW_IMAGE_SHA=${brew_image_sha}")
+        # Combine image + digest into a single ref so an empty digest never
+        # produces the invalid "image:tag@" syntax in FROM instructions.
+        COMMON_IMAGE_REF="${common_image}${common_image_sha:+@${common_image_sha}}"
+        BREW_IMAGE_REF="${brew_image}${brew_image_sha:+@${brew_image_sha}}"
+        BUILD_ARGS+=("--build-arg" "COMMON_IMAGE_REF=${COMMON_IMAGE_REF}")
+        BUILD_ARGS+=("--build-arg" "BREW_IMAGE_REF=${BREW_IMAGE_REF}")
         # Note: base image digest is resolved at build time, not pinned here
         # following bluefin pattern for freshness
     else
@@ -425,7 +427,7 @@ lint:
     set -eoux pipefail
     # Check if shellcheck is installed
     if ! command -v shellcheck &> /dev/null; then
-        echo "shfmt could not be found. Please install it."
+        echo "shellcheck could not be found. Please install it."
         exit 1
     fi
     # Run shellcheck on all Bash scripts

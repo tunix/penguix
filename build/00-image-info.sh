@@ -76,7 +76,7 @@ if [[ -f "${OS_RELEASE}" ]] && ! grep -q "^VARIANT_ID=" "${OS_RELEASE}"; then
   # Append our identity
   cat >> "${OS_RELEASE}" << EOF
 
-# finpilot image identity
+# ${IMAGE_NAME} image identity
 VARIANT_ID="${IMAGE_FLAVOR}"
 PRETTY_NAME="${IMAGE_PRETTY_NAME}"
 NAME="${IMAGE_NAME}"

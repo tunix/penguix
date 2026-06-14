@@ -79,8 +79,12 @@ jobs:
 
       - name: Install yq
         shell: bash
+        env:
+          # renovate: datasource=github-releases depName=mikefarah/yq
+          YQ_VERSION: "v4.44.3"
         run: |
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo wget -qO /usr/local/bin/yq \
+            "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
           sudo chmod +x /usr/local/bin/yq
 
       - name: Restore DNF cache

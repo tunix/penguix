@@ -35,27 +35,39 @@
     },
     {
       "customType": "regex",
-      "description": "Track optional pinned download versions in image-versions.yml",
+      "description": "Track pinned tool versions in workflow env vars",
       "managerFilePatterns": [
-        "/^image-versions\\.yml$/"
+        "/^\\.github/workflows/.+\\.yml$/"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\s+# [^\\n]+\\n#\\s+\\w+: \"(?<currentValue>[^\"]+)\""
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\n\\s+\\w+: \"(?<currentValue>[^\"]+)\""
       ]
     }
   ],
   "packageRules": [
     {
-      "description": "Automerge low-risk dependency updates when repository checks pass",
-      "matchUpdateTypes": ["digest", "pin", "pinDigest", "patch", "minor"],
+      "description": "Automerge safe low-risk updates (digest/pin only) when checks pass",
+      "matchUpdateTypes": [
+        "digest",
+        "pin",
+        "pinDigest"
+      ],
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash"
     },
     {
       "description": "Keep the shared projectbluefin actions channel fresh",
-      "matchPackageNames": ["projectbluefin/actions"],
-      "matchUpdateTypes": ["digest", "pinDigest", "pin", "patch", "minor"],
+      "matchPackageNames": [
+        "projectbluefin/actions"
+      ],
+      "matchUpdateTypes": [
+        "digest",
+        "pinDigest",
+        "pin",
+        "patch",
+        "minor"
+      ],
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash"
@@ -66,14 +78,24 @@
         "ghcr.io/projectbluefin/common",
         "ghcr.io/ublue-os/brew"
       ],
-      "matchUpdateTypes": ["digest", "pinDigest", "pin"],
+      "matchUpdateTypes": [
+        "digest",
+        "pinDigest",
+        "pin"
+      ],
       "automerge": true,
-      "schedule": ["at any time"]
+      "schedule": [
+        "at any time"
+      ]
     },
     {
       "description": "Do not automatically cross Fedora major releases",
-      "matchDepNames": ["quay.io/fedora-ostree-desktops/silverblue"],
-      "matchUpdateTypes": ["major"],
+      "matchDepNames": [
+        "quay.io/fedora-ostree-desktops/silverblue"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     }
   ]

@@ -258,7 +258,6 @@ This uses [chunkah](https://github.com/coreos/chunkah) to reorganize OCI layers 
 - `source-image`: Local image reference to rechunk
 
 **For optimal OTA deltas**, also add `bootc-build/apply-pkg-intervals` before the rechunk step and create a `.github/workflows/pkg-cadence.yml` workflow that calls `projectbluefin/actions/.github/workflows/reusable-pkg-cadence.yml@v1`. This groups packages by update cadence (weekly, monthly, quarterly, yearly) so a typical update only downloads layers that actually changed. Without it, chunkah still works but uses default layer grouping.
-  - You can also use different tags (e.g., `-rechunked` suffix) and then retag if preferred
 
 **References:**
 

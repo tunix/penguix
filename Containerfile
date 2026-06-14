@@ -35,11 +35,11 @@
 ###############################################################################
 
 # Image version pins - digests read from image-versions.yml at build time
-# These ARGs are populated by the build pipeline for reproducibility
-ARG COMMON_IMAGE="ghcr.io/projectbluefin/common:latest"
-ARG COMMON_IMAGE_SHA=""
-ARG BREW_IMAGE="ghcr.io/ublue-os/brew:latest"
-ARG BREW_IMAGE_SHA=""
+# These ARGs are populated by the build pipeline for reproducibility.
+# Pass as a single ref (image:tag or image:tag@sha256:...) so an empty digest
+# does not produce the invalid syntax "image:tag@" on local builds.
+ARG COMMON_IMAGE_REF="ghcr.io/projectbluefin/common:latest"
+ARG BREW_IMAGE_REF="ghcr.io/ublue-os/brew:latest"
 ARG FEDORA_MAJOR_VERSION="44"
 ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/silverblue"
 ARG BASE_IMAGE_REF="${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}"
@@ -50,8 +50,8 @@ ARG IMAGE_NAME="finpilot"
 ARG IMAGE_VENDOR="projectbluefin"
 ARG UBLUE_IMAGE_TAG="stable"
 ARG BASE_IMAGE_NAME="silverblue"
-FROM ${COMMON_IMAGE}@${COMMON_IMAGE_SHA} AS common
-FROM ${BREW_IMAGE}@${BREW_IMAGE_SHA} AS brew
+FROM ${COMMON_IMAGE_REF} AS common
+FROM ${BREW_IMAGE_REF} AS brew
 
 # Context stage - combine local and imported OCI container resources
 FROM scratch AS ctx
