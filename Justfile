@@ -1,5 +1,8 @@
 export image_name := env("IMAGE_NAME", "finpilot")
 export default_tag := env("DEFAULT_TAG", "stable")
+export fedora_major_version := env("FEDORA_MAJOR_VERSION", "44")
+export base_image := env("BASE_IMAGE", "quay.io/fedora-ostree-desktops/silverblue")
+export podman := env("PODMAN", "podman")
 export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest@sha256:7ae88b8d6f2cabfa971d7836b96d6cac19cd1384e658031bd154f9687e929905")
 
 alias build-vm := build-qcow2
@@ -90,8 +93,18 @@ sudoif command *args:
 build $target_image=image_name $tag=default_tag:
     #!/usr/bin/env bash
 
-    # Fedora major version: env var first, then Containerfile default
-    fedora_version="${FEDORA_MAJOR_VERSION:-$(grep -m1 '^ARG FEDORA_MAJOR_VERSION=' Containerfile | cut -d'"' -f2)}"
+    # Fedora major version is controlled via env/Justfile export
+    fedora_version="${FEDORA_MAJOR_VERSION}"
+
+    # Resolve and pin the base image digest for reproducibility
+    echo "Resolving base image digest for ${BASE_IMAGE}:${fedora_version}..."
+    base_image_digest=$(skopeo inspect --retry-times 3 "docker://${BASE_IMAGE}:${fedora_version}" 2>/dev/null | jq -r '.Digest // empty')
+    if [[ -z "${base_image_digest:-}" ]]; then
+        echo "ERROR: Could not resolve digest for ${BASE_IMAGE}:${fedora_version}"
+        exit 1
+    fi
+    base_image_ref="${BASE_IMAGE}:${fedora_version}@${base_image_digest}"
+    echo "Base image pinned to: ${base_image_ref}"
 
     # Bluefin-style version string: <fedora-version>.<date> for stable,
     # <tag>-<fedora-version>.<date> for everything else.
@@ -101,7 +114,23 @@ build $target_image=image_name $tag=default_tag:
         ver="${tag}-${fedora_version}.$(date +%Y%m%d)"
     fi
 
+    # Avoid tag collisions when rebuilding on the same day
+    if command -v skopeo &>/dev/null; then
+        skopeo list-tags "docker://ghcr.io/${IMAGE_VENDOR:-projectbluefin}/${target_image}" >/tmp/repotags.json 2>/dev/null \
+            || echo '{"Tags":[]}' >/tmp/repotags.json
+        if [[ $(jq "any(.Tags[]; contains(\"${ver}\"))" /tmp/repotags.json) == "true" ]]; then
+            POINT=1
+            while [[ $(jq "any(.Tags[]; contains(\"${ver}.${POINT}\"))" /tmp/repotags.json) == "true" ]]; do
+                ((POINT++))
+            done
+            ver="${ver}.${POINT}"
+            echo "Tag collision detected; using version ${ver}"
+        fi
+    fi
+
     BUILD_ARGS=()
+    BUILD_ARGS+=("--build-arg" "FEDORA_MAJOR_VERSION=${fedora_version}")
+    BUILD_ARGS+=("--build-arg" "BASE_IMAGE_REF=${base_image_ref}")
     BUILD_ARGS+=("--build-arg" "VERSION=${ver}")
     if [[ -z "$(git status -s)" ]]; then
         BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
@@ -143,7 +172,7 @@ build $target_image=image_name $tag=default_tag:
     LABELS+=("--label" "org.opencontainers.image.description=${IMAGE_DESC:-My Customized Universal Blue Image}")
     LABELS+=("--label" "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}/blob/${GITHUB_SHA:-}/Containerfile")
     LABELS+=("--label" "org.opencontainers.image.url=https://github.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}")
-    LABELS+=("--label" "org.opencontainers.image.vendor=${IMAGE_VENDOR:-${GITHUB_REPOSITORY_OWNER:-projectbluefin}}")
+    LABELS+=("--label" "org.opencontainers.image.vendor=${IMAGE_VENDOR:-projectbluefin}")
     LABELS+=("--label" "org.opencontainers.image.created=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)")
     LABELS+=("--label" "io.artifacthub.package.readme-url=https://raw.githubusercontent.com/${GITHUB_REPOSITORY_OWNER:-}/${target_image}/refs/heads/main/README.md")
     LABELS+=("--label" "io.artifacthub.package.logo-url=${IMAGE_LOGO_URL:-https://avatars.githubusercontent.com/u/120078124?s=200&v=4}")
@@ -164,7 +193,7 @@ build $target_image=image_name $tag=default_tag:
         fi
     fi
 
-    podman build \
+    ${PODMAN} build \
         "${BUILD_ARGS[@]}" \
         "${LABELS[@]}" \
         "${CACHE_ARGS[@]}" \
@@ -179,15 +208,20 @@ tag-images $image_name="" $default_tag="" $tags="":
     #!/usr/bin/bash
     set -eou pipefail
 
-    IMAGE=$(podman inspect "localhost/${image_name}:${default_tag}" | jq -r '.[].Id')
-    podman untag "localhost/${image_name}:${default_tag}"
+    if [[ -z "${image_name}" || -z "${default_tag}" || -z "${tags}" ]]; then
+        echo "Usage: just tag-images <image_name> <default_tag> <tags>"
+        exit 1
+    fi
+
+    IMAGE=$(${PODMAN} inspect "localhost/${image_name}:${default_tag}" | jq -r '.[].Id')
+    ${PODMAN} untag "localhost/${image_name}:${default_tag}"
 
     for tag in ${tags}; do
-        podman tag "${IMAGE}" "${image_name}:${tag}"
+        ${PODMAN} tag "${IMAGE}" "${image_name}:${tag}"
     done
 
     # Re-apply default tag so local operations can still find it
-    podman tag "${IMAGE}" "${image_name}:${default_tag}"
+    ${PODMAN} tag "${IMAGE}" "${image_name}:${default_tag}"
 
     echo "Tagged ${image_name} with: ${tags}"
 
