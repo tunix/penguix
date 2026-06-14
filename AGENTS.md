@@ -1,5 +1,14 @@
 # Copilot Instructions for finpilot bootc Image Template
 
+## Start here
+
+Read the repo skill docs before changing behavior:
+
+- `docs/skills/finpilot-overview.md` — architecture, repo layout, skill routing table
+- `docs/skills/finpilot-build.md` — Containerfile, image-versions.yml, Justfile, build scripts
+- `docs/skills/finpilot-ci.md` — GitHub Actions workflows, composite actions, Renovate config
+- `docs/skills/finpilot-templates.md` — fork initialization, rename checklist, signing setup
+
 ## CRITICAL: GitHub API Usage
 
 **ALWAYS use GitHub API for external references:**
