@@ -17,9 +17,6 @@ jobs:
   renovate:
     name: Renovate
     runs-on: ubuntu-latest
-    # Skip gracefully when RENOVATE_TOKEN has not been configured yet.
-    # Template forks work out-of-the-box before the secret is added.
-    if: ${{ secrets.RENOVATE_TOKEN != '' }}
     permissions:
       contents: read
     steps:
@@ -28,7 +25,22 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Check for RENOVATE_TOKEN
+        id: token-check
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+        run: |
+          if [[ -z "${TOKEN}" ]]; then
+            echo "RENOVATE_TOKEN secret not configured — skipping Renovate."
+            echo "See .github/SETUP_CHECKLIST.md to set up the token."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Validate RENOVATE_TOKEN
+        if: steps.token-check.outputs.configured == 'true'
         uses: ./.github/actions/check-token-health
         with:
           token: ${{ secrets.RENOVATE_TOKEN }}
@@ -36,7 +48,8 @@ jobs:
           required_scopes: repo,workflow
 
       - name: Run Renovate
-        uses: renovatebot/github-action@8217b3fc286df088d7c27f3255fe8414463bc0fd # v46.1.15
+        if: steps.token-check.outputs.configured == 'true'
+        uses: renovatebot/github-action@8217b3fc286df088d7c27f3255fe8414463cb0fd # v46.1.15
         with:
           token: ${{ secrets.RENOVATE_TOKEN }}
         env:
