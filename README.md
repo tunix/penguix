@@ -232,61 +232,37 @@ Ready to take your custom OS to production? Enable these features for enhanced s
 
 - [ ] **Enable Image Rechunking** (Recommended)
   - Optimizes bootc image layers for better update performance
-  - Reduces update sizes by 5-10x
+  - Reduces update sizes by 5-10x when combined with package cadence data
   - Improves download resumability with evenly sized layers
   - To enable:
     1. Edit `.github/workflows/build-image.yml`
     2. Find the "OPTIONAL: Rechunking" section
-    3. Uncomment the rechunk step
+    3. Uncomment the `bootc-build/chunka` step
+  - For optimal results, also add `bootc-build/apply-pkg-intervals` and a `pkg-cadence.yml` workflow
   - Status: **Not enabled by default** (optional optimization)
 
 #### Adding Image Rechunking
 
-After building your bootc image, add a rechunk step before pushing to the registry. Here's an example based on the workflow used by [zirconium-dev/zirconium](https://github.com/zirconium-dev/zirconium):
+After building your bootc image, add a rechunk step before pushing to the registry. The template ships with a commented `bootc-build/chunka` step in `.github/workflows/build-image.yml`:
 
 ```yaml
-- name: Build image
-  id: build
-  run: sudo podman build -t "${IMAGE_NAME}:${DEFAULT_TAG}" -f ./Containerfile .
-
-- name: Rechunk Image
-  run: |
-    sudo podman run --rm --privileged \
-      -v /var/lib/containers:/var/lib/containers \
-      --entrypoint /usr/libexec/bootc-base-imagectl \
-      "localhost/${IMAGE_NAME}:${DEFAULT_TAG}" \
-      rechunk --max-layers 96 \
-      "localhost/${IMAGE_NAME}:${DEFAULT_TAG}" \
-      "localhost/${IMAGE_NAME}:${DEFAULT_TAG}"
-
-- name: Push to Registry
-  run: sudo podman push "localhost/${IMAGE_NAME}:${DEFAULT_TAG}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:${DEFAULT_TAG}"
+- name: Rechunk image
+  if: github.event_name != 'pull_request'
+  id: rechunk-image
+  uses: projectbluefin/actions/bootc-build/chunka@v1
+  with:
+    source-image: localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
+    max-layers: 128
 ```
 
-Alternative approach using a temporary tag for clarity:
-
-```yaml
-- name: Rechunk Image
-  run: |
-    sudo podman run --rm --privileged \
-      -v /var/lib/containers:/var/lib/containers \
-      --entrypoint /usr/libexec/bootc-base-imagectl \
-      "localhost/${IMAGE_NAME}:${DEFAULT_TAG}" \
-      rechunk --max-layers 67 \
-      "localhost/${IMAGE_NAME}:${DEFAULT_TAG}" \
-      "localhost/${IMAGE_NAME}:${DEFAULT_TAG}-rechunked"
-
-    # Tag the rechunked image with the original tag
-    sudo podman tag "localhost/${IMAGE_NAME}:${DEFAULT_TAG}-rechunked" "localhost/${IMAGE_NAME}:${DEFAULT_TAG}"
-    sudo podman rmi "localhost/${IMAGE_NAME}:${DEFAULT_TAG}-rechunked"
-```
+This uses [chunkah](https://github.com/coreos/chunkah) to reorganize OCI layers without rpm-ostree. Renovate will keep the action updated once it is uncommented.
 
 **Parameters:**
 
-- `--max-layers`: Maximum number of layers for the rechunked image (typically 67 for optimal balance)
-- The first image reference is the source (input)
-- The second image reference is the destination (output)
-  - When using the same reference for both, the image is rechunked in-place
+- `max-layers`: Maximum number of layers for the rechunked image (128 is a typical bootc default)
+- `source-image`: Local image reference to rechunk
+
+**For optimal OTA deltas**, also add `bootc-build/apply-pkg-intervals` before the rechunk step and create a `.github/workflows/pkg-cadence.yml` workflow that calls `projectbluefin/actions/.github/workflows/reusable-pkg-cadence.yml@v1`. This groups packages by update cadence (weekly, monthly, quarterly, yearly) so a typical update only downloads layers that actually changed. Without it, chunkah still works but uses default layer grouping.
   - You can also use different tags (e.g., `-rechunked` suffix) and then retag if preferred
 
 **References:**

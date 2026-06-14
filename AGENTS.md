@@ -897,7 +897,8 @@ See `build/copr-install-functions.sh` for reusable patterns:
    - `20-*.sh` - Additional scripts (if present and not .example)
    - `30-*.sh` - More scripts (if present and not .example)
 4. **Container Lint** - Validates final image with `bootc container lint`
-5. **Push to Registry** - Uploads to GitHub Container Registry (ghcr.io)
+5. **Rechunk (optional)** - Reorganizes OCI layers with `bootc-build/chunka` for smaller OTA deltas
+6. **Push to Registry** - Uploads to GitHub Container Registry (ghcr.io)
 
 ### What Gets Included in the Image
 

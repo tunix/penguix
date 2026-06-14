@@ -161,9 +161,17 @@ jobs:
 
       # OPTIONAL: Rechunking (OCI-native, no rpm-ostree)
       # Rechunking improves OTA delta performance by reorganizing layers.
-      # Uncomment to enable. See: projectbluefin/actions/bootc-build/chunka
+      # Uncomment the step below to enable it. Renovate will keep the action
+      # pinned and up to date automatically once it is uncommented.
+      #
+      # For optimal layer grouping (packages sorted by update cadence), also add
+      # the bootc-build/apply-pkg-intervals step before rechunking and create a
+      # .github/workflows/pkg-cadence.yml workflow. See:
+      #   https://github.com/projectbluefin/actions/tree/main/bootc-build/chunka
+      #   https://github.com/projectbluefin/actions/tree/main/bootc-build/apply-pkg-intervals
       # - name: Rechunk image
       #   if: github.event_name != 'pull_request'
+      #   id: rechunk-image
       #   uses: projectbluefin/actions/bootc-build/chunka@v1
       #   with:
       #     source-image: localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
