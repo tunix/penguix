@@ -47,15 +47,15 @@
 
 ### 1. Rename ALL instances of `finpilot`
 
-**Source of truth**: `Containerfile` line 9: `# Name: finpilot`
+**Source of truth**: `Containerfile` `# Name: finpilot` comment near the top
 
 **Files to update:**
-- `Containerfile` (line 9)
-- `Justfile` (line 1)
-- `README.md` (line 1)
-- `artifacthub-repo.yml` (line 5)
-- `custom/ujust/README.md` (~line 175)
-- `.github/workflows/ghcr-pruner.yml` (line 22)
+- `Containerfile` (`ARG IMAGE_NAME="finpilot"` and `ARG IMAGE_VENDOR="projectbluefin"`)
+- `Justfile` (`export IMAGE_NAME := env("IMAGE_NAME", "finpilot")`)
+- `README.md` (title)
+- `artifacthub-repo.yml` (`repositoryID: finpilot`)
+- `custom/ujust/README.md` (bootc switch example)
+- `.github/workflows/clean.yml` (`packages: finpilot`)
 
 ### 2. Create "What's Different" section in README
 
@@ -84,7 +84,7 @@ Here are the changes from [Base Image Name]. This image is based on [Bluefin/Baz
 *Last updated: [date]*
 ```
 
-**Maintenance requirement**: 
+**Maintenance requirement**:
 - **ALWAYS update this section when you modify packages or configuration**
 - Keep descriptions brief and user-focused (explain "why", not just "what")
 - Write for typical Linux users, not developers
@@ -107,7 +107,8 @@ Signing is DISABLED by default. First builds succeed immediately. Enable later f
 ```
 ├── Containerfile          # Main build definition (multi-stage build with OCI imports)
 ├── Justfile              # Local build automation (image name, build commands)
-├── build/                # Build-time scripts (10-build.sh, 20-chrome.sh, etc.)
+├── build/                # Build-time scripts (00-image-info.sh, 10-build.sh, etc.)
+│   ├── 00-image-info.sh  # Image metadata generation (image-info.json, os-release)
 │   ├── 10-build.sh      # Main build script (copy custom files, install packages)
 │   ├── 20-*.sh.example  # Example third-party repos (rename to use)
 │   ├── 30-*.sh.example  # Example desktop replacement (rename to use)
@@ -132,15 +133,21 @@ Signing is DISABLED by default. First builds succeed immediately. Enable later f
 │   └── rclone/          # Upload configs (Cloudflare R2, AWS S3, etc.)
 ├── .github/              # GitHub configuration and CI/CD
 │   ├── workflows/       # GitHub Actions workflows
-│   │   ├── build.yml               # Builds :stable on main
-│   │   ├── clean.yml               # Deletes images >90 days old
-│   │   ├── renovate.yml            # Renovate bot updates (6h interval)
-│   │   ├── validate-*.yml          # Pre-merge validation checks
+│   │   ├── build-image.yml       # Builds :stable on main
+│   │   ├── pr-validation.yml     # PR validation (shellcheck, hadolint, pre-commit)
+│   │   ├── clean.yml             # Deletes images >90 days old
+│   │   ├── renovate.yml          # Self-hosted Renovate runner (6h schedule)
+│   │   ├── validate-brewfiles.yml    # Validates Brewfile syntax
+│   │   ├── validate-flatpaks.yml     # Validates Flatpak app IDs
+│   │   ├── validate-justfiles.yml    # Validates Justfile syntax
+│   │   ├── validate-renovate.yml     # Validates Renovate config
 │   │   └── ...
 │   ├── copilot-instructions.md  # THIS FILE - Instructions for Copilot
 │   ├── SETUP_CHECKLIST.md       # Quick setup checklist for users
 │   ├── commit-convention.md     # Conventional commits guide
-│   └── renovate.json5           # Renovate configuration
+│   ├── renovate.json            # Renovate configuration (extends best-practices)
+│   ├── actions/                 # Repository-local composite actions
+│   │   └── check-token-health/  # Validates GitHub tokens before use
 ├── .pre-commit-config.yaml   # Pre-commit hooks (optional local use)
 └── .gitignore                # Prevents committing secrets (cosign.key, etc.)
 ```
@@ -156,13 +163,11 @@ This template follows the **Bluefin architecture pattern** from @projectbluefin/
 1. **Context Stage (ctx)** - Combines resources from multiple sources:
    - Local build scripts (`/build`)
    - Local custom files (`/custom`)
-   - **@projectbluefin/common** - Desktop configuration shared with Aurora (`/oci/common`)
-   - **@projectbluefin/branding** - Branding assets (`/oci/branding`)
-   - **@ublue-os/artwork** - Artwork shared with Aurora and Bazzite (`/oci/artwork`)
+   - **@projectbluefin/common** - Desktop configuration shared with Aurora (`/oci/common`; includes branding/artwork content)
    - **@ublue-os/brew** - Homebrew integration (`/oci/brew`)
 
 2. **Base Image Options:**
-   - `ghcr.io/ublue-os/silverblue-main:42` (Fedora-based, default)
+   - `quay.io/fedora-ostree-desktops/silverblue:44` (Fedora-based, default)
    - `quay.io/centos-bootc/centos-bootc:stream10` (CentOS-based)
 
 **OCI Container Resources:**
@@ -174,6 +179,8 @@ This template follows the **Bluefin architecture pattern** from @projectbluefin/
 
 ### Build-time vs Runtime
 - **Build-time** (`build/`): Baked into container. Use `dnf5 install`. Services, configs, system packages.
+  - `00-image-info.sh` generates `/usr/share/ublue-os/image-info.json` and customizes `/usr/lib/os-release`
+  - `10-build.sh` copies custom files and installs packages
 - **Runtime** (`custom/`): User installs after deployment. Use Brewfiles, Flatpaks. CLI tools, GUI apps, dev environments.
 
 ### Bluefin Convention Compliance
@@ -192,7 +199,7 @@ This template follows the **Bluefin architecture pattern** from @projectbluefin/
 
 ### Validation Workflows
 The repository includes automated validation on pull requests:
-- **validate-shellcheck.yml** - Runs shellcheck on all `build/*.sh` scripts
+- **pr-validation.yml** - Consolidated validation: shellcheck, hadolint, pre-commit (via `projectbluefin/actions`)
 - **validate-brewfiles.yml** - Validates Homebrew Brewfile syntax
 - **validate-flatpaks.yml** - Checks Flatpak app IDs exist on Flathub
 - **validate-justfiles.yml** - Validates just file syntax
@@ -218,20 +225,21 @@ System packages are installed at build-time and baked into the container image. 
 dnf5 install -y vim git htop neovim tmux
 ```
 
-**When to use**: 
+**When to use**:
 - System utilities and services
 - Dependencies required for other build-time operations
 - Packages that need to be available immediately on first boot
 - Services that need to be enabled with `systemctl enable`
 
-**Important**: 
+**Important**:
 - Always use `dnf5` (never `dnf`, `yum`, or `rpm-ostree`)
 - Always add `-y` flag for non-interactive installs
 - For COPR repositories, use `copr_install_isolated` pattern and disable after use
 - For third-party repos, see example scripts: `build/20-onepassword.sh.example`
 
 **Script Naming Convention**:
-- `10-build.sh` - Main build script (always runs first)
+- `00-image-info.sh` - Image metadata generation (image-info.json, os-release)
+- `10-build.sh` - Main build script (copy custom files, install packages)
 - `20-*.sh` - Additional scripts (run in numerical order)
 - `30-*.sh` - Desktop environment changes
 - `.example` suffix - Rename to `.sh` to activate
@@ -316,8 +324,8 @@ Branch=stable
 | Add user command | Create shortcut (NO dnf5) | `custom/ujust/*.just` |
 | Add third-party repo | Use example scripts | `build/20-*.sh.example` (rename) |
 | Replace desktop | Use example script | `build/30-cosmic-desktop.sh.example` |
-| Switch base image | Update FROM line | `Containerfile` line 38 |
-| Add OCI containers | Uncomment COPY --from= lines | `Containerfile` lines 13-18 (ctx stage) |
+| Switch base image | Update FROM line | `Containerfile` `FROM ${BASE_IMAGE_REF}` line |
+| Add OCI containers | Uncomment/add COPY --from= lines | `Containerfile` ctx stage |
 | Test locally | `just build && just build-qcow2 && just run-vm-qcow2` | Terminal |
 | Deploy (production) | `sudo bootc switch ghcr.io/user/repo:stable` | Terminal |
 | Enable service | `systemctl enable service.name` | `build/10-build.sh` |
@@ -334,24 +342,23 @@ Branch=stable
 
 This template uses a **multi-stage build** following the @projectbluefin/distroless pattern.
 
-**Stage 1: Context (ctx) - Line 39**
+**Stage 1: Context (ctx)**
 Combines resources from multiple OCI containers:
 ```dockerfile
 FROM scratch AS ctx
 
 COPY build /build
 COPY custom /custom
+COPY image-versions.yml /image-versions.yml
+
 # Import from OCI containers - Renovate updates :latest to SHA-256 digests
-COPY --from=ghcr.io/ublue-os/base-main:latest /system_files /oci/base
-COPY --from=ghcr.io/projectbluefin/common:latest /system_files /oci/common
-COPY --from=ghcr.io/projectbluefin/branding:latest /system_files /oci/branding
-COPY --from=ghcr.io/ublue-os/artwork:latest /system_files /oci/artwork
-COPY --from=ghcr.io/ublue-os/brew:latest /system_files /oci/brew
+COPY --from=common /system_files /oci/common
+COPY --from=brew /system_files /oci/brew
 ```
 
-**Stage 2: Base Image - Line 52**
+**Stage 2: Base Image**
 ```dockerfile
-FROM ghcr.io/ublue-os/silverblue-main:latest  # Default (Fedora-based)
+FROM quay.io/fedora-ostree-desktops/silverblue:44  # Default (Fedora-based)
 # OR
 FROM quay.io/centos-bootc/centos-bootc:stream10  # CentOS-based
 ```
@@ -366,38 +373,32 @@ FROM quay.io/fedora/fedora-bootc:42       # Upstream Fedora
 
 **Tags**: `:stable` (recommended), `:latest` (bleeding edge), `-nvidia` variants available
 
-**Renovate**: Base image SHA and OCI container tags are auto-updated by Renovate bot every 6 hours (see `.github/renovate.json5`)
+**Renovate**: OCI container digests and GitHub Actions are auto-updated by Renovate (see `renovate.json`)
 
 **OCI Container Resources:**
-- **@ublue-os/base-main** - Base system configuration
-- **@projectbluefin/common** - Desktop configuration shared with Aurora
-- **@projectbluefin/branding** - Branding assets
-- **@ublue-os/artwork** - Artwork shared with Aurora and Bazzite
+- **@projectbluefin/common** - Desktop configuration shared with Aurora (includes branding/artwork content)
 - **@ublue-os/brew** - Homebrew integration
 
 **File Locations in Build Scripts:**
 - Local build scripts: `/ctx/build/`
 - Local custom files: `/ctx/custom/`
-- Base files: `/ctx/oci/base/`
 - Common files: `/ctx/oci/common/`
-- Branding files: `/ctx/oci/branding/`
-- Artwork files: `/ctx/oci/artwork/`
 - Brew files: `/ctx/oci/brew/`
 
 ### 2. OCI Containers for Additional System Files
 
-**File**: `Containerfile` (ctx stage, lines 6-18)
+**File**: `Containerfile` (ctx stage)
 
-Following the `@projectbluefin/distroless` pattern, you can layer in additional system files from OCI containers. These are commented out by default in the template.
+Following the `@projectbluefin/distroless` pattern, you can layer in additional system files from OCI containers.
 
 **Available OCI Containers**:
 ```dockerfile
-# Artwork and Branding from projectbluefin/common
-COPY --from=ghcr.io/projectbluefin/common:latest /system_files/bluefin /files/bluefin
-COPY --from=ghcr.io/projectbluefin/common:latest /system_files/shared /files/shared
+# Desktop configuration (includes Bluefin wallpapers, themes, branding assets,
+# ujust completions, and udev rules) from projectbluefin/common
+COPY --from=ghcr.io/projectbluefin/common:latest /system_files /oci/common
 
 # Homebrew system files from ublue-os/brew
-COPY --from=ghcr.io/ublue-os/brew:latest /system_files /files/brew
+COPY --from=ghcr.io/ublue-os/brew:latest /system_files /oci/brew
 ```
 
 **What's included**:
@@ -409,7 +410,7 @@ COPY --from=ghcr.io/ublue-os/brew:latest /system_files /files/brew
 - You want additional system integration beyond what the base image provides
 - You're building a Bluefin derivative and want to maintain brand consistency
 
-**Important**: 
+**Important**:
 - These are **commented out by default** as template examples
 - Uncomment only if you specifically want these additional system files
 - The files are copied into the `ctx` stage and made available to your build scripts
@@ -553,8 +554,9 @@ bootc switch --mutate-in-place --transport registry ghcr.io/USERNAME/REPO:stable
 - `main` - Production only. Builds `:stable` images. Never push directly.
 
 **Workflows**:
-- `build.yml` - Builds `:stable` on main
-- `renovate.yml` - Monitors base image updates (every 6 hours)
+- `build-image.yml` - Builds `:stable` on main
+- `pr-validation.yml` - PR validation (shellcheck, hadolint, pre-commit)
+- `renovate.yml` - Self-hosted Renovate runner (6h schedule, via projectbluefin/actions)
 - `clean.yml` - Deletes images >90 days (weekly)
 - `validate-*.yml` - Pre-merge validation (shellcheck, Brewfile, Flatpak, etc.)
 
@@ -565,9 +567,11 @@ bootc switch --mutate-in-place --transport registry ghcr.io/USERNAME/REPO:stable
 - `:pr-123` - Pull request builds (for testing)
 - `:sha-abc123` - Git commit SHA (short)
 
-**Renovate Bot**: 
-- Automatically updates base image SHAs in `Containerfile`
-- Runs every 6 hours (configured in `.github/renovate.json5`)
+**Renovate Bot**:
+- Self-hosted via `.github/workflows/renovate.yml`
+- Requires `RENOVATE_TOKEN` secret (Classic PAT with `repo` + `workflow` scopes)
+- Automatically updates tracked OCI image digests and GitHub Actions
+- Runs every 6 hours and on config changes
 - Creates PRs for updates - review and merge to keep images current
 
 ### 8. Understanding the Multi-Stage Build Architecture
@@ -587,20 +591,19 @@ This template implements a **multi-stage build pattern** following @projectbluef
 FROM scratch AS ctx
 COPY build /build                    # Local build scripts
 COPY custom /custom                  # Local customizations
+COPY image-versions.yml /image-versions.yml
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files /oci/common
-COPY --from=ghcr.io/projectbluefin/branding:latest /system_files /oci/branding
-COPY --from=ghcr.io/ublue-os/artwork:latest /system_files /oci/artwork
 COPY --from=ghcr.io/ublue-os/brew:latest /system_files /oci/brew
 ```
 
 This stage combines:
-- **Local resources** (build scripts, custom files)
+- **Local resources** (build scripts, custom files, image version pins)
 - **OCI container resources** from upstream projects
-- Resources are copied to **distinct subdirectories** to avoid conflicts
+- Resources are copied to **distinct subdirectories** (`/oci/*`) to avoid conflicts
 
 **Stage 2: Final Image**
 ```dockerfile
-FROM ghcr.io/ublue-os/silverblue-main:42
+FROM quay.io/fedora-ostree-desktops/silverblue:44
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     /ctx/build/10-build.sh
@@ -616,17 +619,16 @@ The final stage:
 Build scripts can access files from OCI containers:
 ```bash
 #!/usr/bin/env bash
-# Example: Copy branding files
-cp -r /ctx/oci/branding/* /usr/share/branding/
-
-# Example: Copy common desktop config
-cp /ctx/oci/common/config.yaml /etc/myapp/
+# Example: Copy common desktop config (branding/artwork content lives inside common)
+cp -r /ctx/oci/common/* /usr/share/
 
 # Example: Use brew files
 cp /ctx/oci/brew/*.sh /usr/local/bin/
 ```
 
 **Renovate Integration:**
+- Self-hosted via `.github/workflows/renovate.yml`
+- Requires `RENOVATE_TOKEN` secret (Classic PAT with `repo` + `workflow` scopes)
 - Renovate monitors OCI container tags (`:latest`)
 - Automatically updates to SHA digests for reproducibility
 - Example: `:latest` → `@sha256:abc123...`
@@ -636,23 +638,16 @@ cp /ctx/oci/brew/*.sh /usr/local/bin/
 
 ### 9. Image Signing (Optional, Recommended for Production)
 
-**Default**: DISABLED (commented out in workflows) to allow first builds.
+**Default**: DISABLED (commented out in workflow) to allow first builds.
+
+This template uses **keyless OIDC signing** via Cosign and GitHub Actions. No static keys, `SIGNING_SECRET`, or `cosign.pub` files are required.
+
 ```bash
-# Generate keys
-COSIGN_PASSWORD="" cosign generate-key-pair
-# Creates: cosign.key (SECRET), cosign.pub (COMMIT)
-
-# Add to GitHub
-# Settings → Secrets and Variables → Actions → New secret
-# Name: SIGNING_SECRET
-# Value: <paste entire contents of cosign.key>
-
-# Uncomment signing sections in:
-# - .github/workflows/build.yml
-# - .github/workflows/build-testing.yml
+# Uncomment the "Sign and publish" step in:
+# - .github/workflows/build-image.yml
 ```
 
-**NEVER commit `cosign.key`**. Already in `.gitignore`.
+**NEVER commit `cosign.key` or any signing keys to the repository**. `cosign.key` is listed in `.gitignore` as a safety net.
 
 ---
 
@@ -684,9 +679,9 @@ COSIGN_PASSWORD="" cosign generate-key-pair
 
 | Symptom | Cause | Solution |
 |---------|-------|----------|
-| Build fails: "permission denied" | Signing misconfigured | Verify signing commented out OR `SIGNING_SECRET` set |
+| Build fails: "permission denied" | Signing misconfigured | Verify signing step is uncommented and `id-token: write` permission is granted |
 | Build fails: "package not found" | Typo or unavailable | Check spelling, verify on RPMfusion, add COPR if needed |
-| Build fails: "base image not found" | Invalid FROM line | Check syntax in `Containerfile` line 24 |
+| Build fails: "base image not found" | Invalid FROM line | Check syntax in `Containerfile` `FROM ${BASE_IMAGE_REF}` line |
 | Build fails: "shellcheck error" | Script syntax error | Run `shellcheck build/*.sh` locally, fix errors |
 | PR validation fails: Brewfile | Invalid Brewfile syntax | Check Ruby syntax, ensure packages exist |
 | PR validation fails: Flatpak | Invalid app ID | Verify app ID exists on https://flathub.org/ |
@@ -697,7 +692,7 @@ COSIGN_PASSWORD="" cosign generate-key-pair
 | ujust commands not working | Wrong install location | Files must be in `custom/ujust/` and copied to `/usr/share/ublue-os/just/` |
 | Flatpaks not installed | Expected behavior | Flatpaks install post-first-boot, not in ISO/container |
 | Local build fails | Wrong environment | Must run on bootc-based system or have podman installed |
-| Renovate not creating PRs | Configuration issue | Check `.github/renovate.json5` syntax |
+| Renovate not creating PRs | Configuration issue | Check `renovate.json` syntax and `RENOVATE_TOKEN` scopes |
 | Third-party repo not working | Repo file persists | Remove repo file at end of script (see examples) |
 
 ---
@@ -849,12 +844,13 @@ pre-commit run --all-files
 ## Advanced Topics
 
 ### /opt Immutability
-Some packages (Chrome, Docker Desktop) write to `/opt`. On Fedora, it's symlinked to `/var/opt` (mutable). To make immutable:
+Some packages (Chrome, Docker Desktop) write to `/opt`. On Fedora, it's symlinked to `/var/opt` (mutable). To make `/opt` an immutable real directory in the image, replace the `RUN rm -rf /opt && ln -s /var/opt /opt` line under `### /opt` near the bottom of the `Containerfile` with:
 
-Uncomment `Containerfile` line 20:
 ```dockerfile
 RUN rm /opt && mkdir /opt
 ```
+
+The default keeps `/opt` symlinked to `/var/opt` (runtime mutable).
 
 ### Multi-Architecture
 - Local `just` commands support your platform
@@ -882,7 +878,8 @@ See `build/copr-install-functions.sh` for reusable patterns:
    - `20-*.sh` - Additional scripts (if present and not .example)
    - `30-*.sh` - More scripts (if present and not .example)
 4. **Container Lint** - Validates final image with `bootc container lint`
-5. **Push to Registry** - Uploads to GitHub Container Registry (ghcr.io)
+5. **Rechunk (optional)** - Reorganizes OCI layers with `bootc-build/chunka` for smaller OTA deltas
+6. **Push to Registry** - Uploads to GitHub Container Registry (ghcr.io)
 
 ### What Gets Included in the Image
 
@@ -958,15 +955,15 @@ When user requests customization, check in this order:
 ### Files to AVOID Modifying
 
 **Do NOT modify unless specifically requested or necessary**:
-- `.github/renovate.json5` - Renovate configuration (auto-updates)
+- `.github/renovate.json` - Renovate configuration (auto-updates)
+- `.github/workflows/renovate.yml` - Self-hosted Renovate runner (managed by projectbluefin/actions)
 - `.github/workflows/validate-*.yml` - Validation workflows
 - `.gitignore` - Prevents committing secrets
 - `build/copr-helpers.sh` - Helper functions (stable patterns)
 - `LICENSE` - Repository license
-- `cosign.pub` - Public signing key (regenerate if changing keys)
 
 **Modify with extreme caution**:
-- `.github/workflows/build.yml` - Core build workflow
+- `.github/workflows/build-image.yml` - Core build workflow
 - `.github/workflows/clean.yml` - Image cleanup
 - `Justfile` - Local build automation (users rely on these commands)
 
@@ -1117,6 +1114,6 @@ Assisted-by: Claude 3.5 Sonnet via GitHub Copilot
 
 ---
 
-**Last Updated**: 2025-11-14  
-**Template Version**: finpilot (Enhanced with comprehensive Copilot instructions)  
+**Last Updated**: 2026-06-14
+**Template Version**: finpilot (Enhanced with comprehensive Copilot instructions)
 **Maintainer**: Universal Blue Community

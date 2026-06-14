@@ -43,8 +43,9 @@ echo "::endgroup::"
 
 echo "::group:: Install Packages"
 
-# Install packages using dnf5
-# Example: dnf5 install -y tmux
+# Install a minimal package to verify the cache is working
+# This ensures the DNF cache is populated for future builds
+dnf5 install -y tmux
 
 # Example using COPR with isolated pattern:
 # copr_install_isolated "ublue-os/staging" package-name

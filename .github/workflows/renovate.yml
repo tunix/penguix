@@ -1,32 +1,41 @@
 name: Renovate
+
 on:
   schedule:
-    # Run every 6 hours
     - cron: '0 */6 * * *'
   workflow_dispatch:
   push:
     branches:
       - main
     paths:
-      - '.github/renovate.json5'
+      - '.github/renovate.json'
       - '.github/workflows/renovate.yml'
+
+permissions: {}
 
 jobs:
   renovate:
-    name: Run Renovate
+    name: Renovate
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Self-hosted Renovate
-        uses: renovatebot/github-action@0984fb80fc633b17e57f3e8b6c007fe0dc3e0d62 # v40.3.6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
-          configurationFile: .github/renovate.json5
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+
+      - name: Validate RENOVATE_TOKEN
+        uses: ./.github/actions/check-token-health
+        with:
+          token: ${{ secrets.RENOVATE_TOKEN }}
+          token_name: RENOVATE_TOKEN
+          required_scopes: repo,workflow
+
+      - name: Run Renovate
+        uses: renovatebot/github-action@8217b3fc286df088d7c27f3255fe8414463bc0fd # v46.1.15
+        with:
+          token: ${{ secrets.RENOVATE_TOKEN }}
         env:
-          RENOVATE_REPOSITORIES: ${{ github.repository }}
-          LOG_LEVEL: 'debug'
+          LOG_LEVEL: info
+          RENOVATE_REPOSITORIES: '["${{ github.repository }}"]'
