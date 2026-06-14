@@ -19,7 +19,11 @@ on:
     - cron: '05 10 * * *'  # 10:05am UTC everyday
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write
 
 env:
   IMAGE_NAME: "${{ github.event.repository.name }}"
