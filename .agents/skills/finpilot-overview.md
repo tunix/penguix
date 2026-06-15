@@ -14,7 +14,7 @@ metadata:
 
 - Starting a new session in this repo
 - Explaining how finpilot relates to bluefin/aurora/dakota
-- Deciding which `docs/skills/` file covers your change area
+- Deciding which `.agents/skills/` file covers your change area
 - Onboarding a new contributor or agent
 
 ## When NOT to Use
@@ -36,7 +36,7 @@ finpilot is a **bootc image template** following the Bluefin multi-stage build a
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Stage 1: ctx (FROM scratch)                                │
-│    COPY build/  custom/  image-versions.yml                 │
+│    COPY build/  custom/                                    │
 │    COPY --from=common  → /oci/common                        │
 │    COPY --from=brew    → /oci/brew                          │
 └─────────────────────────┬───────────────────────────────────┘
@@ -54,9 +54,8 @@ finpilot is a **bootc image template** following the Bluefin multi-stage build a
 ## Repo Layout
 
 ```
-├── Containerfile          # Multi-stage build definition
+├── Containerfile          # Multi-stage build definition (base + OCI context image pins)
 ├── Justfile               # Local build automation
-├── image-versions.yml     # OCI digest source of truth (Renovate-tracked)
 ├── build/                 # Build-time scripts (00-, 10-, 20-, 30-...)
 │   ├── 00-image-info.sh   # image-info.json + os-release branding
 │   ├── 10-build.sh        # Main package install script
@@ -71,7 +70,7 @@ finpilot is a **bootc image template** following the Bluefin multi-stage build a
 │   ├── actions/
 │   │   └── check-token-health/  # PAT validation composite action
 │   └── renovate.json            # Renovate config (OCI digests, GH Actions)
-└── docs/skills/           # This directory
+└── .agents/skills/        # This directory
 ```
 
 ## Factory Role
@@ -87,7 +86,7 @@ pipeline repo itself, but it adopts the same composite workflow actions as bluef
 
 | Change area | Read this skill |
 |---|---|
-| `Containerfile`, `image-versions.yml`, `Justfile` | `finpilot-build.md` |
+| `Containerfile`, `Justfile` | `finpilot-build.md` |
 | `.github/workflows/`, `.hadolint.yaml`, `renovate.json` | `finpilot-ci.md` |
 | Template init, fork setup, AGENTS.md, README.md | `finpilot-templates.md` |
 | `build/*.sh`, `custom/` | `finpilot-build.md` |
@@ -103,7 +102,7 @@ pipeline repo itself, but it adopts the same composite workflow actions as bluef
 
 - Making Containerfile changes without reading `finpilot-build.md`
 - Adding a workflow without verifying the `projectbluefin/actions` composite action exists
-- Updating `image-versions.yml` manually instead of letting Renovate do it
+- Updating pinned `@sha256:...` digests in `Containerfile` manually instead of letting Renovate do it
 
 ## Verification
 

@@ -11,18 +11,6 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Track OCI image digests in image-versions.yml",
-      "managerFilePatterns": [
-        "/^image-versions\\.yml$/"
-      ],
-      "matchStrings": [
-        "image: (?<packageName>[^\\s]+)\\n\\s+tag: (?<currentValue>[^\\s]+)\\n\\s+digest: (?<currentDigest>sha256:[a-f0-9]+)"
-      ],
-      "datasourceTemplate": "docker",
-      "versioningTemplate": "docker"
-    },
-    {
-      "customType": "regex",
       "description": "Track pinned container images in Justfile variables",
       "managerFilePatterns": [
         "/^Justfile$/"

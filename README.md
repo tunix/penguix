@@ -139,10 +139,10 @@ Renovate will run every 6 hours and on config changes. It pins GitHub Actions to
 
 ### 5. Customize Your Image
 
-Choose your base image in `Containerfile` (the `FROM ${BASE_IMAGE_REF}` line):
+Choose your base image in `Containerfile` (the `FROM` line):
 
 ```dockerfile
-FROM quay.io/fedora-ostree-desktops/silverblue:44
+FROM quay.io/fedora-ostree-desktops/silverblue:44@sha256:...
 ```
 
 Finpilot layers on top of Fedora Silverblue, not Bluefin. Bluefin's desktop

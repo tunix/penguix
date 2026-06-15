@@ -1,7 +1,5 @@
 export IMAGE_NAME := env("IMAGE_NAME", "finpilot")
 export DEFAULT_TAG := env("DEFAULT_TAG", "stable")
-export FEDORA_MAJOR_VERSION := env("FEDORA_MAJOR_VERSION", "44")
-export BASE_IMAGE := env("BASE_IMAGE", "quay.io/fedora-ostree-desktops/silverblue")
 export PODMAN := env("PODMAN", "podman")
 export REPO_ORG := env("GITHUB_REPOSITORY_OWNER", "projectbluefin")
 export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest@sha256:7ae88b8d6f2cabfa971d7836b96d6cac19cd1384e658031bd154f9687e929905")
@@ -94,18 +92,13 @@ sudoif command *args:
 build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     #!/usr/bin/env bash
 
-    # Fedora major version is controlled via env/Justfile export
-    fedora_version="${FEDORA_MAJOR_VERSION}"
-
-    # Resolve and pin the base image digest for reproducibility
-    echo "Resolving base image digest for ${BASE_IMAGE}:${fedora_version}..."
-    base_image_digest=$(skopeo inspect --retry-times 3 "docker://${BASE_IMAGE}:${fedora_version}" 2>/dev/null | jq -r '.Digest // empty')
-    if [[ -z "${base_image_digest:-}" ]]; then
-        echo "ERROR: Could not resolve digest for ${BASE_IMAGE}:${fedora_version}"
+    # Read the Fedora major version from Containerfile (single source of truth).
+    # The base image itself is pinned in the Containerfile FROM line.
+    fedora_version=$(grep -E '^ARG FEDORA_MAJOR_VERSION=' Containerfile | head -n1 | sed -E 's/^ARG FEDORA_MAJOR_VERSION="?([^"]+)"?/\1/')
+    if [[ -z "${fedora_version:-}" ]]; then
+        echo "ERROR: Could not extract FEDORA_MAJOR_VERSION from Containerfile"
         exit 1
     fi
-    base_image_ref="${BASE_IMAGE}:${fedora_version}@${base_image_digest}"
-    echo "Base image pinned to: ${base_image_ref}"
 
     # Bluefin-style version string: <fedora-version>.<date> for stable,
     # <tag>-<fedora-version>.<date> for everything else.
@@ -130,30 +123,9 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     fi
 
     BUILD_ARGS=()
-    BUILD_ARGS+=("--build-arg" "FEDORA_MAJOR_VERSION=${fedora_version}")
-    BUILD_ARGS+=("--build-arg" "BASE_IMAGE_REF=${base_image_ref}")
     BUILD_ARGS+=("--build-arg" "VERSION=${ver}")
     if [[ -z "$(git status -s)" ]]; then
         BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
-    fi
-
-    # Read image versions from image-versions.yml for reproducible builds
-    if [[ -f "image-versions.yml" ]] && command -v yq &>/dev/null; then
-        echo "Reading image versions from image-versions.yml..."
-        common_image=$(yq -r '.images[] | select(.name == "common") | .image + ":" + .tag' image-versions.yml)
-        common_image_sha=$(yq -r '.images[] | select(.name == "common") | .digest' image-versions.yml)
-        brew_image=$(yq -r '.images[] | select(.name == "brew") | .image + ":" + .tag' image-versions.yml)
-        brew_image_sha=$(yq -r '.images[] | select(.name == "brew") | .digest' image-versions.yml)
-        # Combine image + digest into a single ref so an empty digest never
-        # produces the invalid "image:tag@" syntax in FROM instructions.
-        COMMON_IMAGE_REF="${common_image}${common_image_sha:+@${common_image_sha}}"
-        BREW_IMAGE_REF="${brew_image}${brew_image_sha:+@${brew_image_sha}}"
-        BUILD_ARGS+=("--build-arg" "COMMON_IMAGE_REF=${COMMON_IMAGE_REF}")
-        BUILD_ARGS+=("--build-arg" "BREW_IMAGE_REF=${BREW_IMAGE_REF}")
-        # Note: base image digest is resolved at build time, not pinned here
-        # following bluefin pattern for freshness
-    else
-        echo "Warning: image-versions.yml not found or yq not installed. Using Containerfile defaults."
     fi
 
     # Image identity ARGs - these define how bootc/ublue ecosystem recognizes the image

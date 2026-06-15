@@ -56,19 +56,19 @@ uses: projectbluefin/actions/bootc-build/setup-runner@<sha> # v1
 
 The SHA comment (`# v1`) is for human readability only — Renovate ignores it.
 
-## Adding a New Tool (e.g., yq, jq, cosign)
+## Adding a New Tool (e.g., jq, cosign)
 
 Always pin to a specific version with a Renovate tracking comment:
 
 ```yaml
-- name: Install yq
+- name: Install <tool>
   env:
-    # renovate: datasource=github-releases depName=mikefarah/yq
-    YQ_VERSION: "v4.44.3"
+    # renovate: datasource=github-releases depName=owner/repo
+    TOOL_VERSION: "1.2.3"
   run: |
-    sudo wget -qO /usr/local/bin/yq \
-      "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
-    sudo chmod +x /usr/local/bin/yq
+    sudo wget -qO /usr/local/bin/<tool> \
+      "https://github.com/owner/repo/releases/download/v${TOOL_VERSION}/<tool>-linux-amd64"
+    sudo chmod +x /usr/local/bin/<tool>
 ```
 
 The `renovate.json` custom manager tracks this pattern:
@@ -118,23 +118,18 @@ to users' machines.
 
 ## Renovate OCI Digest Tracking
 
-OCI image digests are tracked via `image-versions.yml`, not inline in `Containerfile`:
+All OCI image digests are pinned inline in `Containerfile` `FROM` lines and tracked
+by Renovate's built-in `dockerfile` manager:
 
-```json
-{
-  "customType": "regex",
-  "description": "Track OCI image digests in image-versions.yml",
-  "managerFilePatterns": ["/^image-versions\\.yml$/"],
-  "matchStrings": [
-    "image: (?<packageName>[^\\s]+)\\n\\s+tag: (?<currentValue>[^\\s]+)\\n\\s+digest: (?<currentDigest>sha256:[a-f0-9]+)"
-  ],
-  "datasourceTemplate": "docker",
-  "versioningTemplate": "docker"
-}
+```dockerfile
+FROM ghcr.io/projectbluefin/common:latest@sha256:<current> AS common
+FROM ghcr.io/ublue-os/brew:latest@sha256:<current> AS brew
+ARG FEDORA_MAJOR_VERSION="44"
+FROM quay.io/fedora-ostree-desktops/silverblue:44@sha256:<current>
 ```
 
-When Renovate updates a digest it opens a PR that changes only `image-versions.yml`.
-The next CI build reads the new digest via `yq` and passes it as `COMMON_IMAGE_REF` / `BREW_IMAGE_REF`.
+When Renovate updates a digest it opens a PR that changes only the relevant
+`Containerfile` line. The next CI build uses it directly.
 
 ## Renovate Workflow Requirements
 
@@ -152,7 +147,7 @@ Suppressions are documented with reasons:
 
 ```yaml
 ignore:
-  - DL3006  # Images use ARG for dynamic tags — cannot use explicit tags here
+  - DL3006  # Commented-out alternative FROM lines use ARG interpolation
   - DL3059  # Multiple consecutive RUN — intentional design (cache layering)
   - SC2312  # Style preference — command substitution in conditions
 ```

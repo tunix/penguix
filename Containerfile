@@ -5,7 +5,7 @@
 #
 # IMPORTANT: Change "finpilot" above to your desired project name.
 # This name should be used consistently throughout the repository in:
-#   - Justfile: export image_name := env("IMAGE_NAME", "your-name-here")
+#   - Justfile: export IMAGE_NAME := env("IMAGE_NAME", "your-name-here")
 #   - README.md: # your-name-here (title)
 #   - artifacthub-repo.yml: repositoryID: your-name-here
 #   - custom/ujust/README.md: localhost/your-name-here:stable (in bootc switch example)
@@ -26,23 +26,34 @@
 #    - @projectbluefin/common - Desktop configuration shared with Aurora
 #    - @ublue-os/brew - Homebrew integration
 #
-# 2. Base Image Options:
-#    - `ghcr.io/ublue-os/silverblue-main:latest` (Fedora and GNOME)
-#    - `ghcr.io/ublue-os/base-main:latest` (Fedora and no desktop
-#    - `quay.io/centos-bootc/centos-bootc:stream10 (CentOS-based)`
+# 2. Base Image Options (edit the FROM line below):
+#    - `quay.io/fedora-ostree-desktops/silverblue:44` (Fedora 44 and GNOME)
+#    - `quay.io/fedora-ostree-desktops/base-main:44` (Fedora 44, no desktop)
+#    - `quay.io/centos-bootc/centos-bootc:stream10` (CentOS-based)
 #
 # See: https://docs.projectbluefin.io/contributing/ for architecture diagram
 ###############################################################################
 
-# Image version pins - digests read from image-versions.yml at build time
-# These ARGs are populated by the build pipeline for reproducibility.
-# Pass as a single ref (image:tag or image:tag@sha256:...) so an empty digest
-# does not produce the invalid syntax "image:tag@" on local builds.
-ARG COMMON_IMAGE_REF="ghcr.io/projectbluefin/common:latest@sha256:1e408cb5a3d5a08b229ae427c3dae4a1a6026a8d3f1f0bbaf033bd302d138b52"
-ARG BREW_IMAGE_REF="ghcr.io/ublue-os/brew:latest@sha256:5c5b6dea4b9faaab4d6fa81d7fc4f37f218c8a75a0839c72ae70b268bfdf4b0f"
+# OCI context images - imported below and pinned directly in their FROM lines.
+# The base image is pinned in the FROM line below and updated by Renovate.
+FROM ghcr.io/projectbluefin/common:latest@sha256:1e408cb5a3d5a08b229ae427c3dae4a1a6026a8d3f1f0bbaf033bd302d138b52 AS common
+FROM ghcr.io/ublue-os/brew:latest@sha256:5c5b6dea4b9faaab4d6fa81d7fc4f37f218c8a75a0839c72ae70b268bfdf4b0f AS brew
+
+# Context stage - combine local and imported OCI container resources
+FROM scratch AS ctx
+
+COPY build /build
+COPY custom /custom
+
+# Copy from OCI containers to distinct subdirectories to avoid conflicts
+COPY --from=common /system_files /oci/common
+COPY --from=brew /system_files /oci/brew
+
+# Base Image - GNOME included (Fedora official OSTree desktop)
+# This is the single source of truth for the base image. Change it here and
+# Renovate will keep the digest pin up to date.
 ARG FEDORA_MAJOR_VERSION="44"
-ARG BASE_IMAGE="quay.io/fedora-ostree-desktops/silverblue"
-ARG BASE_IMAGE_REF="${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}"
+FROM quay.io/fedora-ostree-desktops/silverblue:44@sha256:311b0bef53d994b9d82ea48f7ae5626f3ba04063880d0f354712cbf4338ef066
 
 # Image identity - these define how bootc, fastfetch, and the ublue ecosystem
 # recognize your image. Change these to match your project name.
@@ -50,30 +61,8 @@ ARG IMAGE_NAME="finpilot"
 ARG IMAGE_VENDOR="projectbluefin"
 ARG UBLUE_IMAGE_TAG="stable"
 ARG BASE_IMAGE_NAME="silverblue"
-FROM ${COMMON_IMAGE_REF} AS common
-FROM ${BREW_IMAGE_REF} AS brew
-
-# Context stage - combine local and imported OCI container resources
-FROM scratch AS ctx
-
-COPY build /build
-COPY custom /custom
-COPY image-versions.yml /image-versions.yml
-
-# Copy from OCI containers to distinct subdirectories to avoid conflicts
-COPY --from=common /system_files /oci/common
-COPY --from=brew /system_files /oci/brew
-
-# Base Image - GNOME included (Fedora official OSTree desktop)
-# BASE_IMAGE_REF is passed as build arg: "image:tag" for local builds,
-# "image:tag@sha256:..." for CI builds with pinned digest.
-FROM ${BASE_IMAGE_REF}
 
 # Re-declare ARGs for this stage (Docker requires ARG re-declaration per stage)
-ARG IMAGE_NAME
-ARG IMAGE_VENDOR
-ARG UBLUE_IMAGE_TAG
-ARG BASE_IMAGE_NAME
 ARG FEDORA_MAJOR_VERSION
 
 ## Alternative base images, no desktop included (uncomment to use):

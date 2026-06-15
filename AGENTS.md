@@ -4,10 +4,10 @@
 
 Read the repo skill docs before changing behavior:
 
-- `docs/skills/finpilot-overview.md` — architecture, repo layout, skill routing table
-- `docs/skills/finpilot-build.md` — Containerfile, image-versions.yml, Justfile, build scripts
-- `docs/skills/finpilot-ci.md` — GitHub Actions workflows, composite actions, Renovate config
-- `docs/skills/finpilot-templates.md` — fork initialization, rename checklist, signing setup
+- `.agents/skills/finpilot-overview.md` — architecture, repo layout, skill routing table
+- `.agents/skills/finpilot-build.md` — Containerfile, Justfile, build scripts
+- `.agents/skills/finpilot-ci.md` — GitHub Actions workflows, composite actions, Renovate config
+- `.agents/skills/finpilot-templates.md` — fork initialization, rename checklist, signing setup
 
 ## CRITICAL: GitHub API Usage
 
@@ -333,7 +333,7 @@ Branch=stable
 | Add user command | Create shortcut (NO dnf5) | `custom/ujust/*.just` |
 | Add third-party repo | Use example scripts | `build/20-*.sh.example` (rename) |
 | Replace desktop | Use example script | `build/30-cosmic-desktop.sh.example` |
-| Switch base image | Update FROM line | `Containerfile` `FROM ${BASE_IMAGE_REF}` line |
+| Switch base image | Update FROM line | `Containerfile` `FROM` line |
 | Add OCI containers | Uncomment/add COPY --from= lines | `Containerfile` ctx stage |
 | Test locally | `just build && just build-qcow2 && just run-vm-qcow2` | Terminal |
 | Deploy (production) | `sudo bootc switch ghcr.io/user/repo:stable` | Terminal |
@@ -358,18 +358,17 @@ FROM scratch AS ctx
 
 COPY build /build
 COPY custom /custom
-COPY image-versions.yml /image-versions.yml
 
-# Import from OCI containers - Renovate updates :latest to SHA-256 digests
+# Import from OCI containers - digests are pinned in their FROM lines
 COPY --from=common /system_files /oci/common
 COPY --from=brew /system_files /oci/brew
 ```
 
 **Stage 2: Base Image**
 ```dockerfile
-FROM quay.io/fedora-ostree-desktops/silverblue:44  # Default (Fedora-based)
+FROM quay.io/fedora-ostree-desktops/silverblue:44@sha256:...  # Default (Fedora-based)
 # OR
-FROM quay.io/centos-bootc/centos-bootc:stream10  # CentOS-based
+FROM quay.io/centos-bootc/centos-bootc:stream10@sha256:...  # CentOS-based
 ```
 
 **Common alternative base images**:
@@ -600,19 +599,18 @@ This template implements a **multi-stage build pattern** following @projectbluef
 FROM scratch AS ctx
 COPY build /build                    # Local build scripts
 COPY custom /custom                  # Local customizations
-COPY image-versions.yml /image-versions.yml
-COPY --from=ghcr.io/projectbluefin/common:latest /system_files /oci/common
-COPY --from=ghcr.io/ublue-os/brew:latest /system_files /oci/brew
+COPY --from=ghcr.io/projectbluefin/common:latest@sha256:... /system_files /oci/common
+COPY --from=ghcr.io/ublue-os/brew:latest@sha256:... /system_files /oci/brew
 ```
 
 This stage combines:
-- **Local resources** (build scripts, custom files, image version pins)
+- **Local resources** (build scripts, custom files)
 - **OCI container resources** from upstream projects
 - Resources are copied to **distinct subdirectories** (`/oci/*`) to avoid conflicts
 
 **Stage 2: Final Image**
 ```dockerfile
-FROM quay.io/fedora-ostree-desktops/silverblue:44
+FROM quay.io/fedora-ostree-desktops/silverblue:44@sha256:...
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     /ctx/build/10-build.sh
@@ -690,7 +688,7 @@ This template uses **keyless OIDC signing** via Cosign and GitHub Actions. No st
 |---------|-------|----------|
 | Build fails: "permission denied" | Signing misconfigured | Verify signing step is uncommented and `id-token: write` permission is granted |
 | Build fails: "package not found" | Typo or unavailable | Check spelling, verify on RPMfusion, add COPR if needed |
-| Build fails: "base image not found" | Invalid FROM line | Check syntax in `Containerfile` `FROM ${BASE_IMAGE_REF}` line |
+| Build fails: "base image not found" | Invalid FROM line | Check syntax in `Containerfile` `FROM` line |
 | Build fails: "shellcheck error" | Script syntax error | Run `shellcheck build/*.sh` locally, fix errors |
 | PR validation fails: Brewfile | Invalid Brewfile syntax | Check Ruby syntax, ensure packages exist |
 | PR validation fails: Flatpak | Invalid app ID | Verify app ID exists on https://flathub.org/ |
@@ -1123,6 +1121,6 @@ Assisted-by: Claude 3.5 Sonnet via GitHub Copilot
 
 ---
 
-**Last Updated**: 2026-06-14
+**Last Updated**: 2026-06-15
 **Template Version**: finpilot (Enhanced with comprehensive Copilot instructions)
 **Maintainer**: Universal Blue Community

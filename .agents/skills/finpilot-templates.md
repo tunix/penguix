@@ -88,7 +88,7 @@ Static-key signing (`SIGNING_SECRET`) is not supported by this template.
 
 `AGENTS.md` is the Copilot instructions file. When updating it:
 
-- **Line-number references are fragile** — use semantic references (`ARG IMAGE_NAME`, `FROM ${BASE_IMAGE_REF}`) not line numbers
+- **Line-number references are fragile** — use semantic references (`ARG IMAGE_NAME`, `FROM`) not line numbers
 - **Keep the `## Start here` section pointing to the skills router table** — this is the factory pattern
 - **Update `Last Updated` date** on every substantive change
 - **Do not add resolved items** (PR numbers, "✅ done" entries) — those belong in git history
