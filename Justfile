@@ -122,17 +122,17 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
         fi
     fi
 
-    # Read image identity from Containerfile (single source of truth).
-    # CI overrides via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG
-    cf_image_name=$(grep -E '^ARG IMAGE_NAME=' Containerfile | head -n1 | sed -E 's/^ARG IMAGE_NAME="?([^"]+)"?/\1/')
-    cf_image_vendor=$(grep -E '^ARG IMAGE_VENDOR=' Containerfile | head -n1 | sed -E 's/^ARG IMAGE_VENDOR="?([^"]+)"?/\1/')
-    cf_image_tag=$(grep -E '^ARG UBLUE_IMAGE_TAG=' Containerfile | head -n1 | sed -E 's/^ARG UBLUE_IMAGE_TAG="?([^"]+)"?/\1/')
-
     BUILD_ARGS=()
     BUILD_ARGS+=("--build-arg" "VERSION=${ver}")
-    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${IMAGE_NAME:-${cf_image_name:-${target_image}}}")
-    BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${IMAGE_VENDOR:-${cf_image_vendor:-${REPO_ORG}}}")
-    BUILD_ARGS+=("--build-arg" "UBLUE_IMAGE_TAG=${UBLUE_IMAGE_TAG:-${cf_image_tag:-${tag}}}")
+    if [[ -z "$(git status -s)" ]]; then
+        BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
+    fi
+
+    # Image identity ARGs - these define how bootc/ublue ecosystem recognizes the image
+    # Override via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG
+    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${IMAGE_NAME:-${target_image}}")
+    BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${IMAGE_VENDOR:-${REPO_ORG}}")
+    BUILD_ARGS+=("--build-arg" "UBLUE_IMAGE_TAG=${UBLUE_IMAGE_TAG:-${tag}}")
 
     # Add GitHub token as build secret if available (for CI/CD)
     if [[ -n "${GITHUB_TOKEN:-}" ]]; then
