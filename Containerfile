@@ -63,7 +63,7 @@ ARG UBLUE_IMAGE_TAG="stable"
 ARG BASE_IMAGE_NAME="silverblue"
 
 # Re-declare ARGs for this stage (Docker requires ARG re-declaration per stage)
-ARG FEDORA_MAJOR_VERSION
+ARG FEDORA_MAJOR_VERSION="44"
 
 ## Alternative base images, no desktop included (uncomment to use):
 # FROM quay.io/fedora-ostree-desktops/base-main:${FEDORA_MAJOR_VERSION}
