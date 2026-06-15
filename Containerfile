@@ -50,9 +50,7 @@ COPY --from=common /system_files /oci/common
 COPY --from=brew /system_files /oci/brew
 
 # Base Image - GNOME included (Fedora official OSTree desktop)
-# This is the single source of truth for the base image. Change it here and
 # Renovate will keep the digest pin up to date.
-ARG FEDORA_MAJOR_VERSION="44"
 FROM quay.io/fedora-ostree-desktops/silverblue:44@sha256:311b0bef53d994b9d82ea48f7ae5626f3ba04063880d0f354712cbf4338ef066
 
 # Image identity - these define how bootc, fastfetch, and the ublue ecosystem
@@ -61,19 +59,7 @@ ARG IMAGE_NAME="finpilot"
 ARG IMAGE_VENDOR="projectbluefin"
 ARG UBLUE_IMAGE_TAG="stable"
 ARG BASE_IMAGE_NAME="silverblue"
-
-# Re-declare ARGs for this stage (Docker requires ARG re-declaration per stage)
 ARG FEDORA_MAJOR_VERSION="44"
-
-## Alternative base images, no desktop included (uncomment to use):
-# FROM quay.io/fedora-ostree-desktops/base-main:${FEDORA_MAJOR_VERSION}
-# FROM quay.io/centos-bootc/centos-bootc:stream10
-
-## Alternative GNOME OS base image (uncomment to use):
-# FROM quay.io/gnome_infrastructure/gnome-build-meta:gnomeos-nightly
-
-# Per-build metadata - redeclare separately so they don't bust the base cache
-ARG SHA_HEAD_SHORT=""
 ARG VERSION=""
 
 ### MODIFICATIONS
