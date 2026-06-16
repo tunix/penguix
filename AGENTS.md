@@ -65,6 +65,7 @@ Read the repo skill docs before changing behavior:
 - `artifacthub-repo.yml` (`repositoryID: finpilot`)
 - `custom/ujust/README.md` (bootc switch example)
 - `.github/workflows/clean.yml` (`packages: finpilot`)
+- `iso/iso.toml` (bootc switch URL)
 
 ### 2. Create "What's Different" section in README
 

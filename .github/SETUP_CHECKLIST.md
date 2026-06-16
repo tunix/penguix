@@ -3,7 +3,7 @@
 ## Initial Setup
 
 ### 1. Rename Template
-- [ ] Update `finpilot` to your name in: Containerfile, Justfile, README.md, artifacthub-repo.yml
+- [ ] Update `finpilot` to your name in: Containerfile, Justfile, README.md, artifacthub-repo.yml, custom/ujust/README.md, .github/workflows/clean.yml, iso/iso.toml
 
 ### 2. Enable GitHub Actions
 - [ ] Settings → Actions → General → Enable workflows

@@ -1,4 +1,4 @@
-# Default Brewfile for bluepilot
+# Default Brewfile for finpilot
 # Add your favorite brew packages here
 #
 # Examples:

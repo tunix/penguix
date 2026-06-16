@@ -25,7 +25,7 @@ metadata:
 ## Core Process: Creating a New Fork
 
 1. **Click "Use this template"** on GitHub → create new repository
-2. **Rename `finpilot` in exactly 6 files** (see table below)
+2. **Rename `finpilot` in exactly 7 files** (see table below)
 3. **Enable GitHub Actions** in the Actions tab
 4. **Add `RENOVATE_TOKEN` secret** (Classic PAT, `repo` + `workflow` scopes)
 5. **Enable auto-merge** (Settings → General → Pull Requests → Allow auto-merge)
@@ -33,7 +33,7 @@ metadata:
 7. **Trigger first build** — push any commit or run the workflow manually
 8. **Enable signing** (optional) — uncomment `sign-and-publish` step in `build-image.yml`
 
-## The Six Rename Locations
+## The Seven Rename Locations
 
 When forking, change `finpilot` → your image name in exactly these locations:
 
@@ -45,6 +45,7 @@ When forking, change `finpilot` → your image name in exactly these locations:
 | 4 | `artifacthub-repo.yml` | `repositoryID: finpilot` |
 | 5 | `custom/ujust/README.md` | `localhost/finpilot:stable` in the bootc switch example |
 | 6 | `.github/workflows/clean.yml` | `packages: finpilot` |
+| 7 | `iso/iso.toml` | `ghcr.io/USERNAME/REPO:stable` in the bootc switch URL |
 
 Missing any of these causes the image to be published or cleaned up under the wrong name.
 

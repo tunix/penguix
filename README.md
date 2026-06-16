@@ -95,7 +95,7 @@ Click "Use this template" to create a new repository from this template.
 
 ### 2. Rename the Project
 
-Important: Change `finpilot` to your repository name in these 6 files:
+Important: Change `finpilot` to your repository name in these 7 files:
 
 1. `Containerfile` (`# Name:` comment and `ARG IMAGE_NAME`): `# Name: your-repo-name`
 2. `Justfile` (`export IMAGE_NAME := env("IMAGE_NAME", ...)`): `your-repo-name`
@@ -103,6 +103,7 @@ Important: Change `finpilot` to your repository name in these 6 files:
 4. `artifacthub-repo.yml` (`repositoryID`): `repositoryID: your-repo-name`
 5. `custom/ujust/README.md` (bootc switch example): `localhost/your-repo-name:stable`
 6. `.github/workflows/clean.yml` (`packages`): `packages: your-repo-name`
+7. `iso/iso.toml` (bootc switch URL): `ghcr.io/YOUR_USERNAME/your-repo-name:stable`
 
 ### 3. Enable GitHub Actions
 
