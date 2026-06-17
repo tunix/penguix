@@ -1,12 +1,12 @@
 #!/usr/bin/bash
 
-set -eoux pipefail
+set -euo pipefail
 
 ###############################################################################
 # Main Build Script
 ###############################################################################
 # This script follows the @ublue-os/bluefin pattern for build scripts.
-# It uses set -eoux pipefail for strict error handling and debugging.
+# It uses set -euo pipefail for strict error handling.
 ###############################################################################
 
 # Source helper functions
@@ -33,11 +33,11 @@ mkdir -p /usr/share/ublue-os/homebrew/
 cp /ctx/custom/brew/*.Brewfile /usr/share/ublue-os/homebrew/
 
 # Consolidate Just Files
-find /ctx/custom/ujust -iname '*.just' -exec printf "\n\n" \; -exec cat {} \; >> /usr/share/ublue-os/just/60-custom.just
+find /ctx/custom/ujust -iname '*.just' -exec printf "\n\n" \; -exec cat {} \; >>/usr/share/ublue-os/just/60-custom.just
 
 # Copy Flatpak preinstall files
-mkdir -p /etc/flatpak/preinstall.d/
-cp /ctx/custom/flatpaks/*.preinstall /etc/flatpak/preinstall.d/
+mkdir -p /usr/share/flatpak/preinstall.d/
+cp /ctx/custom/flatpaks/*.preinstall /usr/share/flatpak/preinstall.d/
 
 echo "::endgroup::"
 

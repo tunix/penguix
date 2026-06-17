@@ -3,19 +3,33 @@
 ## Initial Setup
 
 ### 1. Rename Template
-- [ ] Update `finpilot` to your name in: Containerfile, Justfile, README.md, artifacthub-repo.yml
+
+- [ ] Update `finpilot` to your name in **7 files** (see `.agents/skills/finpilot-templates.md`):
+  1. `Containerfile` — `ARG IMAGE_NAME` and `ARG IMAGE_VENDOR`
+  2. `Justfile` — `export IMAGE_NAME`
+  3. `README.md` — title
+  4. `artifacthub-repo.yml` — `repositoryID`
+  5. `custom/ujust/README.md` — bootc switch example
+  6. `.github/workflows/clean.yml` — `packages`
+  7. `iso/iso.toml` — bootc switch URL
+
+**Agent skill:** `finpilot-templates.md` (rename rules), `finpilot-onboarding.md` (fork bootstrap)
 
 ### 2. Enable GitHub Actions
+
 - [ ] Settings → Actions → General → Enable workflows
 - [ ] Set "Read and write permissions"
 
 ### 3. First Push
+
 ```bash
 git add .
 git commit -m "feat: initial customization"
 git push origin main
 ```
+
 ### 4. Enable Renovate (Required)
+
 - [ ] Create a **Classic PAT** (Settings → Developer settings → Personal access tokens → Tokens (classic))
   - Scopes: `repo` (full control) + `workflow` (update workflows)
 - [ ] Add the token as repository secret **`RENOVATE_TOKEN`** (Settings → Secrets and variables → Actions)
@@ -29,7 +43,19 @@ git push origin main
   - Enable "Require branches to be up to date before merging"
 - [ ] Renovate will create a PR to pin your GitHub Actions to SHAs
 
-### 5. Deploy
+**Agent skill:** `finpilot-onboarding.md` (branch protection), `finpilot-ci.md` (Renovate config)
+
+### 5. Add "What Makes this Raptor Different" to README
+
+- [ ] Open `README.md`
+- [ ] Paste the raptor section template (see README or `.agents/skills/finpilot-onboarding.md`)
+- [ ] Fill in placeholders with your planned customizations
+- [ ] Update the `*Last updated: [date]*` timestamp
+
+**Agent skill:** `finpilot-onboarding.md` (raptor section), `finpilot-maintain.md` (maintenance requirement)
+
+### 6. Deploy
+
 ```bash
 sudo bootc switch --transport registry ghcr.io/YOUR_USERNAME/YOUR_REPO:stable
 sudo systemctl reboot
@@ -44,4 +70,20 @@ This template uses keyless OIDC signing — no keys or secrets are required.
 - [ ] Edit `.github/workflows/build-image.yml`
 - [ ] Find the "OPTIONAL: Sign and attest" section
 - [ ] Uncomment the `Sign and publish` step
-- [ ] Commit and push
+- [ ] Commit and push (via PR to `main`)
+
+**Agent skill:** `finpilot-templates.md` (signing setup)
+
+## Agent Handoff Reference
+
+Which skill to load for each checklist block above:
+
+| Checklist step                        | Skill                                             |
+| ------------------------------------- | ------------------------------------------------- |
+| Rename (step 1)                       | `finpilot-templates.md`, `finpilot-onboarding.md` |
+| Enable Actions (step 2)               | `finpilot-onboarding.md`                          |
+| Renovate + branch protection (step 4) | `finpilot-onboarding.md`, `finpilot-ci.md`        |
+| Raptor section (step 5)               | `finpilot-onboarding.md`, `finpilot-maintain.md`  |
+| Signing (optional)                    | `finpilot-templates.md`                           |
+
+**Cross-link requirement**: Whenever you add or remove a package, app, or service **after** initial setup, update the README raptor section and its `*Last updated*` date. This is required per `.agents/skills/finpilot-maintain.md`.
