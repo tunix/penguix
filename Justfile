@@ -292,7 +292,7 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
 #   target_image: The name of the image to build (ex. localhost/fedora)
 #   tag: The tag of the image to build (ex. latest)
 #   type: The type of image to build (ex. qcow2, raw, iso)
-#   config: The configuration file to use for the build (deafult: iso/disk.toml)
+#   config: The configuration file to use for the build (default: iso/disk.toml)
 
 # Example: just _rebuild-bib localhost/fedora latest qcow2 iso/disk.toml
 _rebuild-bib $target_image $tag $type $config: (build target_image tag) && (_build-bib target_image tag type config)

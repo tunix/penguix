@@ -2,7 +2,7 @@
 name: finpilot-templates
 description: >-
   Template initialization, fork setup, renaming conventions, and the
-  six files that must be updated when creating a new image from finpilot.
+  seven files that must be updated when creating a new image from finpilot.
   Use when initializing a fork, updating AGENTS.md, or documenting setup.
 metadata:
   context7-sources: []
@@ -37,15 +37,15 @@ metadata:
 
 When forking, change `finpilot` → your image name in exactly these locations:
 
-| # | File | What to change |
-|---|---|---|
-| 1 | `Containerfile` | `ARG IMAGE_NAME="finpilot"` and `ARG IMAGE_VENDOR="projectbluefin"` |
-| 2 | `Justfile` | `export IMAGE_NAME := env("IMAGE_NAME", "finpilot")` |
-| 3 | `README.md` | Title `# finpilot` |
-| 4 | `artifacthub-repo.yml` | `repositoryID: finpilot` |
-| 5 | `custom/ujust/README.md` | `localhost/finpilot:stable` in the bootc switch example |
-| 6 | `.github/workflows/clean.yml` | `packages: finpilot` |
-| 7 | `iso/iso.toml` | `ghcr.io/USERNAME/REPO:stable` in the bootc switch URL |
+| #   | File                          | What to change                                                      |
+| --- | ----------------------------- | ------------------------------------------------------------------- |
+| 1   | `Containerfile`               | `ARG IMAGE_NAME="finpilot"` and `ARG IMAGE_VENDOR="projectbluefin"` |
+| 2   | `Justfile`                    | `export IMAGE_NAME := env("IMAGE_NAME", "finpilot")`                |
+| 3   | `README.md`                   | Title `# finpilot`                                                  |
+| 4   | `artifacthub-repo.yml`        | `repositoryID: finpilot`                                            |
+| 5   | `custom/ujust/README.md`      | `localhost/finpilot:stable` in the bootc switch example             |
+| 6   | `.github/workflows/clean.yml` | `packages: finpilot`                                                |
+| 7   | `iso/iso.toml`                | `ghcr.io/USERNAME/REPO:stable` in the bootc switch URL              |
 
 Missing any of these causes the image to be published or cleaned up under the wrong name.
 
@@ -61,6 +61,7 @@ ARG BASE_IMAGE_NAME="silverblue"   # Base image for image-info.json
 ```
 
 These are consumed by `build/00-image-info.sh` to write:
+
 - `/usr/share/ublue-os/image-info.json` (read by the ublue ecosystem)
 - `/usr/lib/os-release` branding fields
 
@@ -70,11 +71,13 @@ This template uses **keyless OIDC signing** via Cosign + Fulcio. No `cosign.key`
 `cosign.pub`, or `SIGNING_SECRET` are needed.
 
 To enable:
+
 1. Edit `.github/workflows/build-image.yml`
 2. Find the `# OPTIONAL: Sign and attest` section
 3. Uncomment the `Sign and publish` step
 
 Users verify images with:
+
 ```bash
 cosign verify \
   --certificate-identity-regexp="https://github.com/YOUR_ORG/YOUR_REPO/.github/workflows/" \
@@ -96,11 +99,11 @@ Static-key signing (`SIGNING_SECRET`) is not supported by this template.
 
 ## Common Rationalizations
 
-| Rationalization | Reality |
-|---|---|
-| "I only need to rename it in the obvious places." | There are exactly 6 locations. Missing `.github/workflows/clean.yml` causes old images to never be pruned under the old name. |
-| "Keyless signing is complicated — I'll use the static key approach." | Static key approach was removed intentionally. Keyless OIDC is simpler: no secrets, no key rotation. |
-| "I'll update AGENTS.md later once the build is working." | AGENTS.md drives Copilot behaviour on every subsequent session. Update it now. |
+| Rationalization                                                      | Reality                                                                                                                       |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| "I only need to rename it in the obvious places."                    | There are exactly 7 locations. Missing `.github/workflows/clean.yml` causes old images to never be pruned under the old name. |
+| "Keyless signing is complicated — I'll use the static key approach." | Static key approach was removed intentionally. Keyless OIDC is simpler: no secrets, no key rotation.                          |
+| "I'll update AGENTS.md later once the build is working."             | AGENTS.md drives Copilot behaviour on every subsequent session. Update it now.                                                |
 
 ## Red Flags
 
@@ -112,7 +115,7 @@ Static-key signing (`SIGNING_SECRET`) is not supported by this template.
 
 ## Verification
 
-- [ ] All 6 rename locations updated?
+- [ ] All 7 rename locations updated?
 - [ ] GitHub Actions enabled in the fork?
 - [ ] `RENOVATE_TOKEN` secret added?
 - [ ] Auto-merge enabled in repository settings?

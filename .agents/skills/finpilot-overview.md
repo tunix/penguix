@@ -36,7 +36,7 @@ finpilot is a **bootc image template** following the Bluefin multi-stage build a
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Stage 1: ctx (FROM scratch)                                │
-│    COPY build/  custom/                                    │
+│    COPY build/  custom/                                     │
 │    COPY --from=common  → /oci/common                        │
 │    COPY --from=brew    → /oci/brew                          │
 └─────────────────────────┬───────────────────────────────────┘
@@ -82,21 +82,52 @@ pipeline repo itself, but it adopts the same composite workflow actions as bluef
 - Renovate config extends `config:best-practices` and tracks OCI digests
 - Image metadata (`image-info.json`) follows the ublue-os convention
 
-## Skill Routing Table
+## Task Router ("I need to…")
 
-| Change area | Read this skill |
-|---|---|
-| `Containerfile`, `Justfile` | `finpilot-build.md` |
-| `.github/workflows/`, `.hadolint.yaml`, `renovate.json` | `finpilot-ci.md` |
-| Template init, fork setup, AGENTS.md, README.md | `finpilot-templates.md` |
-| `build/*.sh`, `custom/` | `finpilot-build.md` |
+| I need to…                                       | Load this skill                           |
+| ------------------------------------------------ | ----------------------------------------- |
+| Bootstrap a new fork from this template          | `finpilot-onboarding.md`                  |
+| Add/remove a package or app                      | `finpilot-packages.md`                    |
+| Change Brewfiles, Flatpaks, or ujust             | `finpilot-custom.md`                      |
+| Change Containerfile, Justfile, or build scripts | `finpilot-build.md`                       |
+| Fix CI or Renovate                               | `finpilot-ci.md` / `finpilot-maintain.md` |
+| Open a PR                                        | `finpilot-pr-checklist.md`                |
+| Debug a build or deploy failure                  | `finpilot-troubleshooting.md`             |
+| Follow a worked example                          | `finpilot-examples.md`                    |
+| Orient to repo architecture                      | `finpilot-overview.md` (this file)        |
+| Initialize or rename this template               | `finpilot-templates.md`                   |
+
+## Scope Rules
+
+To keep changes minimal and safe:
+
+- **Doc tasks** (README, skills markdown) → No CI impact, free to edit
+- **CI tasks** (`.github/workflows/`, `renovate.json`) → Trigger `pr-validation.yml`, must pass `actionlint` and `renovate-config-validator`
+- **Build tasks** (`Containerfile`, `build/`, `Justfile`) → Trigger full build, must pass `hadolint` + `shellcheck`
+- **Runtime tasks** (`custom/`) → Trigger respective `validate-*.yml`
+
+### Files to AVOID Modifying
+
+**Do NOT modify unless specifically asked:**
+
+- `.github/renovate.json` - Renovate configuration (auto-updates)
+- `.github/workflows/renovate.yml` - Managed by projectbluefin/actions
+- `.github/workflows/validate-*.yml` - Validation workflows
+- `.gitignore` - Prevents committing secrets
+- `build/copr-helpers.sh` - Stable helper patterns
+- `LICENSE` - Repository license
+
+**Modify with extreme caution:**
+
+- `.github/workflows/build-image.yml` - Core build workflow
+- `Justfile` - Users rely on these commands
 
 ## Common Rationalizations
 
-| Rationalization | Reality |
-|---|---|
+| Rationalization                                      | Reality                                                             |
+| ---------------------------------------------------- | ------------------------------------------------------------------- |
 | "AGENTS.md has everything — no need to read skills." | AGENTS.md is for Copilot UX. Skills are the agent operating manual. |
-| "It's just a template repo, not factory infra." | It ships workflow patterns to every fork. Mistakes multiply. |
+| "It's just a template repo, not factory infra."      | It ships workflow patterns to every fork. Mistakes multiply.        |
 
 ## Red Flags
 

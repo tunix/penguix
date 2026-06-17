@@ -33,16 +33,16 @@ metadata:
 
 ## Workflow Map
 
-| File | Trigger | Purpose |
-|---|---|---|
-| `build-image.yml` | push main, schedule, manual | Build + push `:stable` via `projectbluefin/actions` |
-| `pr-validation.yml` | PR → main | shellcheck + hadolint + pre-commit via `validate-pr` |
-| `renovate.yml` | schedule 6h, push renovate config | Self-hosted Renovate runner |
-| `clean.yml` | schedule weekly | Delete GHCR images older than 90 days |
-| `validate-brewfiles.yml` | PR paths: `custom/brew/**` | Homebrew Brewfile syntax check |
-| `validate-flatpaks.yml` | PR paths: `custom/flatpaks/**` | Flathub app ID existence check |
-| `validate-justfiles.yml` | PR paths: `Justfile` | `just --list` syntax check |
-| `validate-renovate.yml` | PR paths: `renovate.json` | `renovate-config-validator` |
+| File                     | Trigger                           | Purpose                                              |
+| ------------------------ | --------------------------------- | ---------------------------------------------------- |
+| `build-image.yml`        | push main, schedule, manual       | Build + push `:stable` via `projectbluefin/actions`  |
+| `pr-validation.yml`      | PR → main                         | shellcheck + hadolint + pre-commit via `validate-pr` |
+| `renovate.yml`           | schedule 6h, push renovate config | Self-hosted Renovate runner                          |
+| `clean.yml`              | schedule weekly                   | Delete GHCR images older than 90 days                |
+| `validate-brewfiles.yml` | PR paths: `custom/brew/**`        | Homebrew Brewfile syntax check                       |
+| `validate-flatpaks.yml`  | PR paths: `custom/flatpaks/**`    | Flathub app ID existence check                       |
+| `validate-justfiles.yml` | PR paths: `Justfile`              | `just --list` syntax check                           |
+| `validate-renovate.yml`  | PR paths: `renovate.json`         | `renovate-config-validator`                          |
 
 ## Composite Action Pins
 
@@ -72,6 +72,7 @@ Always pin to a specific version with a Renovate tracking comment:
 ```
 
 The `renovate.json` custom manager tracks this pattern:
+
 ```json
 {
   "customType": "regex",
@@ -134,6 +135,7 @@ When Renovate updates a digest it opens a PR that changes only the relevant
 ## Renovate Workflow Requirements
 
 The self-hosted Renovate runner requires a `RENOVATE_TOKEN` secret:
+
 - **Classic PAT** with `repo` + `workflow` scopes
 - Set in repository secrets as `RENOVATE_TOKEN`
 - The `check-token-health` composite action validates this at the start of the workflow
@@ -147,20 +149,20 @@ Suppressions are documented with reasons:
 
 ```yaml
 ignore:
-  - DL3006  # Commented-out alternative FROM lines use ARG interpolation
-  - DL3059  # Multiple consecutive RUN — intentional design (cache layering)
-  - SC2312  # Style preference — command substitution in conditions
+  - DL3006 # Commented-out alternative FROM lines use ARG interpolation
+  - DL3059 # Multiple consecutive RUN — intentional design (cache layering)
+  - SC2312 # Style preference — command substitution in conditions
 ```
 
 Add suppressions sparingly. If you suppress a new rule, document the reason inline.
 
 ## Common Rationalizations
 
-| Rationalization | Reality |
-|---|---|
-| "I'll use `/releases/latest/` for now and pin it later." | You won't. Non-reproducible builds silently fail months later. Pin immediately. |
-| "Minor/patch automerge is fine — it's just a template." | Templates ship to users' machines. A bad automerge in a CI action can break all forks. |
-| "I don't need Renovate tracking for this one tool." | Unpinned tools silently break when upstream releases a breaking change. |
+| Rationalization                                          | Reality                                                                                |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| "I'll use `/releases/latest/` for now and pin it later." | You won't. Non-reproducible builds silently fail months later. Pin immediately.        |
+| "Minor/patch automerge is fine — it's just a template."  | Templates ship to users' machines. A bad automerge in a CI action can break all forks. |
+| "I don't need Renovate tracking for this one tool."      | Unpinned tools silently break when upstream releases a breaking change.                |
 
 ## Red Flags
 

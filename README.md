@@ -15,34 +15,70 @@ Instead, you create your own OS repository based on this template, allowing full
 Here are the changes from [Base Image Name]. This image is based on [Bluefin/Bazzite/Aurora/etc] and includes these customizations:
 
 ### Added Packages (Build-time)
+
 - **System packages**: tmux, micro, mosh - [brief explanation of why]
 
 ### Added Applications (Runtime)
+
 - **CLI Tools (Homebrew)**: neovim, helix - [brief explanation]
 - **GUI Apps (Flatpak)**: Spotify, Thunderbird - [brief explanation]
 
 ### Removed/Disabled
+
 - List anything removed from base image
 
 ### Configuration Changes
+
 - Any systemd services enabled/disabled
 - Desktop environment changes
 - Other notable modifications
 
-*Last updated: [date]*
+_Last updated: [date]_
 
 > Replace the placeholders above with your actual customizations whenever you add or remove packages, apps, or configuration. This section is what tells users how your image differs from the base.
 
 ## Guided Copilot Mode
 
-Here are the steps to guide copilot to make your own repo, or just use it like a regular image template.
+This template works best with **phased prompts** that let Copilot bootstrap your image in three stages.
 
-1. Click the green "Use this as a template" button and create a new repository
-2. Select your owner, pick a repo name for your OS, and a description
-3. In the "Jumpstart your project with Copilot (optional)" add this, modify to your liking:
+### Phase 1 — Bootstrap
+
+Use this prompt first to get your fork building:
 
 ```
-Use @projectbluefin/finpilot as a template, name the OS the repository name. Ensure the entire operating system is bootstrapped. Ensure all github actions are enabled and running. Ensure the README has the GitHub setup instructions for keyless image signing and the other steps required to finish the task.
+Bootstrap a new custom OS from @projectbluefin/finpilot. Name it after this repository. Read `.agents/skills/finpilot-onboarding.md` first, then:
+1. Rename `finpilot` in the 7 required files
+2. Enable GitHub Actions and set RENOVATE_TOKEN (repo + workflow scopes)
+3. Configure branch protection for `main` with `validate` as a required status check
+4. Enable auto-merge
+5. Trigger the first green build on `main`
+6. Add the "What Makes this Raptor Different" section to README.md (with placeholders)
+```
+
+### Phase 2 — Customize
+
+Once the first build is green, use this prompt to add packages:
+
+```
+Read `.agents/skills/finpilot-packages.md` and `.agents/skills/finpilot-custom.md`, then:
+1. Add one system package to the image in `build/10-build.sh`
+2. Add one CLI tool to `custom/brew/default.Brewfile`
+3. Add one GUI app to `custom/flatpaks/default.preinstall`
+4. Add shortcuts in `custom/ujust/custom-apps.just` to install them
+5. Update the README "What Makes this Raptor Different" section with the new entries
+6. Run `just build && just build-qcow2 && just run-vm-qcow2` to verify locally
+7. Open a PR and merge once `validate` passes
+```
+
+### Phase 3 — Production
+
+When you are ready for production, use this prompt to harden the setup:
+
+```
+Read `.agents/skills/finpilot-maintain.md` and `.agents/skills/finpilot-ci.md`, then:
+1. Enable keyless image signing by uncommenting the step in `.github/workflows/build-image.yml`
+2. Verify the cosign command works: cosign verify --certificate-identity-regexp="https://github.com/USER/REPO/.github/workflows/" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" ghcr.io/USER/REPO:stable
+3. Review the maintenance schedule in `finpilot-maintain.md`
 ```
 
 ## What's Included
@@ -376,4 +412,4 @@ The `adw-gtk3-dark` runtime is not available on Flathub. These warnings are cosm
 
 ### Homebrew not installed after bootc switch (fixes #44)
 
-Homebrew is installed at build time into the image. If you don't see `brew`, verify your Containerfile includes the brew stage from `projectbluefin/common`. Check `custom/brew/README.md` for setup instructions.
+Homebrew is installed at build time into the image. If you don't see `brew`, verify your Containerfile includes the Brew integration. Check `custom/brew/README.md` for setup instructions.

@@ -27,7 +27,7 @@ find "${CLEAN_ROOT}/var/cache"/* -maxdepth 0 -type d \! -name libdnf5 \! -name r
 # replacing the mountpoint can fail with EBUSY.
 for runtime_dir in tmp boot; do
     mkdir -p "${CLEAN_ROOT:?}/${runtime_dir}"
-    find "${CLEAN_ROOT:?}/${runtime_dir}" -mindepth 1 -maxdepth 1 -print0 | \
+    find "${CLEAN_ROOT:?}/${runtime_dir}" -mindepth 1 -maxdepth 1 -print0 |
         while IFS= read -r -d '' entry; do
             if mountpoint -q "${entry}" 2>/dev/null; then
                 continue
@@ -40,7 +40,7 @@ done
 # depth-first so we can remove image-owned files like /run/dnf while leaving
 # mounted files and any directories that still contain them alone.
 mkdir -p "${CLEAN_ROOT:?}/run"
-find "${CLEAN_ROOT:?}/run" -mindepth 1 -depth -print0 | \
+find "${CLEAN_ROOT:?}/run" -mindepth 1 -depth -print0 |
     while IFS= read -r -d '' entry; do
         if mountpoint -q "${entry}" 2>/dev/null; then
             continue

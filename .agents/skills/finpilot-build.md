@@ -53,13 +53,13 @@ release, update both the `FEDORA_MAJOR_VERSION` ARG and the base image tag.
 
 ### Numbering
 
-| Prefix | Purpose |
-|---|---|
-| `00-image-info.sh` | Metadata only: writes `image-info.json`, customises `os-release` |
-| `10-build.sh` | Main script: copies custom files, `dnf5 install` |
-| `20-*.sh` | Optional extras: third-party repos, COPR packages |
-| `30-*.sh` | Optional desktop swaps |
-| `clean-stage.sh` | Always runs last: reverts `keepcache`, disables fedora flatpak repo, clears artefacts |
+| Prefix             | Purpose                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| `00-image-info.sh` | Metadata only: writes `image-info.json`, customises `os-release`                      |
+| `10-build.sh`      | Main script: copies custom files, `dnf5 install`                                      |
+| `20-*.sh`          | Optional extras: third-party repos, COPR packages                                     |
+| `30-*.sh`          | Optional desktop swaps                                                                |
+| `clean-stage.sh`   | Always runs last: reverts `keepcache`, disables fedora flatpak repo, clears artefacts |
 
 ### Template build script rules
 
@@ -87,17 +87,18 @@ EOF
 Default: `quay.io/fedora-ostree-desktops/silverblue:44`
 
 The major version is controlled by the `FEDORA_MAJOR_VERSION` ARG and the `FROM` line in `Containerfile`. To bump Fedora releases:
+
 1. Update `FEDORA_MAJOR_VERSION` and the `FROM` line in `Containerfile`
 2. Update the Renovate rule that blocks major updates for the base image
 3. Test with `just build` — expect `bootc container lint --fatal-warnings` to catch regressions
 
 ## Common Rationalizations
 
-| Rationalization | Reality |
-|---|---|
-| "I'll skip the digest pin and use a floating tag." | Non-reproducible builds and breaks supply-chain traceability. The `FROM` line should always be pinned. |
-| "Renovate won't notice a manually pinned digest in `Containerfile`." | Renovate's dockerfile manager tracks `FROM image:tag@sha256:...` in `Containerfile` automatically. |
-| "I'll add `dnf` as a fallback since dnf5 might not be installed." | Never. `dnf5` is the canonical tool. Using `dnf` or `rpm-ostree` diverges from Bluefin. |
+| Rationalization                                                      | Reality                                                                                                |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| "I'll skip the digest pin and use a floating tag."                   | Non-reproducible builds and breaks supply-chain traceability. The `FROM` line should always be pinned. |
+| "Renovate won't notice a manually pinned digest in `Containerfile`." | Renovate's dockerfile manager tracks `FROM image:tag@sha256:...` in `Containerfile` automatically.     |
+| "I'll add `dnf` as a fallback since dnf5 might not be installed."    | Never. `dnf5` is the canonical tool. Using `dnf` or `rpm-ostree` diverges from Bluefin.                |
 
 ## Red Flags
 
