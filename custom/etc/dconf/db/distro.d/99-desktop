@@ -18,6 +18,17 @@ monospace-font-name = 'JetBrains Mono Regular 11'
 [org/gnome/desktop/wm/preferences]
 button-layout = 'appmenu:minimize,maximize,close'
 
+[org/gnome/desktop/wm/keybindings]
+# Unbind Ctrl+Alt arrows so Ghostty split navigation can use them.
+switch-to-workspace-left = ['<Super>Page_Up', '<Super>KP_Prior', '<Super><Alt>Left']
+switch-to-workspace-right = ['<Super>Page_Down', '<Super>KP_Next', '<Super><Alt>Right']
+switch-to-workspace-up = @as []
+switch-to-workspace-down = @as []
+move-to-workspace-left = ['<Super><Shift>Page_Up', '<Super><Shift>KP_Prior', '<Super><Shift><Alt>Left']
+move-to-workspace-right = ['<Super><Shift>Page_Down', '<Super><Shift>KP_Next', '<Super><Shift><Alt>Right']
+move-to-workspace-up = @as []
+move-to-workspace-down = @as []
+
 [org/gnome/desktop/sound]
 allow-volume-above-100-percent = true
 event-sounds = true
