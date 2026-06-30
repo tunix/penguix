@@ -13,6 +13,7 @@ Scripts are named with a number prefix (e.g., `10-build.sh`, `20-onepassword.sh`
 ## Example Scripts
 
 - **`20-onepassword.sh.example`** - Example showing how to install software from third-party RPM repositories (Google Chrome, 1Password)
+- **`30-cosmic-desktop.sh.example`** - Example showing how to replace the GNOME desktop with COSMIC desktop
 
 To use an example script:
 1. Remove the `.example` extension
@@ -25,7 +26,7 @@ Create numbered scripts for different purposes:
 
 ```bash
 # 10-build.sh - Base system (already exists)
-# 20-drivers.sh - Hardware drivers  
+# 20-drivers.sh - Hardware drivers
 # 30-development.sh - Development tools
 # 40-gaming.sh - Gaming software
 # 50-cleanup.sh - Final cleanup tasks
