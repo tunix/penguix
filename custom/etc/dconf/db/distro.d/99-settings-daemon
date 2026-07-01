@@ -27,5 +27,5 @@ name = 'Start Ghostty'
 
 [org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1]
 binding = '<Ctrl><Shift>Space'
-command = '/opt/1Password/1password --quick-access'
+command = '/home/linuxbrew/.linuxbrew/bin/1password --quick-access'
 name = '1Password Quick Access'
