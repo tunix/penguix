@@ -1,4 +1,3 @@
-flatpak "app.drey.Damask"
 flatpak "be.alexandervanhee.gradia"
 flatpak "com.belmoussaoui.Decoder"
 flatpak "com.belmoussaoui.Obfuscate"
