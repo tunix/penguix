@@ -7,6 +7,7 @@ set -oue pipefail
 echo "::group:: Installing solaar..."
 
 dnf install -y solaar solaar-udev
+pip3 install --target "$(python3 -c 'import sysconfig; print(sysconfig.get_path("purelib"))')" hid-parser
 
 echo "solaar installed successfully"
 echo "::endgroup::"
