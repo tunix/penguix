@@ -6,7 +6,7 @@ set -oue pipefail
 ### Install solaar from Official Repository
 echo "::group:: Installing solaar..."
 
-dnf install -y solaar solaar-udev
+dnf install -y solaar solaar-udev python3-hid-parser
 
 echo "solaar installed successfully"
 echo "::endgroup::"

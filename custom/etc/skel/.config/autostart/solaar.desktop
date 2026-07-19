@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Solaar
+Exec=/usr/bin/solaar --window=hide
+Hidden=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
