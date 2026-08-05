@@ -5,7 +5,8 @@ description: >-
   seven files that must be updated when creating a new image from finpilot.
   Use when initializing a fork, updating AGENTS.md, or documenting setup.
 metadata:
-  context7-sources: []
+  context7-sources:
+    - /renovatebot/renovate
 ---
 
 # finpilot Templates & Fork Setup
@@ -32,6 +33,29 @@ metadata:
 6. **Configure branch protection for `main`** with `validate` as required check
 7. **Trigger first build** — push any commit or run the workflow manually
 8. **Enable signing** (optional) — uncomment `sign-and-publish` step in `build-image.yml`
+
+## Maintaining a Template-Derived Image
+
+`Use this template` creates an independent repository. Renovate updates
+tracked dependencies, action pins, and OCI digests, but it does not synchronize
+arbitrary template structure or build logic.
+
+For an improvement that should benefit finpilot users:
+
+1. File a scoped issue in `projectbluefin/finpilot`.
+2. The issue creator may select the Clanker opt-in to place their new issue in
+   `3-clanker-queue`; maintainers may apply that label to any accepted issue.
+3. A Hive-connected agent works the queued issue in a focused pull request.
+4. Humans review and merge the pull request.
+
+Do not merge a template repository into a derivative with unrelated histories.
+Review `Containerfile`, build script, and workflow changes, then port the
+needed changes deliberately through a pull request that preserves the
+derivative's customizations.
+
+## Sources
+
+- Renovate dependency-update behavior: `/renovatebot/renovate`
 
 ## The Seven Rename Locations
 

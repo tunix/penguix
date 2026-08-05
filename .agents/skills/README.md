@@ -19,6 +19,7 @@ This directory contains task-oriented skill files for the finpilot bootc image t
 | `finpilot-troubleshooting.md` | Symptom → cause → fix tables for build, CI, and runtime issues. |
 | `finpilot-pr-checklist.md` | Pre-commit and per-change-type validation checklists. |
 | `finpilot-examples.md` | Runnable example scripts and the `.example` → `.sh` activation pattern. |
+| `skill-improvement.md` | Capture durable, finpilot-specific operational learning. |
 
 ## Quick Router
 
@@ -32,6 +33,7 @@ This directory contains task-oriented skill files for the finpilot bootc image t
 | Open a PR | `finpilot-pr-checklist.md` |
 | Debug a build or deploy failure | `finpilot-troubleshooting.md` |
 | Follow a worked example | `finpilot-examples.md` |
+| Capture a durable lesson | `skill-improvement.md` |
 
 ## How to Extend Skills
 

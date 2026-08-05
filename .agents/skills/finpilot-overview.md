@@ -24,10 +24,11 @@ metadata:
 
 ## Core Process
 
-1. **Read AGENTS.md `## Start here`** to find the routing table
-2. **Identify your change area** (Containerfile/Justfile → build, workflows → ci, template init → templates)
-3. **Read the relevant skill file** before touching anything
-4. **Verify against current patterns** in `projectbluefin/actions` before deviating
+1. **Read `docs/SKILL.md`** to identify the task router and required skills
+2. **Read AGENTS.md `## Start here`** to find repository constraints
+3. **Identify your change area** (Containerfile/Justfile → build, workflows → ci, template init → templates)
+4. **Read the relevant skill file** before touching anything
+5. **Verify against current patterns** in `projectbluefin/actions` before deviating
 
 ## Architecture
 
@@ -81,6 +82,10 @@ pipeline repo itself, but it adopts the same composite workflow actions as bluef
 - CI uses `projectbluefin/actions/bootc-build/*` composite actions
 - Renovate config extends `config:best-practices` and tracks OCI digests
 - Image metadata (`image-info.json`) follows the ublue-os convention
+- The label-enforcement workflow maintains the shared seven-label lifecycle;
+  an issue creator's form opt-in admits their new issue to
+  `3-clanker-queue` for Hive-connected agents; maintainers may also set that
+  label explicitly
 
 ## Task Router ("I need to…")
 
