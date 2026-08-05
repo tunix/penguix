@@ -4,8 +4,6 @@ description: >-
   Decision tree for where to add packages in finpilot. Maps requests to the
   correct file and install method: build-time dnf5, runtime Brewfile, or
   runtime Flatpak. Use when deciding how to add a new package or tool.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot Package Decision Tree
@@ -20,7 +18,7 @@ metadata:
 ## When NOT to Use
 
 - You already know the target file and install method — go edit it directly
-- You are debugging why a package fails to install — see `finpilot-troubleshooting.md`
+- You are debugging why a package fails to install — use `finpilot-troubleshooting`
 
 ## Core Process
 

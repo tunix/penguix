@@ -5,8 +5,6 @@ description: >-
   existing .example files and how to activate them.
   Use when adding new build scripts or explaining the activation pattern to
   contributors.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot Example Scripts
@@ -156,7 +154,7 @@ set -euo pipefail
 
 ## Link to Package Decision Tree
 
-For deciding whether to use an example script or add directly to `build/10-build.sh`, see `finpilot-packages.md`.
+For deciding whether to use an example script or add directly to `build/10-build.sh`, use `finpilot-packages`.
 
 **Quick guide:**
 

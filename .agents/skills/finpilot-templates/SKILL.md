@@ -4,8 +4,6 @@ description: >-
   Template initialization, fork setup, renaming conventions, and the
   seven files that must be updated when creating a new image from finpilot.
   Use when initializing a fork, updating AGENTS.md, or documenting setup.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot Templates & Fork Setup
@@ -19,8 +17,8 @@ metadata:
 
 ## When NOT to Use
 
-- Build system changes — see `finpilot-build.md`
-- CI workflow changes — see `finpilot-ci.md`
+- Build system changes — use `finpilot-build`
+- CI workflow changes — use `finpilot-ci`
 
 ## Core Process: Creating a New Fork
 
@@ -110,7 +108,7 @@ Static-key signing (`SIGNING_SECRET`) is not supported by this template.
 - Fork repo still has `finpilot` in `clean.yml` (image cleanup will target wrong package)
 - `cosign.pub` placeholder file added to a fork
 - AGENTS.md referencing line numbers instead of semantic identifiers
-- `## Start here` section removed or not pointing to skill files
+- `## Start here` section removed or not routing tasks to Agent Skills
 - `RENOVATE_TOKEN` not set but Renovate workflow is enabled (fails silently on first run)
 
 ## Verification

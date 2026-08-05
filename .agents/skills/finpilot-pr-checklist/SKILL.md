@@ -4,8 +4,6 @@ description: >-
   PR gates and pre-commit checklist by change type. Covers validation commands
   for Containerfile, build scripts, Brewfiles, Flatpaks, ujust, workflows, and
   README changes. Use before opening or reviewing a PR.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot PR Checklist
@@ -20,7 +18,7 @@ metadata:
 ## When NOT to Use
 
 - The PR only contains documentation changes without affecting build/CI — still run markdown lint, but full checklist is overkill
-- You are troubleshooting an already-open PR — see `finpilot-troubleshooting.md`
+- You are troubleshooting an already-open PR — use `finpilot-troubleshooting`
 
 ## Core Process
 

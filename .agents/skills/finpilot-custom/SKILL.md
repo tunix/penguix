@@ -5,8 +5,6 @@ description: >-
   Covers syntax, placement, validation workflows, and the critical rule:
   NEVER use dnf5 in just files. Use when modifying custom/ or explaining
   the runtime layer to contributors.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot Runtime Layer
@@ -21,9 +19,9 @@ metadata:
 
 ## When NOT to Use
 
-- Build script changes — see `finpilot-build.md`
-- CI workflow changes — see `finpilot-ci.md`
-- Adding system packages at build-time — see `finpilot-packages.md`
+- Build script changes — use `finpilot-build`
+- CI workflow changes — use `finpilot-ci`
+- Adding system packages at build-time — use `finpilot-packages`
 
 ## Core Process
 

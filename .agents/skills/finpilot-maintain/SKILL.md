@@ -5,8 +5,6 @@ description: >-
   README raptor section updates, signing enablement, local test loops,
   and maintenance schedules. Use when maintaining an active fork after
   the initial onboarding.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot Maintenance
@@ -21,9 +19,9 @@ metadata:
 
 ## When NOT to Use
 
-- First-time fork setup — see `finpilot-onboarding.md`
-- Adding new packages for the first time — see `finpilot-packages.md`
-- Debugging a specific build failure — see `finpilot-troubleshooting.md`
+- First-time fork setup — use `finpilot-onboarding`
+- Adding new packages for the first time — use `finpilot-packages`
+- Debugging a specific build failure — use `finpilot-troubleshooting`
 
 ## Core Process
 

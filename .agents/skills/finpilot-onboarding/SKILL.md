@@ -4,8 +4,6 @@ description: >-
   Fork bootstrap agent playbook. Covers the 7 rename locations, first green build,
   README "What Makes this Raptor Different" section, optional signing setup, and
   branch protection configuration. Use when creating a new fork from this template.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot Onboarding
@@ -20,8 +18,8 @@ metadata:
 ## When NOT to Use
 
 - The repository is already initialized and has had a successful build
-- You are adding packages or changing build logic — see `finpilot-packages.md` or `finpilot-build.md`
-- You are updating CI workflows — see `finpilot-ci.md`
+- You are adding packages or changing build logic — use `finpilot-packages` or `finpilot-build`
+- You are updating CI workflows — use `finpilot-ci`
 
 ## Core Process
 

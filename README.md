@@ -46,7 +46,7 @@ This template works best with **phased prompts** that let Copilot bootstrap your
 Use this prompt first to get your fork building:
 
 ```
-Bootstrap a new custom OS from @projectbluefin/finpilot. Name it after this repository. Read `.agents/skills/finpilot-onboarding.md` first, then:
+Bootstrap a new custom OS from @projectbluefin/finpilot. Name it after this repository. Use the `finpilot-onboarding` skill first, then:
 1. Rename `finpilot` in the 7 required files
 2. Enable GitHub Actions and set RENOVATE_TOKEN (repo + workflow scopes)
 3. Configure branch protection for `main` with `validate` as a required status check
@@ -60,7 +60,7 @@ Bootstrap a new custom OS from @projectbluefin/finpilot. Name it after this repo
 Once the first build is green, use this prompt to add packages:
 
 ```
-Read `.agents/skills/finpilot-packages.md` and `.agents/skills/finpilot-custom.md`, then:
+Use the `finpilot-packages` and `finpilot-custom` skills, then:
 1. Add one system package to the image in `build/10-build.sh`
 2. Add one CLI tool to `custom/brew/default.Brewfile`
 3. Add one GUI app to `custom/flatpaks/default.preinstall`
@@ -75,10 +75,10 @@ Read `.agents/skills/finpilot-packages.md` and `.agents/skills/finpilot-custom.m
 When you are ready for production, use this prompt to harden the setup:
 
 ```
-Read `.agents/skills/finpilot-maintain.md` and `.agents/skills/finpilot-ci.md`, then:
+Use the `finpilot-maintain` and `finpilot-ci` skills, then:
 1. Enable keyless image signing by uncommenting the step in `.github/workflows/build-image.yml`
 2. Verify the cosign command works: cosign verify --certificate-identity-regexp="https://github.com/USER/REPO/.github/workflows/" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" ghcr.io/USER/REPO:stable
-3. Review the maintenance schedule in `finpilot-maintain.md`
+3. Follow the maintenance schedule in the `finpilot-maintain` skill
 ```
 
 ## What's Included

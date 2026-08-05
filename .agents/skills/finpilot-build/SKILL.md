@@ -4,8 +4,6 @@ description: >-
   Containerfile multi-stage build, image digest pinning in FROM lines,
   Justfile local build recipes, and build script conventions.
   Use when changing Containerfile, Justfile, or build/*.sh.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot Build System
@@ -19,7 +17,7 @@ metadata:
 
 ## When NOT to Use
 
-- CI workflow changes (`.github/workflows/`) — see `finpilot-ci.md`
+- CI workflow changes (`.github/workflows/`) — use `finpilot-ci`
 - Runtime customizations (`custom/`) — use the README.md guides
 
 ## Core Process

@@ -4,8 +4,6 @@ description: >-
   GitHub Actions workflows, projectbluefin/actions composite actions,
   Renovate configuration, and PR validation for finpilot.
   Use when changing .github/workflows/, renovate.json, or .hadolint.yaml.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot CI
@@ -20,7 +18,7 @@ metadata:
 
 ## When NOT to Use
 
-- Containerfile / Justfile / build script changes — see `finpilot-build.md`
+- Containerfile / Justfile / build script changes — use `finpilot-build`
 - Runtime customisations — use README.md guides
 
 ## Core Process
