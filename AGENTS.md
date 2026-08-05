@@ -7,20 +7,8 @@ Task-specific instructions are Agent Skills under
 their descriptions. Use the matching skill before changing behavior; for an
 unfamiliar multi-phase task, start with `finpilot-overview`, continue with the
 domain skill, and finish with `finpilot-pr-checklist`. Not sure which skill
-fits? Load `finpilot-router` — it owns the routing table.
-
-- `finpilot-router` — task routing: which skill covers what
-- `finpilot-overview` — architecture and repo layout
-- `finpilot-onboarding` — fork bootstrap: rename, Actions, token, first build, raptor section
-- `finpilot-templates` — rename rules, image identity ARGs, signing setup
-- `finpilot-packages` — decision tree (dnf5 vs Brew vs Flatpak)
-- `finpilot-custom` — Brewfiles, Flatpaks, ujust rules
-- `finpilot-build` — Containerfile, Justfile, build scripts
-- `finpilot-ci` — GitHub Actions workflows, composite actions, Renovate
-- `finpilot-maintain` — ongoing: Renovate PRs, signing, local test loop
-- `finpilot-troubleshooting` — symptom → cause → fix
-- `finpilot-pr-checklist` — PR gates by change type
-- `finpilot-examples` — runnable examples and activation patterns
+fits? Load `finpilot-router` — it owns the routing table. The skill index with
+links lives in `.agents/skills/README.md`.
 
 ## CRITICAL: GitHub API Usage
 
@@ -92,6 +80,6 @@ Assisted-by: [Model Name] via [Tool Name]
 
 ---
 
-**Last Updated**: 2026-06-16
+**Last Updated**: 2026-08-05
 **Template Version**: finpilot (Agent UX Overhaul)
 **Maintainer**: Universal Blue Community

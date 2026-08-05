@@ -1,9 +1,10 @@
 ---
 name: finpilot-onboarding
 description: >-
-  Fork bootstrap playbook: the 7 rename locations, first green build,
-  README "What Makes this Raptor Different" section, and branch protection.
-  Use when creating a new fork from this template.
+  Fork bootstrap playbook: rename (locations: `finpilot-templates`),
+  enable Actions, RENOVATE_TOKEN, first green build, README "What Makes
+  this Raptor Different" section, and branch protection. Use when creating
+  a new fork from this template.
 ---
 
 # finpilot Onboarding
@@ -32,9 +33,18 @@ description: >-
 7. **Add the "What Makes this Raptor Different" section to README** (template below)
 8. **Enable signing** (optional, recommended for production; setup: `finpilot-templates`)
 
-Keep day-one changes minimal: validate the first green build before adding
-packages, Flatpaks, or Brewfiles — each phase validates the previous
-(`finpilot-packages` and `finpilot-custom` cover those phases).
+Keep day-one changes minimal and iterate in phases:
+
+1. **Phase 1 — Bootstrap**: rename, enable Actions, add `RENOVATE_TOKEN`,
+   trigger the first green build (this skill)
+2. **Phase 2 — Customize**: add one or two packages, run `just build` locally
+   (`finpilot-packages`, `finpilot-build`)
+3. **Phase 3 — Runtime**: add Flatpak/Brew customizations, test in a VM with
+   `just run-vm-qcow2` (`finpilot-custom`)
+4. **Phase 4 — Production**: enable signing, full branch protection
+   (`finpilot-templates`, `finpilot-maintain`)
+
+Resist changing everything at once — each phase validates the previous.
 
 Each step's completion criterion is the matching item in the Verification checklist below.
 

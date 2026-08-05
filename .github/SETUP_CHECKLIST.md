@@ -78,12 +78,12 @@ This template uses keyless OIDC signing — no keys or secrets are required.
 
 Which skill to load for each checklist block above:
 
-| Checklist step                        | Skill                                             |
-| ------------------------------------- | ------------------------------------------------- |
-| Rename (step 1)                       | `finpilot-templates`, `finpilot-onboarding` |
-| Enable Actions (step 2)               | `finpilot-onboarding`                       |
-| Renovate + branch protection (step 4) | `finpilot-onboarding`, `finpilot-ci`         |
-| Raptor section (step 5)               | `finpilot-onboarding`, `finpilot-maintain`   |
-| Signing (optional)                    | `finpilot-templates`                        |
+| Checklist step                        | Skill                                           |
+| ------------------------------------- | ----------------------------------------------- |
+| Rename (step 1)                       | `finpilot-templates`, `finpilot-onboarding`     |
+| Enable Actions (step 2)               | `finpilot-onboarding`                           |
+| Renovate + branch protection (step 4) | `finpilot-onboarding`, `finpilot-ci`            |
+| Raptor section (step 5)               | `finpilot-onboarding`, `finpilot-maintain`      |
+| Signing (optional)                    | `finpilot-templates`                            |
 
 **Cross-link requirement**: Whenever you add or remove a package, app, or service **after** initial setup, update the README raptor section and its `*Last updated*` date. This is required by the `finpilot-maintain` skill.
