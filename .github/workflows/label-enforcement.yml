@@ -9,9 +9,9 @@ on:
 permissions:
   contents: read
   issues: write
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   enforce:
-    uses: projectbluefin/actions/.github/workflows/reusable-design-enforcement.yml@8f6f302538abc24e6db5f9fa54599ee69f37b97d
+    uses: projectbluefin/actions/.github/workflows/reusable-design-enforcement.yml@ce7ab75eb66d3ace300fed4c121a31b417e8f9fe
     secrets: inherit
