@@ -1,1 +1,1 @@
-../../.agents/skills/skill-improvement.md
+../../.agents/skills/skill-improvement/SKILL.md
