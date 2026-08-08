@@ -13,5 +13,5 @@ permissions:
 
 jobs:
   enforce:
-    uses: projectbluefin/actions/.github/workflows/reusable-design-enforcement.yml@67d4cfb597e331448e31047a380439bdeee91865
+    uses: projectbluefin/actions/.github/workflows/reusable-design-enforcement.yml@8f6f302538abc24e6db5f9fa54599ee69f37b97d
     secrets: inherit
