@@ -34,6 +34,8 @@ env:
   IMAGE_LOGO_URL: "https://avatars.githubusercontent.com/u/120078124?s=200&v=4"
   DEFAULT_TAG: "stable"
   REGISTRY_CACHE_WRITE: ${{ github.event_name != 'pull_request' && '1' || '0' }}
+  ENABLE_RECHUNKING: "false"
+  RECHUNK_MAX_LAYERS: "128"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -61,14 +63,14 @@ jobs:
 
       - name: Preflight
         id: preflight
-        uses: projectbluefin/actions/bootc-build/preflight@c3ffb5dd594f4a363298bacc7ad4cfe18457fa97 # v1
+        uses: projectbluefin/actions/bootc-build/preflight@5fe9b3bcfdf3a68b4d2eb459445505b600e456e6 # v1
         with:
           registry: ghcr.io
           github-token: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ env.IMAGE_NAME }}
 
       - name: Setup runner
-        uses: projectbluefin/actions/bootc-build/setup-runner@c3ffb5dd594f4a363298bacc7ad4cfe18457fa97 # v1
+        uses: projectbluefin/actions/bootc-build/setup-runner@5fe9b3bcfdf3a68b4d2eb459445505b600e456e6 # v1
         with:
           storage-backend: btrfs
           update-podman: "true"
@@ -76,7 +78,7 @@ jobs:
 
       - name: Restore DNF cache
         id: dnf-cache-restore
-        uses: projectbluefin/actions/bootc-build/dnf-cache@c3ffb5dd594f4a363298bacc7ad4cfe18457fa97 # v1
+        uses: projectbluefin/actions/bootc-build/dnf-cache@5fe9b3bcfdf3a68b4d2eb459445505b600e456e6 # v1
         with:
           action: restore
           cache-name: ${{ env.IMAGE_NAME }}
@@ -84,7 +86,7 @@ jobs:
 
       - name: Detect changes
         id: detect-changes
-        uses: projectbluefin/actions/bootc-build/detect-changes@c3ffb5dd594f4a363298bacc7ad4cfe18457fa97 # v1
+        uses: projectbluefin/actions/bootc-build/detect-changes@5fe9b3bcfdf3a68b4d2eb459445505b600e456e6 # v1
         with:
           filters: |
             image:
@@ -126,7 +128,7 @@ jobs:
       - name: Generate tags
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         id: generate-tags
-        uses: projectbluefin/actions/bootc-build/generate-tags@c3ffb5dd594f4a363298bacc7ad4cfe18457fa97 # v1
+        uses: projectbluefin/actions/bootc-build/generate-tags@5fe9b3bcfdf3a68b4d2eb459445505b600e456e6 # v1
         with:
           base-name: ${{ env.IMAGE_NAME }}
           stream-name: ${{ env.DEFAULT_TAG }}
@@ -136,30 +138,22 @@ jobs:
 
       - name: Save DNF cache
         if: always() && !cancelled() && github.event_name != 'pull_request'
-        uses: projectbluefin/actions/bootc-build/dnf-cache@c3ffb5dd594f4a363298bacc7ad4cfe18457fa97 # v1
+        uses: projectbluefin/actions/bootc-build/dnf-cache@5fe9b3bcfdf3a68b4d2eb459445505b600e456e6 # v1
         with:
           action: save
           cache-name: ${{ env.IMAGE_NAME }}
           allow-write: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
           cache-bust: ${{ hashFiles('**/Containerfile') }}
 
-      # OPTIONAL: Rechunking (OCI-native, no rpm-ostree)
-      # Rechunking improves OTA delta performance by reorganizing layers.
-      # Uncomment the step below to enable it. Renovate will keep the action
-      # pinned and up to date automatically once it is uncommented.
-      #
-      # For optimal layer grouping (packages sorted by update cadence), also add
-      # the bootc-build/apply-pkg-intervals step before rechunking and create a
-      # .github/workflows/pkg-cadence.yml workflow. See:
-      #   https://github.com/projectbluefin/actions/tree/main/bootc-build/chunka
-      #   https://github.com/projectbluefin/actions/tree/main/bootc-build/apply-pkg-intervals
-      # - name: Rechunk image
-      #   if: github.event_name != 'pull_request'
-      #   id: rechunk-image
-      #   uses: projectbluefin/actions/bootc-build/chunka@6231015b336556d2ff0adc1d1e59514bf19dcb42 # v1
-      #   with:
-      #     source-image: localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
-      #     max-layers: 128
+      # OPTIONAL: Set ENABLE_RECHUNKING to "true" above to optimize OTA deltas.
+      # This uses OCI-native chunkah and does not require bootc-base-imagectl.
+      - name: Rechunk image
+        if: env.ENABLE_RECHUNKING == 'true' && github.event_name != 'pull_request'
+        id: rechunk-image
+        uses: projectbluefin/actions/bootc-build/chunka@c3ffb5dd594f4a363298bacc7ad4cfe18457fa97 # v1
+        with:
+          source-image: localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
+          max-layers: ${{ env.RECHUNK_MAX_LAYERS }}
 
       - name: Tag images
         if: github.event_name != 'pull_request'
@@ -182,7 +176,7 @@ jobs:
       - name: Push to GHCR
         if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         id: push
-        uses: projectbluefin/actions/bootc-build/push-image@c3ffb5dd594f4a363298bacc7ad4cfe18457fa97 # v1
+        uses: projectbluefin/actions/bootc-build/push-image@5fe9b3bcfdf3a68b4d2eb459445505b600e456e6 # v1
         with:
           image-name: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.generate-tags.outputs.tags }}
