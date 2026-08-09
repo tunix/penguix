@@ -31,7 +31,7 @@ concurrency:
 jobs:
   promote:
     name: Promote main to stable
-    uses: projectbluefin/actions/.github/workflows/reusable-promote-squash.yml@f8418f73faf163c048ab23f10655235c078d7606 # v1
+    uses: projectbluefin/actions/.github/workflows/reusable-promote-squash.yml@e5cdde685d1bf76900d052495b7cc288ee14899c # v1
     with:
       variants: >-
         [{"image":"${{ github.event.repository.name }}"}]
