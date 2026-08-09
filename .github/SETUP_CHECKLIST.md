@@ -79,7 +79,16 @@ Renovate targets `main`; approved changes reach `stable` through the promotion f
 
 **Agent skills:** `finpilot-onboarding` (raptor section), `finpilot-maintain` (maintenance requirement)
 
-### 7. Deploy
+### 7. Participate in finpilot maintenance
+- [ ] Use [finpilot issues](https://github.com/projectbluefin/finpilot/issues/new/choose)
+  for reusable template or build-system improvements.
+- [ ] Select the Clanker opt-in only on issues you create to send them to
+  `3-clanker-queue`; maintainers may also apply that label.
+- [ ] Port structural template changes to this repository through a focused PR.
+  Renovate manages dependencies only; it does not synchronize arbitrary
+  template files.
+
+### 8. Deploy
 
 Test the candidate image from `main`:
 
@@ -89,7 +98,6 @@ sudo systemctl reboot
 ```
 
 After merging the promotion to `stable`, deploy the production image:
-
 ```bash
 sudo bootc switch --transport registry ghcr.io/YOUR_USERNAME/YOUR_REPO:stable
 sudo systemctl reboot

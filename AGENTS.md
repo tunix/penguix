@@ -93,11 +93,11 @@ enable keyless signing (SETUP_CHECKLIST "Enable Signing") for it to report
 7. **NEVER** push directly to `main` (only via PR with passing `validate` check)
 8. **NEVER** push directly to `stable`; promote tested `main` commits via the promotion PR from `promote-main-to-stable.yml`
 9. **ALWAYS** test the `:stable-testing` image before merging a promotion to `stable`
-8. **ALWAYS** confirm with user before deviating from @ublue-os/bluefin patterns
-9. **ALWAYS** run shellcheck/YAML validation before committing
-10. **ALWAYS** follow numbered script convention: `10-*.sh`, `20-*.sh`, `30-*.sh`
-11. **ALWAYS** validate that new Flatpak IDs exist on Flathub before adding
-12. **NEVER** modify validation workflows without understanding impact on PR checks
+10. **ALWAYS** confirm with user before deviating from @ublue-os/bluefin patterns
+11. **ALWAYS** run shellcheck/YAML validation before committing
+12. **ALWAYS** follow numbered script convention: `10-*.sh`, `20-*.sh`, `30-*.sh`
+13. **ALWAYS** validate that new Flatpak IDs exist on Flathub before adding
+14. **NEVER** modify validation workflows without understanding impact on PR checks
 
 ## Analysis vs Implementation
 
@@ -112,6 +112,31 @@ Assisted-by: [Model Name] via [Tool Name]
 ```
 
 ---
+
+## Factory workflow and ownership
+
+Use the shared lifecycle and labels in
+[`projectbluefin/common/docs/skills/label-workflow.md`](https://github.com/projectbluefin/common/blob/main/docs/skills/label-workflow.md).
+Humans triage and approve; agents work only on assigned or
+`3-clanker-queue` issues. Clankers is authenticated Hive transport only, not
+merge authority. Keep template-specific ownership local and never write to
+`ublue-os/*`.
+
+## Self-Improvement
+
+Every session: ship the work and update the relevant skill file in
+`.agents/skills/`. Same PR, not a follow-up.
+
+Banned:
+- No changelog files. Delete `IMPROVEMENTS.md`, `CHANGELOG.md`, and
+  `SESSION.md` if found.
+- No session notes committed to the repository.
+- No "append here" documentation. Route durable learning to `.agents/skills/`.
+
+Before marking work done:
+- [ ] Discovered a workaround, pattern, or convention?
+- [ ] Updated or created the relevant skill file?
+- [ ] Included that learning in this PR?
 
 **Last Updated**: 2026-08-05
 **Template Version**: finpilot (Agent UX Overhaul)
