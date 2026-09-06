@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# Tests for scripts/validate-brewfiles.sh.
+# Tests for build/validate-brewfiles.sh.
 #
 # All commands use a fake brew, never the host's package manager. The central
 # security property under test: the script greps Brewfiles and passes names to
@@ -9,7 +9,7 @@
 #
 # Run with: bats tests/unit/validate-brewfiles_test.bats
 
-SCRIPT="${BATS_TEST_DIRNAME}/../../scripts/validate-brewfiles.sh"
+SCRIPT="${BATS_TEST_DIRNAME}/../../build/validate-brewfiles.sh"
 
 setup() {
     WORKDIR="$(mktemp -d)"

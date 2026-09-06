@@ -6,7 +6,7 @@ on:
   pull_request:
     paths:
       - "custom/brew/**"
-      - "scripts/validate-brewfiles.sh"
+      - "build/validate-brewfiles.sh"
       - "tests/unit/validate-brewfiles_test.bats"
       - ".github/workflows/validate-brewfiles.yml"
 jobs:

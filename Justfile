@@ -40,7 +40,7 @@ test-unit:
 validate-brewfiles:
     #!/usr/bin/bash
     set -euo pipefail
-    bash scripts/validate-brewfiles.sh
+    bash build/validate-brewfiles.sh
 
 # Fix Just Syntax
 [group('Just')]
