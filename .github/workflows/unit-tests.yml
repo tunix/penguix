@@ -1,0 +1,39 @@
+name: Unit Tests
+
+on:
+  pull_request:
+    branches: [main, stable]
+    paths:
+      - "build/**"
+      - "tests/**"
+      - "Justfile"
+      - ".github/workflows/unit-tests.yml"
+  push:
+    branches: [main, stable]
+    paths:
+      - "build/**"
+      - "tests/**"
+      - "Justfile"
+      - ".github/workflows/unit-tests.yml"
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions: {}
+
+jobs:
+  bats:
+    name: BATS unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Install bats
+        run: sudo apt-get update && sudo apt-get install -y bats
+      - name: Run unit tests
+        run: bats --print-output-on-failure tests/unit
