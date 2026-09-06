@@ -121,11 +121,13 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
 
     # Avoid tag collisions when rebuilding on the same day
     if command -v skopeo &>/dev/null; then
-        skopeo list-tags "docker://ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}" >/tmp/repotags.json 2>/dev/null \
-            || echo '{"Tags":[]}' >/tmp/repotags.json
-        if [[ $(jq "any(.Tags[]; contains(\"${ver}\"))" /tmp/repotags.json) == "true" ]]; then
+        repotags=$(mktemp -t repotags.XXXXXXXX.json) || { echo "ERROR: mktemp failed to create tag-list temp file"; exit 1; }
+        trap 'rm -f "${repotags}"' EXIT
+        skopeo list-tags "docker://ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}" >"${repotags}" 2>/dev/null \
+            || echo '{"Tags":[]}' >"${repotags}"
+        if [[ $(jq "any(.Tags[]; contains(\"${ver}\"))" "${repotags}") == "true" ]]; then
             POINT=1
-            while [[ $(jq "any(.Tags[]; contains(\"${ver}.${POINT}\"))" /tmp/repotags.json) == "true" ]]; do
+            while [[ $(jq "any(.Tags[]; contains(\"${ver}.${POINT}\"))" "${repotags}") == "true" ]]; do
                 ((POINT++))
             done
             ver="${ver}.${POINT}"
