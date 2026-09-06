@@ -28,6 +28,10 @@ check:
 test-unit:
     #!/usr/bin/bash
     set -euo pipefail
+    if ! command -v just &>/dev/null; then
+        echo "just not found — install with: curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin"
+        exit 1
+    fi
     if ! command -v bats &>/dev/null; then
         echo "bats not found — install with: sudo apt-get install bats  OR  npm install -g bats"
         exit 1
