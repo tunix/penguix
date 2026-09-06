@@ -141,7 +141,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
 
     # Image identity ARGs - these define how bootc/ublue ecosystem recognizes the image
     # Override via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG
-    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${IMAGE_NAME:-${target_image}}")
+    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${target_image}")
     BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${IMAGE_VENDOR:-${REPO_ORG}}")
     BUILD_ARGS+=("--build-arg" "UBLUE_IMAGE_TAG=${UBLUE_IMAGE_TAG:-${tag}}")
 
