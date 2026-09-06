@@ -121,8 +121,8 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
 
     # Avoid tag collisions when rebuilding on the same day
     if command -v skopeo &>/dev/null; then
-        repotags=$(mktemp -t repotags.XXXXXXXX.json)
-        trap "rm -f \"${repotags}\"" EXIT
+        repotags=$(mktemp -t repotags.XXXXXXXX.json) || { echo "ERROR: mktemp failed to create tag-list temp file"; exit 1; }
+        trap 'rm -f "${repotags}"' EXIT
         skopeo list-tags "docker://ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}" >"${repotags}" 2>/dev/null \
             || echo '{"Tags":[]}' >"${repotags}"
         if [[ $(jq "any(.Tags[]; contains(\"${ver}\"))" "${repotags}") == "true" ]]; then
