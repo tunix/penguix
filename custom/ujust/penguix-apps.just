@@ -9,10 +9,19 @@ penguix-install-all:
     #!/usr/bin/env bash
     echo "Installing applications for penguix..."
     
+    brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-apps.Brewfile
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-cli.Brewfile
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-coding.Brewfile
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-devops.Brewfile
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-flatpak.Brewfile
+
+# Install GUI applications for penguix
+[group('Apps')]
+penguix-install-apps:
+    #!/usr/bin/env bash
+    echo "Installing GUI applications for penguix..."
+
+    brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-apps.Brewfile
 
 # Install cli applications for penguix
 [group('Apps')]

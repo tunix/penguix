@@ -1,3 +1,5 @@
+brew "1password-cli-linux"
+brew "atuin"
 brew "btop"
 brew "direnv"
 brew "httpie"
