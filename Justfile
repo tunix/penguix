@@ -23,6 +23,25 @@ check:
     echo "Checking syntax: Justfile"
     just --unstable --fmt --check -f Justfile
 
+# Run unit tests for build scripts
+[group('Just')]
+test-unit:
+    #!/usr/bin/bash
+    set -euo pipefail
+    if ! command -v bats &>/dev/null; then
+        echo "bats not found — install with: sudo apt-get install bats  OR  npm install -g bats"
+        exit 1
+    fi
+    echo "Running unit tests..."
+    bats tests/unit/
+
+# Validate Brewfiles without evaluating them as Ruby (see #288)
+[group('Just')]
+validate-brewfiles:
+    #!/usr/bin/bash
+    set -euo pipefail
+    bash build/validate-brewfiles.sh
+
 # Fix Just Syntax
 [group('Just')]
 fix:
@@ -39,12 +58,11 @@ fix:
 clean:
     #!/usr/bin/bash
     set -eoux pipefail
-    touch _build
-    find *_build* -exec rm -rf {} \;
+    find . -maxdepth 1 -name '*_build*' -prune -exec rm -rf {} +
     rm -f previous.manifest.json
     rm -f changelog.md
     rm -f output.env
-    rm -f output/
+    rm -rf output/
 
 # Sudo Clean Repo
 [group('Utility')]
@@ -110,11 +128,13 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
 
     # Avoid tag collisions when rebuilding on the same day
     if command -v skopeo &>/dev/null; then
-        skopeo list-tags "docker://ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}" >/tmp/repotags.json 2>/dev/null \
-            || echo '{"Tags":[]}' >/tmp/repotags.json
-        if [[ $(jq "any(.Tags[]; contains(\"${ver}\"))" /tmp/repotags.json) == "true" ]]; then
+        repotags=$(mktemp -t repotags.XXXXXXXX.json) || { echo "ERROR: mktemp failed to create tag-list temp file"; exit 1; }
+        trap 'rm -f "${repotags}"' EXIT
+        skopeo list-tags "docker://ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}" >"${repotags}" 2>/dev/null \
+            || echo '{"Tags":[]}' >"${repotags}"
+        if [[ $(jq "any(.Tags[]; contains(\"${ver}\"))" "${repotags}") == "true" ]]; then
             POINT=1
-            while [[ $(jq "any(.Tags[]; contains(\"${ver}.${POINT}\"))" /tmp/repotags.json) == "true" ]]; do
+            while [[ $(jq "any(.Tags[]; contains(\"${ver}.${POINT}\"))" "${repotags}") == "true" ]]; do
                 ((POINT++))
             done
             ver="${ver}.${POINT}"
@@ -130,7 +150,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
 
     # Image identity ARGs - these define how bootc/ublue ecosystem recognizes the image
     # Override via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG
-    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${IMAGE_NAME:-${target_image}}")
+    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${target_image}")
     BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${IMAGE_VENDOR:-${REPO_ORG}}")
     BUILD_ARGS+=("--build-arg" "UBLUE_IMAGE_TAG=${UBLUE_IMAGE_TAG:-${tag}}")
 

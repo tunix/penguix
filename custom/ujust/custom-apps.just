@@ -3,8 +3,8 @@
 ### custom-apps.just
 ####################
 ## Example application installation commands
-## See .agents/skills/finpilot-custom.md for runtime layer guidance
-## See .agents/skills/finpilot-examples.md for activation patterns
+## See .agents/skills/finpilot-custom/SKILL.md for runtime layer guidance
+## See .agents/skills/finpilot-examples/SKILL.md for activation patterns
 
 # Install default applications via Homebrew
 [group('Apps')]
@@ -40,6 +40,7 @@ install-all-brew:
 [group('Apps')]
 install-jetbrains-toolbox:
     #!/usr/bin/env bash
+    set -euo pipefail
     echo "Installing JetBrains Toolbox..."
     pushd "$(mktemp -d)"
     echo "Fetching latest version..."

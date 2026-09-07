@@ -1,4 +1,4 @@
-tap "hashicorp/tap"
+tap "hashicorp/tap", trusted: true
 
 brew "ansible"
 brew "argocd"

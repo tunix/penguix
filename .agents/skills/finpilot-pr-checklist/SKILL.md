@@ -4,8 +4,6 @@ description: >-
   PR gates and pre-commit checklist by change type. Covers validation commands
   for Containerfile, build scripts, Brewfiles, Flatpaks, ujust, workflows, and
   README changes. Use before opening or reviewing a PR.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot PR Checklist
@@ -20,10 +18,15 @@ metadata:
 ## When NOT to Use
 
 - The PR only contains documentation changes without affecting build/CI — still run markdown lint, but full checklist is overkill
-- You are troubleshooting an already-open PR — see `finpilot-troubleshooting.md`
+- You are troubleshooting an already-open PR — use `finpilot-troubleshooting`
 
 ## Core Process
 
+0. **Check for an existing open PR against the same issue** — before writing any
+   code, run `gh pr list --state open --search "<issue-number>"` and skim
+   `gh pr list --state open`. Multiple agents work this repo concurrently; if a
+   PR already addresses the issue, review or extend it instead of opening a
+   competing one. Duplicate PRs get closed and the work is wasted.
 1. **Identify which files changed**
 2. **Run the relevant validation commands** from the tables below
 3. **Fix any errors** before opening the PR
@@ -151,6 +154,18 @@ just --list
 | Raptor section present | Verify "What Makes this Raptor Different?" section exists and is up to date |
 
 **CI triggers:** None by default (consider adding `markdownlint` to pre-commit)
+
+### Repo-wide Doc Sweeps
+
+| Check                   | Command                                                              |
+| ----------------------- | -------------------------------------------------------------------- |
+| Include dot-directories | `grep -rn "pattern" .github .agents` (don't rely on `grep -r .` alone) |
+
+`.github/` and `.agents/` hold most of this template's docs, skills, and
+workflows. A recursive search rooted at `.` can silently skip dot-directories
+depending on grep configuration — target them explicitly when auditing docs
+for stale claims, and verify every reported location against the real file
+before editing.
 
 ---
 
