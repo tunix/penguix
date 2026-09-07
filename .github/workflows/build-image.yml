@@ -40,7 +40,7 @@ env:
   DEFAULT_TAG: "stable"
   PRODUCTION_BRANCH: "stable" # The branch that publishes :stable production images
   REGISTRY_CACHE_WRITE: ${{ github.event_name != 'pull_request' && '1' || '0' }}
-  ENABLE_RECHUNKING: "false"
+  ENABLE_RECHUNKING: "true"
   RECHUNK_MAX_LAYERS: "128"
 
 concurrency:
