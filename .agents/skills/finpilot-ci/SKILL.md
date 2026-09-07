@@ -58,6 +58,12 @@ description: >-
 - The release gate verifies cosign signatures on `:testing`; the `Sign and
   publish` step in `build-image.yml` provides them, and unsigned images report
   `release/blocked`.
+- Missing `stable` makes the reusable `git fetch origin stable` fail (exit 128)
+  and opens `ci: testing→main promotion conflict`. `promote-main-to-stable.yml`
+  creates `stable` from `main` on first run. Personal forks set
+  `request_reviewer: false` — there is no `<owner>/maintainers` team.
+- The reusable still titles that issue `testing→main`; the penguix model is
+  `main→stable`.
 
 ## Composite Action Pins
 
