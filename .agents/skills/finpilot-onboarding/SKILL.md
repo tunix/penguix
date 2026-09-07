@@ -90,8 +90,9 @@ step 3). The `promote-main-to-stable.yml` workflow then automates releases:
 1. Pushes to `main` publish `:stable-testing`; a squash PR to `stable` opens
    automatically whenever the trees differ
 2. The PR requests review from `<owner>/maintainers` — org forks need that
-   team; personal-account forks should replace the caller workflow with a
-   local one that skips reviewer requests
+    team; personal-account forks set `request_reviewer: false` on
+    `promote-main-to-stable.yml`. If `stable` does not exist yet, that
+    workflow creates it from `main` on first run.
 3. `stable`'s required approvals set the automation level: `0` = fully
    automatic, `1` = review, then auto-merge
 4. Keyless signing (enabled by default) feeds the release gate — signed
