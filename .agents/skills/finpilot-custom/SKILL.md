@@ -1,12 +1,9 @@
 ---
 name: finpilot-custom
 description: >-
-  Runtime layer documentation for Brewfiles, Flatpaks, and ujust commands.
-  Covers syntax, placement, validation workflows, and the critical rule:
-  NEVER use dnf5 in just files. Use when modifying custom/ or explaining
-  the runtime layer to contributors.
-metadata:
-  context7-sources: []
+  Runtime layer of finpilot: Brewfiles, Flatpaks, and ujust commands — syntax,
+  placement, and validation. Use when modifying custom/ or explaining the
+  runtime layer to contributors.
 ---
 
 # finpilot Runtime Layer
@@ -21,9 +18,9 @@ metadata:
 
 ## When NOT to Use
 
-- Build script changes — see `finpilot-build.md`
-- CI workflow changes — see `finpilot-ci.md`
-- Adding system packages at build-time — see `finpilot-packages.md`
+- Build script changes — use `finpilot-build`
+- CI workflow changes — use `finpilot-ci`
+- Adding system packages at build-time — use `finpilot-packages`
 
 ## Core Process
 
@@ -34,7 +31,7 @@ metadata:
 
 ## Brewfiles: `custom/brew/*.Brewfile`
 
-Brewfiles use Ruby syntax. They define Homebrew packages installed by users after deployment.
+Brewfiles use Ruby syntax. They define Homebrew packages installed by users after deployment. Homebrew itself is pre-staged at build time via the `@ublue-os/brew` OCI container and extracted on first boot by `brew-setup.service`; Brewfiles define what users install after that extraction.
 
 ### File Locations
 
@@ -54,8 +51,8 @@ brew "eza"        # Modern replacement for ls
 brew "ripgrep"    # Faster grep
 brew "fd"         # Simple alternative to find
 
-# Taps (repositories)
-tap "homebrew/cask"
+# Third-party taps need Homebrew tap-trust or `brew info` / CI validation fails.
+tap "ublue-os/tap", trusted: true
 
 # Casks
 brew "node"
@@ -80,8 +77,8 @@ ujust install-fonts
 ### Validation
 
 - **PR trigger**: `validate-brewfiles.yml` runs on PRs that touch `custom/brew/**`
-- **Local check**: `brew bundle check --file /path/to/Brewfile`
-- **List what would install**: `brew bundle list --file /path/to/Brewfile`
+- **Local check**: `just validate-brewfiles` (static; do not `brew bundle check` a PR Brewfile)
+- Third-party `tap` lines must use `trusted: true` so Homebrew will load their formulae/casks
 
 ## Flatpaks: `custom/flatpaks/*.preinstall`
 
@@ -109,14 +106,10 @@ Branch=stable
 
 ### Key Rules
 
-- **Post-first-boot only**: Flatpaks are NOT baked into the ISO or container. They install on first boot with internet access.
+- **Post-first-boot only**: Flatpaks are NOT baked into the ISO or container. They install on first boot with internet access — do not rely on them in offline scenarios or ISO-based installs without network.
 - **Always specify `Branch=stable`** (or another valid branch)
 - **Find app IDs at https://flathub.org/**
 - **Validation**: `validate-flatpaks.yml` checks that app IDs exist on Flathub
-
-### Important Note
-
-Flatpaks require an internet connection on first boot. Do not rely on them being available in offline scenarios or during ISO-based installs without network.
 
 ## ujust: `custom/ujust/*.just`
 

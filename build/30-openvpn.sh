@@ -3,6 +3,7 @@
 # Tell build process to exit if there are any errors.
 set -oue pipefail
 
+# shellcheck source=/dev/null
 source /ctx/build/copr-helpers.sh
 
 ### Install OpenVPN from Official Repository
