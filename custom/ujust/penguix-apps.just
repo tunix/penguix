@@ -8,7 +8,7 @@
 penguix-install-all:
     #!/usr/bin/env bash
     echo "Installing applications for penguix..."
-    
+
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-apps.Brewfile
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-cli.Brewfile
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-coding.Brewfile
@@ -28,7 +28,7 @@ penguix-install-apps:
 penguix-install-cli:
     #!/usr/bin/env bash
     echo "Installing CLI applications for penguix..."
-    
+
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-cli.Brewfile
 
 # Install coding applications for penguix
@@ -36,7 +36,7 @@ penguix-install-cli:
 penguix-install-coding:
     #!/usr/bin/env bash
     echo "Installing coding applications for penguix..."
-    
+
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-coding.Brewfile
 
 # Install devops applications for penguix
@@ -44,7 +44,7 @@ penguix-install-coding:
 penguix-install-devops:
     #!/usr/bin/env bash
     echo "Installing devops applications for penguix..."
-    
+
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-devops.Brewfile
 
 # Install flatpak applications for penguix
@@ -52,5 +52,5 @@ penguix-install-devops:
 penguix-install-flatpak:
     #!/usr/bin/env bash
     echo "Installing flatpak applications for penguix..."
-    
+
     brew bundle upgrade --file /usr/share/ublue-os/homebrew/penguix-flatpak.Brewfile
