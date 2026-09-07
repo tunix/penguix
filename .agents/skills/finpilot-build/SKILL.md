@@ -4,8 +4,6 @@ description: >-
   Containerfile multi-stage build, image digest pinning in FROM lines,
   Justfile local build recipes, and build script conventions.
   Use when changing Containerfile, Justfile, or build/*.sh.
-metadata:
-  context7-sources: []
 ---
 
 # finpilot Build System
@@ -19,8 +17,8 @@ metadata:
 
 ## When NOT to Use
 
-- CI workflow changes (`.github/workflows/`) — see `finpilot-ci.md`
-- Runtime customizations (`custom/`) — use the README.md guides
+- CI workflow changes (`.github/workflows/`) — use `finpilot-ci`
+- Runtime customizations (`custom/`) — use `finpilot-custom`
 
 ## Core Process
 
@@ -63,11 +61,26 @@ release, update both the `FEDORA_MAJOR_VERSION` ARG and the base image tag.
 
 ### Template build script rules
 
-- **Default packages**: build scripts in the template must have **no packages installed by default** — only commented examples. Users add their own.
-- **Exception**: `dnf5 install -y tmux` is intentionally present as a minimal smoke-test that the DNF cache is warm. Do not remove it.
+- **Default packages**: build scripts in the template must have **no extra packages installed by default** — only commented examples. Users add their own.
+- **Exception**: `dnf5 install -y tmux gum` in `build/10-build.sh` is intentional: tmux smoke-tests that the DNF cache is warm, and gum is required by the ujust recipes' interactive prompts. Do not remove.
 - Always use `dnf5` — never `dnf`, `yum`, or `rpm-ostree`
 - Always use `dnf5 install -y` (non-interactive)
 - COPR: enable → install → `copr_install_isolated` (auto-disables); never leave a repo enabled
+
+### NVIDIA GPU support
+
+NVIDIA support is a build-time option activated by renaming the example script and adding its explicit Containerfile `RUN` block:
+
+```bash
+mv build/40-nvidia.sh.example build/40-nvidia.sh
+# Add the standard RUN block for /ctx/build/40-nvidia.sh after 10-build.sh.
+# See build/README.md.
+just build
+```
+
+All NVIDIA logic is self-contained in `40-nvidia.sh`. When both the script and its explicit Containerfile `RUN` block are activated, it provisions the NVIDIA driver, CDI container toolkit, Mutter kms-modifiers, and bootc kernel args directly into the base image — no separate image variant, no `IMAGE_NAME` gating.
+
+Deactivate by removing its Containerfile `RUN` block and renaming the script back to `.example`. See `build/40-nvidia.sh.example` for the full implementation.
 
 ### 00-image-info.sh branding
 
