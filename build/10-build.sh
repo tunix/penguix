@@ -16,13 +16,10 @@ source /ctx/build/copr-helpers.sh
 # Enable nullglob for all glob operations to prevent failures on empty matches
 shopt -s nullglob
 
-echo "::group:: Copy Bluefin Config from Common"
+echo "::group:: Overlay Brew Integration Files"
 
-# Copy just files from @projectbluefin/common (includes 00-entry.just which imports 60-custom.just)
-mkdir -p /usr/share/ublue-os/just/
-shopt -s nullglob
-cp -r /ctx/oci/common/bluefin/usr/share/ublue-os/just/* /usr/share/ublue-os/just/
-shopt -u nullglob
+# Brew integration files from @ublue-os/brew OCI (tarball, systemd services, shell integration)
+rsync -rvK /ctx/oci/brew/ /
 
 echo "::endgroup::"
 
@@ -33,6 +30,7 @@ mkdir -p /usr/share/ublue-os/homebrew/
 cp /ctx/custom/brew/*.Brewfile /usr/share/ublue-os/homebrew/
 
 # Consolidate Just Files
+mkdir -p /usr/share/ublue-os/just/
 find /ctx/custom/ujust -iname '*.just' -exec printf "\n\n" \; -exec cat {} \; >>/usr/share/ublue-os/just/60-custom.just
 
 # Copy Flatpak preinstall files
@@ -41,36 +39,24 @@ cp /ctx/custom/flatpaks/*.preinstall /usr/share/flatpak/preinstall.d/
 
 echo "::endgroup::"
 
-echo "::group:: Execute runnable scripts..."
+echo "::group:: Install Packages"
 
-# Install a minimal package to verify the cache is working
-# This ensures the DNF cache is populated for future builds
-dnf5 install -y tmux
-
-# Execute additional build scripts
-for script in /ctx/build/*.sh; do
-    if [[ "$(basename "$script")" != "10-build.sh" ]]; then
-        if [[ -x "$script" ]]; then
-            echo "Executing $script..."
-            "$script"
-        fi
-    fi
-done
+# Install the default packages and verify the DNF cache is working.
+# gum is required by the default ujust recipes for interactive prompts.
+dnf5 install -y tmux gum
 
 # Example using COPR with isolated pattern:
 # copr_install_isolated "ublue-os/staging" package-name
 
-echo "Done with executing scripts!"
 echo "::endgroup::"
 
 echo "::group:: System Configuration"
 
 # Enable/disable systemd services
 systemctl enable podman.socket
-systemctl mask systemd-remount-fs.service
-systemctl mask zfs-import-cache.service
-systemctl mask systemd-udev-settle.service
-systemctl mask NetworkManager-wait-online.service
+systemctl enable brew-setup.service
+systemctl enable brew-update.timer
+systemctl enable brew-upgrade.timer
 # Example: systemctl mask unwanted-service
 
 echo "::endgroup::"

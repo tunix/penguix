@@ -1,11 +1,10 @@
 ---
 name: finpilot-onboarding
 description: >-
-  Fork bootstrap agent playbook. Covers the 7 rename locations, first green build,
-  README "What Makes this Raptor Different" section, optional signing setup, and
-  branch protection configuration. Use when creating a new fork from this template.
-metadata:
-  context7-sources: []
+  Fork bootstrap playbook: rename (locations: `finpilot-templates`),
+  enable Actions, RENOVATE_TOKEN, first green build, README "What Makes
+  this Raptor Different" section, and branch protection. Use when creating
+  a new fork from this template.
 ---
 
 # finpilot Onboarding
@@ -20,35 +19,34 @@ metadata:
 ## When NOT to Use
 
 - The repository is already initialized and has had a successful build
-- You are adding packages or changing build logic — see `finpilot-packages.md` or `finpilot-build.md`
-- You are updating CI workflows — see `finpilot-ci.md`
+- You are adding packages or changing build logic — use `finpilot-packages` or `finpilot-build`
+- You are updating CI workflows — use `finpilot-ci`
 
 ## Core Process
 
 1. **Fork the template**: Use "Use this template" on GitHub to create a new repository
-2. **Rename all 7 locations** (see table below)
+2. **Rename all 7 locations** (table: `finpilot-templates`)
 3. **Enable GitHub Actions** in the new repository
 4. **Add `RENOVATE_TOKEN` secret** (Classic PAT with `repo` + `workflow` scopes)
 5. **Configure branch protection and auto-merge**
 6. **Trigger first build**
-7. **Add the "What Makes this Raptor Different" section to README**
-8. **Enable signing** (optional, recommended for production)
+7. **Add the "What Makes this Raptor Different" section to README** (template below)
+8. **Verify signing** on the first signed build (`finpilot-templates`)
 
-## The Seven Rename Locations
+Keep day-one changes minimal and iterate in phases:
 
-When forking, change `finpilot` → your image name in exactly these files:
+1. **Phase 1 — Bootstrap**: rename, enable Actions, add `RENOVATE_TOKEN`,
+   trigger the first green build (this skill)
+2. **Phase 2 — Customize**: add one or two packages, run `just build` locally
+   (`finpilot-packages`, `finpilot-build`)
+3. **Phase 3 — Runtime**: add Flatpak/Brew customizations, test in a VM with
+   `just run-vm-qcow2` (`finpilot-custom`)
+4. **Phase 4 — Production**: verify signing, full branch protection
+   (`finpilot-templates`, `finpilot-maintain`)
 
-| #   | File                          | What to change                                                      |
-| --- | ----------------------------- | ------------------------------------------------------------------- |
-| 1   | `Containerfile`               | `ARG IMAGE_NAME="finpilot"` and `ARG IMAGE_VENDOR="projectbluefin"` |
-| 2   | `Justfile`                    | `export IMAGE_NAME := env("IMAGE_NAME", "finpilot")`                |
-| 3   | `README.md`                   | Title `# finpilot`                                                  |
-| 4   | `artifacthub-repo.yml`        | `repositoryID: finpilot`                                            |
-| 5   | `custom/ujust/README.md`      | `localhost/finpilot:stable` in the bootc switch example             |
-| 6   | `.github/workflows/clean.yml` | `packages: finpilot`                                                |
-| 7   | `iso/iso.toml`                | `ghcr.io/USERNAME/REPO:stable` in the bootc switch URL              |
+Resist changing everything at once — each phase validates the previous.
 
-Missing any of these causes the image to be published or cleaned up under the wrong name.
+Each step's completion criterion is the matching item in the Verification checklist below.
 
 ## Enable GitHub Actions
 
@@ -84,6 +82,25 @@ This token allows Renovate to open PRs for digest bumps and dependency updates.
 
 This ensures PRs are validated before merging and Renovate can auto-merge safe digest updates.
 
+## Set Up Promotion (Stable Branch)
+
+Create `stable` as an exact copy of `main` (git commands in `SETUP_CHECKLIST.md`
+step 3). The `promote-main-to-stable.yml` workflow then automates releases:
+
+1. Pushes to `main` publish `:stable-testing`; a squash PR to `stable` opens
+   automatically whenever the trees differ
+2. The PR requests review from `<owner>/maintainers` — org forks need that
+   team; personal-account forks should replace the caller workflow with a
+   local one that skips reviewer requests
+3. `stable`'s required approvals set the automation level: `0` = fully
+   automatic, `1` = review, then auto-merge
+4. Keyless signing (enabled by default) feeds the release gate — signed
+   `:testing` images report `release/ready`; unsigned images report
+   `release/blocked`
+
+Full requirements live in `SETUP_CHECKLIST.md` → step 3; promotion mechanics
+in `finpilot-ci`.
+
 ## First Green Build
 
 After the rename and secret setup, trigger a build:
@@ -94,7 +111,7 @@ After the rename and secret setup, trigger a build:
 Monitor the workflow. A successful first build:
 
 - Passes `bootc container lint --fatal-warnings`
-- Publishes `:stable` and `:stable.YYYYMMDD` tags to GHCR
+- Publishes `:stable-testing` and `:testing` tags to GHCR (`stable` branch builds publish `:stable`)
 - Appears under **Packages** in your repository
 
 ## README "What Makes this Raptor Different" Section
@@ -128,46 +145,13 @@ Here are the changes from [Base Image Name]. This image is based on [Bluefin/Baz
 _Last updated: [date]_
 ```
 
-**Maintenance requirement**:
+**Maintenance requirement**: update this section on every package or
+configuration change — see the update rules in `finpilot-maintain`.
 
-- **ALWAYS update this section when you modify packages or configuration**
-- Keep descriptions brief and user-focused (explain "why", not just "what")
-- Write for typical Linux users, not developers
-- Update the "Last updated" date with each change
+## Signing
 
-## Optional Signing Setup
-
-Signing is **disabled by default** so first builds succeed immediately. Enable later for production.
-
-This template uses **keyless OIDC signing** via Cosign + Fulcio. No `cosign.key` or static keys are needed.
-
-**To enable:**
-
-1. Edit `.github/workflows/build-image.yml`
-2. Find the `# OPTIONAL: Sign and attest` section
-3. Uncomment the `Sign and publish` step
-
-**Verification:**
-
-```bash
-cosign verify \
-  --certificate-identity-regexp="https://github.com/YOUR_ORG/YOUR_REPO/.github/workflows/" \
-  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
-  ghcr.io/YOUR_ORG/YOUR_REPO:stable
-```
-
-**Never commit `cosign.key` to the repository.** It is listed in `.gitignore` as a safety net.
-
-## Agent Playground Setup
-
-When setting up the fork, do not over-customize on day one. Use an **iterative approach**:
-
-1. **Phase 1**: Rename, enable Actions, add token, trigger first build
-2. **Phase 2**: Add one or two packages, run `just build`, verify locally
-3. **Phase 3**: Add Flatpak/Brew customizations, test in VM (`just run-vm-qcow2`)
-4. **Phase 4**: Enable signing, configure branch protection fully, production-ready
-
-Resist the urge to change everything at once. Each phase validates the previous.
+No setup required — first builds publish signed images. Verification details:
+`finpilot-templates`.
 
 ## Common Rationalizations
 
@@ -176,7 +160,7 @@ Resist the urge to change everything at once. Each phase validates the previous.
 | "I'll rename the obvious places and fix the rest later."       | Missing `.github/workflows/clean.yml` or `iso/iso.toml` causes silent failures months later. Do all 7 now. |
 | "I don't need branch protection for a personal fork."          | Without it, Renovate auto-merge won't work, and digest PRs sit unmerged.                                   |
 | "I'll add the raptor section to README after I have packages." | Add the section immediately with placeholders. Update it iteratively.                                      |
-| "Signing is too much work for a first build."                  | Signing is disabled by default. First builds succeed immediately. Enable later.                            |
+| "Signing is too much work for a first build."                  | Nothing to configure — builds sign images automatically.                                                   |
 | "I'll use my fine-grained PAT for Renovate."                   | Renovate requires a **Classic PAT** with `repo` + `workflow` scopes. Fine-grained PATs do not work.        |
 
 ## Red Flags
@@ -197,4 +181,4 @@ Resist the urge to change everything at once. Each phase validates the previous.
 - [ ] Branch protection for `main` configured with `validate` as required check?
 - [ ] First green build succeeded and image published to GHCR?
 - [ ] README contains the "What Makes this Raptor Different" section?
-- [ ] Optional signing enabled (or deferred for later)?
+- [ ] Signing verified on the first signed build?

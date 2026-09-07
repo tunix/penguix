@@ -1,9 +1,13 @@
+tap "ublue-os/tap", trusted: true
+cask "1password-cli-linux"
+brew "atuin"
 brew "btop"
 brew "direnv"
 brew "httpie"
 brew "lazygit"
 brew "neovim"
 brew "ripgrep"
+brew "rtk"
 brew "sd"
 brew "the_silver_searcher"
 brew "zellij"
