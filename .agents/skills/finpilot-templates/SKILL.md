@@ -61,8 +61,8 @@ branch and open a PR. Preserve fork identity and extra scripts:
 - `.github/workflows/clean.yml` derives the GHCR package from the repository
   name; do not hardcode it.
 - `tests/unit/justfile-build_test.bats` hardcodes the Justfile `REPO_ORG`
-  default (`alperkanat` here). Update those assertions when the vendor
-  changes; do not revert `REPO_ORG` to `projectbluefin` to make tests pass.
+  default (`alperkanat` here). The test `setup` unsets
+  `GITHUB_REPOSITORY_OWNER` so CI (`tunix`) does not override that default.
 
 ## Sources
 

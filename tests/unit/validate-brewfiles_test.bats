@@ -30,6 +30,8 @@ case "$1" in
             exit "${MOCK_TAP_STATUS}"
         fi
         ;;
+    trust)
+        ;;
     info)
         [[ $# -eq 4 && "$3" == -- ]] || exit 99
         case " ${MOCK_INFO_FAILURES:-} " in
@@ -74,6 +76,8 @@ teardown() {
     grep -qFx 'tap "two/tap"' "${TAPS}"
     [ "$(wc -l < "${TAPS}")" -eq 2 ]
     [[ "$(head -1 "${CALLS}")" == bundle\|* ]]
+    grep -qFx 'trust|one/tap|one/tap' "${CALLS}"
+    grep -qFx 'trust|two/tap|two/tap' "${CALLS}"
     run test -z "$(grep -E '^[[:space:]]*(brew|cask) ' "${TAPS}" || true)"
     [ "${status}" -eq 0 ]
 }

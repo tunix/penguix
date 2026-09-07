@@ -69,6 +69,19 @@ main() (
         sed 's/^/  /' "${workdir}/taps.Brewfile"
         if brew bundle --file="${workdir}/taps.Brewfile" > "${workdir}/output" 2>&1; then
             echo "Tap setup passed."
+            # brew info will not load third-party formulae/casks until the tap
+            # is trusted, even after a successful tap/bundle (Homebrew tap-trust).
+            while IFS= read -r tap_line; do
+                tap_name="${tap_line#*\"}"
+                tap_name="${tap_name%%\"*}"
+                [[ -n "${tap_name}" ]] || continue
+                if ! brew trust "${tap_name}" > "${workdir}/output" 2>&1; then
+                    rc=$?
+                    printf 'FAIL: brew trust %s (exit %s). Package checks were not run.\n' "${tap_name}" "${rc}" >&2
+                    sed 's/^/  /' "${workdir}/output" >&2
+                    exit 1
+                fi
+            done < "${workdir}/taps.Brewfile"
         else
             rc=$?
             printf 'FAIL: tap setup (exit %s). Package checks were not run.\n' "${rc}" >&2

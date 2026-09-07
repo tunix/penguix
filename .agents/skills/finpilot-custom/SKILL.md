@@ -51,8 +51,8 @@ brew "eza"        # Modern replacement for ls
 brew "ripgrep"    # Faster grep
 brew "fd"         # Simple alternative to find
 
-# Taps (repositories)
-tap "homebrew/cask"
+# Third-party taps need Homebrew tap-trust or `brew info` / CI validation fails.
+tap "ublue-os/tap", trusted: true
 
 # Casks
 brew "node"
@@ -77,8 +77,8 @@ ujust install-fonts
 ### Validation
 
 - **PR trigger**: `validate-brewfiles.yml` runs on PRs that touch `custom/brew/**`
-- **Local check**: `brew bundle check --file /path/to/Brewfile`
-- **List what would install**: `brew bundle list --file /path/to/Brewfile`
+- **Local check**: `just validate-brewfiles` (static; do not `brew bundle check` a PR Brewfile)
+- Third-party `tap` lines must use `trusted: true` so Homebrew will load their formulae/casks
 
 ## Flatpaks: `custom/flatpaks/*.preinstall`
 

@@ -30,6 +30,7 @@ setup() {
 
     export PATH="${STUB_BIN}:${PATH}"
     export PODMAN_LOG SKOPEO_LOG
+    unset GITHUB_REPOSITORY_OWNER IMAGE_VENDOR IMAGE_NAME
 
     # Deterministic clock: the recipe builds the version string from `date`.
     export STUB_DATE_YMD="20260830"
