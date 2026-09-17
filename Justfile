@@ -257,17 +257,18 @@ _rootful_load_image $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
         exit 0
     fi
 
-    # Try to resolve the image tag using podman inspect
+    # Does the image exist locally at all? A non-zero exit means it only lives
+    # in the registry, and the else branch below pulls it.
     set +e
-    resolved_tag=$(podman inspect -t image "${target_image}:${tag}" | jq -r '.[].RepoTags.[0]')
+    podman inspect -t image "${target_image}:${tag}" >/dev/null 2>&1
     return_code=$?
     set -e
 
-    USER_IMG_ID=$(podman images --filter reference="${target_image}:${tag}" --format "'{{ '{{.ID}}' }}'")
+    USER_IMG_ID=$(podman images -q --filter reference="${target_image}:${tag}")
 
     if [[ $return_code -eq 0 ]]; then
         # If the image is found, load it into rootful podman
-        ID=$(just sudoif podman images --filter reference="${target_image}:${tag}" --format "'{{ '{{.ID}}' }}'")
+        ID=$(just sudoif podman images -q --filter reference="${target_image}:${tag}")
         if [[ "$ID" != "$USER_IMG_ID" ]]; then
             # If the image ID is not found or different from user, copy the image from user podman to root podman
             COPYTMP=$(mktemp -p "${PWD}" -d -t _build_podman_scp.XXXXXXXXXX)
@@ -297,25 +298,26 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
     args+="--rootfs=btrfs"
 
     BUILDTMP=$(mktemp -p "${PWD}" -d -t _build-bib.XXXXXXXXXX)
+    # This script exits on the first error, so a failed build would otherwise
+    # leave the image BIB already wrote inside BUILDTMP behind in the repo root.
+    trap 'sudo rm -rf "${BUILDTMP}"' EXIT
 
     sudo podman run \
       --rm \
-      -it \
       --privileged \
-      --pull=newer \
       --net=host \
       --security-opt label=type:unconfined_t \
-      -v $(pwd)/${config}:/config.toml:ro \
-      -v $BUILDTMP:/output \
+      -v "${PWD}/${config}:/config.toml:ro" \
+      -v "${BUILDTMP}:/output" \
       -v /var/lib/containers/storage:/var/lib/containers/storage \
       "${bib_image}" \
       ${args} \
       "${target_image}:${tag}"
 
     mkdir -p output
-    sudo mv -f $BUILDTMP/* output/
-    sudo rmdir $BUILDTMP
-    sudo chown -R $USER:$USER output/
+    sudo mv -f "${BUILDTMP}"/* output/
+    sudo rmdir "${BUILDTMP}"
+    sudo chown -R "$USER:$USER" output/
 
 # Podman builds the image from the Containerfile and creates a bootable image
 # Parameters:
