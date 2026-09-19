@@ -128,6 +128,17 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
         exit 1
     fi
 
+    # Image identity, resolved once: an explicit IMAGE_VENDOR wins, otherwise
+    # fall back to the repository owner GitHub Actions supplies.
+    image_vendor="${IMAGE_VENDOR:-${REPO_ORG}}"
+
+    # target_image names the local image, and the VM recipes pass it with a
+    # `localhost/` prefix. The identity must not carry that prefix: image-info
+    # composes image-ref from IMAGE_NAME, and the ISO path hands that ref to
+    # Bootc Image Builder as the install target, so the prefix would become a
+    # registry path that cannot exist.
+    image_name="${target_image#localhost/}"
+
     # Bluefin-style version string: <fedora-version>.<date> for stable,
     # <tag>-<fedora-version>.<date> for everything else.
     if [[ "${tag}" =~ stable ]]; then
@@ -140,7 +151,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     if command -v skopeo &>/dev/null; then
         repotags=$(mktemp -t repotags.XXXXXXXX.json) || { echo "ERROR: mktemp failed to create tag-list temp file"; exit 1; }
         trap 'rm -f "${repotags}"' EXIT
-        skopeo list-tags "docker://ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}" >"${repotags}" 2>/dev/null \
+        skopeo list-tags "docker://ghcr.io/${image_vendor}/${image_name}" >"${repotags}" 2>/dev/null \
             || echo '{"Tags":[]}' >"${repotags}"
         if [[ $(jq "any(.Tags[]; contains(\"${ver}\"))" "${repotags}") == "true" ]]; then
             POINT=1
@@ -158,10 +169,10 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
         BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
     fi
 
-    # Image identity ARGs - these define how bootc/ublue ecosystem recognizes the image
-    # Override via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG
-    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${target_image}")
-    BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${IMAGE_VENDOR:-${REPO_ORG}}")
+    # Image identity ARGs - these define how bootc/ublue ecosystem recognizes the image.
+    # Override via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG.
+    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${image_name}")
+    BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${image_vendor}")
     BUILD_ARGS+=("--build-arg" "UBLUE_IMAGE_TAG=${UBLUE_IMAGE_TAG:-${tag}}")
 
     # Add GitHub token as build secret if available (for CI/CD)
@@ -190,7 +201,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     # Cache write (REGISTRY_CACHE_WRITE=1) is set by CI for non-PR builds only
     # PR builds and local builds are read-only to prevent cache poisoning
     CACHE_ARGS=()
-    cache_ref="ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}"
+    cache_ref="ghcr.io/${image_vendor}/${image_name}"
     if skopeo list-tags "docker://${cache_ref}" >/dev/null 2>&1; then
         CACHE_ARGS+=("--cache-from" "${cache_ref}")
         if [[ "${REGISTRY_CACHE_WRITE:-0}" == "1" ]]; then
