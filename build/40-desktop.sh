@@ -8,7 +8,11 @@ echo "::group:: Configuring desktop environment..."
 
 cp -r /ctx/custom/etc /
 cp -r /ctx/custom/var /
-# cp -r /ctx/custom/usr /
+# Ships gschema overrides, GNOME extensions, image artwork
+cp -r /ctx/custom/usr /
+
+# Recompile GSettings schemas so zz9-penguix-modifications.gschema.override takes effect
+glib-compile-schemas /usr/share/glib-2.0/schemas/
 
 systemctl mask systemd-remount-fs.service
 systemctl mask zfs-import-cache.service

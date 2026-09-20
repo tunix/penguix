@@ -34,7 +34,7 @@ description: >-
 | File                          | Trigger                           | Purpose                                                       |
 | ----------------------------- | --------------------------------- | ------------------------------------------------------------- |
 | `build-image.yml`             | push main + stable, manual        | Publish `:stable-testing` (main) or `:stable` (stable)        |
-| `promote-main-to-stable.yml`  | push main, manual                 | Squash promotion PR `main` → `stable` via factory reusable    |
+| `promote-main-to-stable.yml`  | push main, schedule daily, manual | Squash promotion PR `main` → `stable` via factory reusable; human merges |
 | `sync-stable-to-main.yml`     | push stable                       | Merge direct `stable` hotfixes back to `main` (usually no-op) |
 | `pr-validation.yml`           | PR → main                         | shellcheck + hadolint + pre-commit via `validate-pr`          |
 | `renovate.yml`                | schedule 6h, push renovate config | Self-hosted Renovate runner                                   |
@@ -64,6 +64,38 @@ description: >-
   `request_reviewer: false` — there is no `<owner>/maintainers` team.
 - The reusable still titles that issue `testing→main`; the penguix model is
   `main→stable`.
+
+### Personal-fork promotion structure (mirrors upstream finpilot)
+
+Three constraints a personal fork hits, all solved in upstream finpilot's
+`promote-main-to-stable.yml`; penguix copied that structure:
+
+- `enqueue_promotion: false` — the reusable's enrollment runs
+  `gh pr merge --auto` with no merge method; gh CLI refuses that
+  non-interactively ("--merge, --rebase, or --squash required") and the
+  reusable exposes no merge-method input. Merge promotion PRs by hand with an
+  explicit strategy (`gh pr merge <n> --squash`). A bot merge would not fire
+  the push-triggered `build-image.yml` for `:stable` either — a merge by a
+  person is required, not just preferred.
+- `gate` calls `reusable-release-gate.yml` directly: `enqueue_promotion` is a
+  master switch that disables the reusable's internal gate too, so the
+  caller invokes the gate itself to keep cosign verification and the
+  release/* labels.
+- `unblock-promotion-checks` approves `action_required` check runs for the
+  bot-authored promotion PR seconds after push. GitHub holds those runs until
+  approval and throttles scheduled unblocking workflows to hours, so the
+  approval must be inline. A penguix-only scheduled approver workflow
+  (`approve-trusted-promotion-runs.yml`) was deleted 2026-09-20 — it never
+  approved anything because `gh api` has no `--arg` flag (silent no-op with
+  usage error).
+- `repair-promotion-branch` force-rebuilds the promotion branch from main's
+  tree when it drifted: the reusable's rename-as-move overlay stages only
+  `--diff-filter=D` paths, so a file main *moved* (dconf keyfile → gschema
+  override, 6227b44) survives at its old path and the squash branch tree stops
+  matching main. `git commit-tree <main_tree> -p origin/stable` repairs it.
+- The cosign identity regexp is repo-strict
+  (`^https://github\.com/${{ github.repository }}/\.github/workflows/`),
+  matching the `certificate-identity-regexp` that `build-image.yml` signs with.
 
 ## Composite Action Pins
 

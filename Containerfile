@@ -49,15 +49,16 @@ COPY --from=common /system_files /oci/common
 COPY --from=brew /system_files /oci/brew
 
 # Base Image - GNOME included (Bluefin DX)
-FROM ghcr.io/ublue-os/bluefin-dx:stable
+# Pinned so Renovate/Dependabot can open PRs when upstream re-publishes :stable
+FROM ghcr.io/ublue-os/bluefin-dx:stable@sha256:5e5d036561a12f531ddcdb039cf09f66d8fd594f55a63920ca85045509dc4017
 
 # Image identity - these define how bootc, fastfetch, and the ublue ecosystem
 # recognize your image. Change these to match your project name.
 ARG IMAGE_NAME="penguix"
 ARG IMAGE_VENDOR="alperkanat"
 ARG UBLUE_IMAGE_TAG="stable"
-ARG BASE_IMAGE_NAME="silverblue"
-ARG FEDORA_MAJOR_VERSION="41"
+ARG BASE_IMAGE_NAME="bluefin-dx"
+ARG FEDORA_MAJOR_VERSION="44"
 ARG VERSION=""
 
 ### /opt
