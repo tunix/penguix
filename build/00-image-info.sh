@@ -9,12 +9,14 @@ set -euo pipefail
 # This script is bluefin-pattern: each consumer provides its own branding.
 #
 # Required env vars (set as ARGs in Containerfile):
-#   IMAGE_NAME          - Image name (e.g. finpilot, my-custom-os)
+#   IMAGE_NAME          - Image name (e.g. penguix, my-custom-os)
 #   IMAGE_VENDOR        - Image vendor/owner (e.g. github username or org)
 #   UBLUE_IMAGE_TAG     - Image tag/stream (e.g. stable, testing, latest)
-#   BASE_IMAGE_NAME     - Base image name (e.g. silverblue)
-#   FEDORA_MAJOR_VERSION - Fedora version (e.g. 42)
-#   VERSION             - Full version string (e.g. stable-42.20250531)
+#   BASE_IMAGE_NAME     - Base image name (e.g. bluefin-dx), derived by `just
+#                         build` from the Containerfile FROM line
+#   FEDORA_MAJOR_VERSION - Optional override; otherwise read from the base
+#                         image's os-release at build time
+#   VERSION             - Full version string (e.g. stable.20250531)
 #   SHA_HEAD_SHORT      - Short git SHA (optional, for dev builds)
 ###############################################################################
 
@@ -29,6 +31,27 @@ BUG_REPORT_URL="${BUG_REPORT_URL:-https://github.com/${IMAGE_VENDOR}/${IMAGE_NAM
 # Paths
 IMAGE_INFO="/usr/share/ublue-os/image-info.json"
 OS_RELEASE="/usr/lib/os-release"
+
+# BASE_IMAGE_NAME arrives from `just build`, which reads it off the Containerfile
+# FROM line — the single place the base is declared. An empty value means a bare
+# `podman build .` would bake an unknown base name into the identity; fail loudly.
+if [[ -z "${BASE_IMAGE_NAME:-}" ]]; then
+	echo "ERROR: BASE_IMAGE_NAME is empty — build with 'just build', which derives it from the Containerfile FROM line" >&2
+	exit 1
+fi
+
+# The base image owns the Fedora major; the Containerfile declares no ARG for
+# it, so image-info can never drift from what the image actually contains.
+# VERSION_ID is never rewritten below, so a repeat run agrees. An explicit
+# FEDORA_MAJOR_VERSION still wins, for CI overrides and tests.
+if [[ -z "${FEDORA_MAJOR_VERSION:-}" && -f "${OS_RELEASE}" ]]; then
+	# shellcheck disable=SC1091
+	FEDORA_MAJOR_VERSION="$(sed -n 's/^VERSION_ID="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "${OS_RELEASE}")"
+fi
+if [[ -z "${FEDORA_MAJOR_VERSION:-}" ]]; then
+	echo "ERROR: FEDORA_MAJOR_VERSION must be set or derivable from ${OS_RELEASE}" >&2
+	exit 1
+fi
 
 # Derive image flavor from name
 if [[ "${IMAGE_NAME}" =~ nvidia ]]; then

@@ -41,7 +41,7 @@ finpilot is a **bootc image template** following the Bluefin multi-stage build a
                           │ --mount=type=bind,from=ctx
 ┌─────────────────────────▼───────────────────────────────────┐
 │  Stage 2: Final image                                       │
-│    FROM quay.io/fedora-ostree-desktops/silverblue:44        │
+│    FROM ghcr.io/ublue-os/bluefin-dx:stable                 │
 │    RUN /ctx/build/00-image-info.sh   (metadata)             │
 │    RUN /ctx/build/10-build.sh        (packages)             │
 │    RUN /ctx/build/clean-stage.sh     (pre-lint cleanup)     │
