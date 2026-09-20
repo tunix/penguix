@@ -7,8 +7,13 @@ repos:
       - id: check-json
       - id: check-toml
       - id: check-yaml
+      # Vendored GNOME extensions (custom/usr/share/gnome-shell/extensions/)
+      # ship upstream-authored files; reformatting them would diverge from the
+      # extension sources and break every future extension update.
       - id: end-of-file-fixer
+        exclude: '^custom/usr/share/gnome-shell/extensions/'
       - id: trailing-whitespace
+        exclude: '^custom/usr/share/gnome-shell/extensions/'
 
   # Brewfile validation has exactly one implementation: build/validate-brewfiles.sh.
   # This hook must stay a caller of that script and must never hand a repository
