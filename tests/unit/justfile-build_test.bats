@@ -208,12 +208,12 @@ podman_build_args() {
     # The VM recipes pass localhost/<name> as target_image. The local tag keeps
     # the prefix; the identity must not, or image-info's image-ref names a
     # registry path that cannot exist and the ISO installs against it.
-    run_just build localhost/finpilot stable
+    run_just build localhost/penguix stable
     [ "$status" -eq 0 ]
     local args
     args="$(podman_build_args)"
-    [[ "${args}" == *"--build-arg IMAGE_NAME=finpilot"* ]]
-    [[ "${args}" == *"--tag localhost/finpilot:stable"* ]]
+    [[ "${args}" == *"--build-arg IMAGE_NAME=penguix"* ]]
+    [[ "${args}" == *"--tag localhost/penguix:stable"* ]]
 }
 
 @test "build: forwards GITHUB_TOKEN as a build secret when set" {
@@ -318,4 +318,13 @@ podman_build_args() {
     run_just tag-images finpilot stable "latest"
     [ "$status" -ne 0 ]
     ! grep -q '^untag ' "${PODMAN_LOG}"
+}
+@test "Justfile: the output chown does not read USER" {
+    # The BIB recipes run under `set -u` from cron, containers and systemd, where
+    # the kernel never exported USER. Reading it aborts the recipe after a 15-25
+    # minute build, so ownership comes from id instead.
+    line=$(grep -F 'chown -R' "${REPO_ROOT}/Justfile")
+    [ -n "${line}" ]
+    [[ "${line}" == *'$(id -u):$(id -g)'* ]]
+    [[ "${line}" != *'$USER'* ]]
 }
