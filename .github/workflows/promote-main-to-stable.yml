@@ -59,7 +59,7 @@ jobs:
   promote:
     name: Promote main to stable
     needs: ensure-stable
-    uses: projectbluefin/actions/.github/workflows/reusable-promote-squash.yml@2564c7bb30143104a9a1aebb4254359e174a8d81 # v1
+    uses: projectbluefin/actions/.github/workflows/reusable-promote-squash.yml@837850b6100b22c7920476035e7e1c28fdbba67f # v1
     with:
       variants: >-
         [{"image":"${{ github.event.repository.name }}"}]
