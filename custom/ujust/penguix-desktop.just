@@ -38,8 +38,32 @@ brave-1password-fix:
 
 # Syncs dconf settings for local user
 [group('Desktop')]
-dconf-sync:
+sync-dconf:
     dconf reset -f /
+
+# Recompiles GSettings schemas so zz9-penguix-modifications.gschema.override takes effect
+# without reinstalling the image
+[group('Desktop')]
+sync-schemas:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
+    echo "GSettings defaults recompiled. Keys you explicitly set still win;"
+    echo "run 'gsettings reset <schema> <key>' to fall back to the new default."
+
+# One-shot: recompiles GSettings schemas and resets user dconf so every key
+# falls back to the image default. WARNING: 'dconf reset -f /' wipes ALL
+# user-level settings (not just desktop ones) — this mirrors sync-dconf.
+[group('Desktop')]
+desktop-defaults-apply:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
+    dconf reset -f /
+    echo "Image desktop defaults applied: schemas recompiled, user dconf reset."
+    echo "Log out/in (or restart apps) so everything picks up the new values."
 
 # Syncs skel for local user
 [group('Desktop')]
