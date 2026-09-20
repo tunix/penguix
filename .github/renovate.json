@@ -47,12 +47,6 @@
       "schedule": ["at any time"]
     },
     {
-      "description": "Do not automatically cross Fedora major releases",
-      "matchDepNames": ["quay.io/fedora-ostree-desktops/silverblue"],
-      "matchUpdateTypes": ["major"],
-      "enabled": false
-    },
-    {
       "description": "Require human review for GitHub Actions updates — automerged action SHA bumps would run unreviewed code in privileged workflows (packages:write, id-token:write, secrets:inherit). Last matching rule wins, so keep this rule last.",
       "matchManagers": ["github-actions"],
       "automerge": false

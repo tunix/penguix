@@ -120,11 +120,17 @@ sudoif command *args:
 build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     #!/usr/bin/env bash
 
-    # Read the Fedora major version from Containerfile (single source of truth).
-    # The base image itself is pinned in the Containerfile FROM line.
-    fedora_version=$(grep -E '^ARG FEDORA_MAJOR_VERSION=' Containerfile | head -n1 | sed -E 's/^ARG FEDORA_MAJOR_VERSION="?([^"]+)"?/\1/')
-    if [[ -z "${fedora_version:-}" ]]; then
-        echo "ERROR: Could not extract FEDORA_MAJOR_VERSION from Containerfile"
+    # The base FROM line is the single source of truth for the base identity: it
+    # is the FROM with no stage alias, because every context stage is
+    # `FROM ... AS name`. Renovate moves its digest, so a major bump is a tag
+    # edit in one place. The tag is taken verbatim, so Fedora's numeric major
+    # and non-numeric tags (e.g. bluefin-dx:stable) both work.
+    base_from=$(grep -iE '^FROM[[:space:]]' Containerfile | grep -viE '[[:space:]]as[[:space:]]' | head -n1)
+    base_tag=$(sed -E 's|^FROM[[:space:]]+[^@:[:space:]]*:([^@[:space:]]+)(@.*)?$|\1|' <<<"${base_from}")
+    base_ref=$(sed -E 's|^FROM[[:space:]]+||; s|@.*$||; s|:[^:/]*$||' <<<"${base_from}")
+    base_image_name="${base_ref##*/}"
+    if [[ -z "${base_from}" || "${base_tag}" == "${base_from}" || -z "${base_image_name}" ]]; then
+        echo "ERROR: Could not read the base image from the Containerfile base FROM line"
         exit 1
     fi
 
@@ -139,12 +145,12 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     # registry path that cannot exist.
     image_name="${target_image#localhost/}"
 
-    # Bluefin-style version string: <fedora-version>.<date> for stable,
-    # <tag>-<fedora-version>.<date> for everything else.
+    # Version string from the base tag: <base-tag>.<date> for stable,
+    # <tag>-<base-tag>.<date> for everything else.
     if [[ "${tag}" =~ stable ]]; then
-        ver="${fedora_version}.$(date +%Y%m%d)"
+        ver="${base_tag}.$(date +%Y%m%d)"
     else
-        ver="${tag}-${fedora_version}.$(date +%Y%m%d)"
+        ver="${tag}-${base_tag}.$(date +%Y%m%d)"
     fi
 
     # Avoid tag collisions when rebuilding on the same day
@@ -173,6 +179,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     # Override via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG.
     BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${image_name}")
     BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${image_vendor}")
+    BUILD_ARGS+=("--build-arg" "BASE_IMAGE_NAME=${base_image_name}")
     BUILD_ARGS+=("--build-arg" "UBLUE_IMAGE_TAG=${UBLUE_IMAGE_TAG:-${tag}}")
 
     # Add GitHub token as build secret if available (for CI/CD)
