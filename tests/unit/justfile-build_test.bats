@@ -26,7 +26,7 @@ setup() {
     mkdir -p "${STUB_BIN}" "${TEST_ROOT}/logs" "${SANDBOX}"
 
     cp "${REPO_ROOT}/Justfile" "${SANDBOX}/Justfile"
-    printf 'ARG FEDORA_MAJOR_VERSION="44"\nFROM scratch\n' >"${SANDBOX}/Containerfile"
+    printf 'FROM example.invalid/bluefin-dx:44@sha256:deadbeef\n' >"${SANDBOX}/Containerfile"
 
     export PATH="${STUB_BIN}:${PATH}"
     export PODMAN_LOG SKOPEO_LOG
@@ -114,26 +114,49 @@ podman_build_args() {
     [[ "$(podman_build_args)" == *"--build-arg VERSION=44.20260830"* ]]
 }
 
-@test "build: reads the Fedora major version from the Containerfile" {
-    printf 'ARG FEDORA_MAJOR_VERSION="43"\nFROM scratch\n' >"${SANDBOX}/Containerfile"
+@test "build: reads the base tag from the base FROM line" {
+    printf 'FROM example.invalid/bluefin-dx:43@sha256:deadbeef\n' >"${SANDBOX}/Containerfile"
     run_just build finpilot stable
     [ "$status" -eq 0 ]
     [[ "$(podman_build_args)" == *"--build-arg VERSION=43.20260830"* ]]
 }
 
-@test "build: accepts an unquoted FEDORA_MAJOR_VERSION ARG" {
-    printf 'ARG FEDORA_MAJOR_VERSION=42\nFROM scratch\n' >"${SANDBOX}/Containerfile"
+@test "build: reads the base FROM tag, not a context stage's tag" {
+    printf 'FROM example.invalid/ctx:99@sha256:deadbeef AS ctx\nFROM example.invalid/bluefin-dx:45@sha256:deadbeef\n' >"${SANDBOX}/Containerfile"
+    run_just build finpilot stable
+    [ "$status" -eq 0 ]
+    [[ "$(podman_build_args)" == *"--build-arg VERSION=45.20260830"* ]]
+}
+
+@test "build: accepts a base FROM line without a digest" {
+    printf 'FROM example.invalid/bluefin-dx:42\n' >"${SANDBOX}/Containerfile"
     run_just build finpilot stable
     [ "$status" -eq 0 ]
     [[ "$(podman_build_args)" == *"--build-arg VERSION=42.20260830"* ]]
 }
 
-@test "build: aborts when the Containerfile has no FEDORA_MAJOR_VERSION ARG" {
-    printf 'FROM scratch\n' >"${SANDBOX}/Containerfile"
+@test "build: accepts a non-numeric base tag verbatim" {
+    # Bluefin streams tag with a name (stable) rather than a Fedora major, so
+    # the version string carries the tag as it is.
+    printf 'FROM example.invalid/centos-bootc:stream10@sha256:deadbeef\n' >"${SANDBOX}/Containerfile"
+    run_just build finpilot stable
+    [ "$status" -eq 0 ]
+    [[ "$(podman_build_args)" == *"--build-arg VERSION=stream10.20260830"* ]]
+}
+
+@test "build: aborts when the base FROM line carries no tag" {
+    printf 'FROM example.invalid/bluefin-dx@sha256:deadbeef\n' >"${SANDBOX}/Containerfile"
     run_just build finpilot stable
     [ "$status" -ne 0 ]
-    [[ "$output" == *"Could not extract FEDORA_MAJOR_VERSION"* ]]
+    [[ "$output" == *"Could not read the base image"* ]]
     [ ! -s "${PODMAN_LOG}" ] || ! grep -q '^build ' "${PODMAN_LOG}"
+}
+
+@test "build: passes the base image name read from the FROM line" {
+    printf 'FROM example.invalid/other-base:44@sha256:deadbeef\n' >"${SANDBOX}/Containerfile"
+    run_just build finpilot stable
+    [ "$status" -eq 0 ]
+    [[ "$(podman_build_args)" == *"--build-arg BASE_IMAGE_NAME=other-base"* ]]
 }
 
 @test "build: appends a point release when the version tag already exists" {
@@ -191,9 +214,10 @@ podman_build_args() {
     [[ "${args}" == *"--build-arg UBLUE_IMAGE_TAG=pinned"* ]]
 }
 
-# The positional target_image wins for the image identity: `target_image`
-# already defaults to IMAGE_NAME, so the default invocation is unchanged
-# while `just build otherimage stable` now labels the identity "otherimage".
+# The positional target_image wins for the image identity, minus any local
+# registry prefix: `target_image` already defaults to IMAGE_NAME, so the default
+# invocation is unchanged while `just build otherimage stable` now labels the
+# identity "otherimage".
 @test "build: IMAGE_NAME build arg follows the positional target_image" {
     run_just build otherimage stable
     [ "$status" -eq 0 ]
@@ -201,6 +225,18 @@ podman_build_args() {
     args="$(podman_build_args)"
     [[ "${args}" == *"--build-arg IMAGE_NAME=otherimage"* ]]
     [[ "${args}" == *"--tag otherimage:stable"* ]]
+}
+
+@test "build: strips a local registry prefix from the image identity" {
+    # The VM recipes pass localhost/<name> as target_image. The local tag keeps
+    # the prefix; the identity must not, or image-info's image-ref names a
+    # registry path that cannot exist and the ISO installs against it.
+    run_just build localhost/penguix stable
+    [ "$status" -eq 0 ]
+    local args
+    args="$(podman_build_args)"
+    [[ "${args}" == *"--build-arg IMAGE_NAME=penguix"* ]]
+    [[ "${args}" == *"--tag localhost/penguix:stable"* ]]
 }
 
 @test "build: forwards GITHUB_TOKEN as a build secret when set" {
@@ -305,4 +341,13 @@ podman_build_args() {
     run_just tag-images finpilot stable "latest"
     [ "$status" -ne 0 ]
     ! grep -q '^untag ' "${PODMAN_LOG}"
+}
+@test "Justfile: the output chown does not read USER" {
+    # The BIB recipes run under `set -u` from cron, containers and systemd, where
+    # the kernel never exported USER. Reading it aborts the recipe after a 15-25
+    # minute build, so ownership comes from id instead.
+    line=$(grep -F 'chown -R' "${REPO_ROOT}/Justfile")
+    [ -n "${line}" ]
+    [[ "${line}" == *'$(id -u):$(id -g)'* ]]
+    [[ "${line}" != *'$USER'* ]]
 }

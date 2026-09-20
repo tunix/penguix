@@ -228,3 +228,38 @@ json_field() {
     run bash "${SCRIPT}"
     [ "$status" -ne 0 ]
 }
+
+@test "00-image-info: derives the Fedora major from the base os-release" {
+    # The Containerfile declares no FEDORA_MAJOR_VERSION ARG, so in a real
+    # build the value comes from the base image's own os-release, and the
+    # identity can never drift from what the image actually contains.
+    unset FEDORA_MAJOR_VERSION
+    run bash "${SCRIPT}"
+    [ "$status" -eq 0 ]
+    [ "$(json_field fedora-version)" = "42" ]
+}
+
+@test "00-image-info: an explicit Fedora major overrides the base os-release" {
+    export FEDORA_MAJOR_VERSION="99"
+    run bash "${SCRIPT}"
+    [ "$status" -eq 0 ]
+    [ "$(json_field fedora-version)" = "99" ]
+}
+
+@test "00-image-info: fails when neither an override nor the base os-release provides the Fedora major" {
+    unset FEDORA_MAJOR_VERSION
+    printf 'NAME="Fedora Linux"\n' >"${OS_RELEASE}"
+    run bash "${SCRIPT}"
+    [ "$status" -ne 0 ]
+    [ ! -f "${IMAGE_INFO_JSON}" ]
+}
+
+@test "00-image-info: fails fast when BASE_IMAGE_NAME is empty" {
+    # `just build` derives it from the FROM line; a bare `podman build .` does
+    # not, and must fail loudly instead of baking an unknown base name.
+    export BASE_IMAGE_NAME=""
+    run bash "${SCRIPT}"
+    [ "$status" -ne 0 ]
+    [ ! -f "${IMAGE_INFO_JSON}" ]
+    [[ "$output" == *"BASE_IMAGE_NAME is empty"* ]]
+}

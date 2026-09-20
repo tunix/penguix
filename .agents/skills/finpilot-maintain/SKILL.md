@@ -165,7 +165,8 @@ digest-only PRs. If Renovate stops creating PRs, run the Renovate section of
 ### Annually
 
 - Review and bump Fedora major version (if desired)
-- Update `FEDORA_MAJOR_VERSION` ARG in `Containerfile`
+- Edit the base tag in the `Containerfile` `FROM` line (the single source of
+  truth — no separate version ARG exists anymore)
 - Test full build and deployment cycle
 - Review and update documentation (`README.md`, `AGENTS.md`, skills)
 
