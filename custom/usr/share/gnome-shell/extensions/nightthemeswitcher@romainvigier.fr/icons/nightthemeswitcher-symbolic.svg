@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: Night Theme Switcher Contributors
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+  <path d="M4 0C1.784 0 0 1.784 0 4v28h32V4c0-2.216-1.784-4-4-4zm22.951 3A2 2 0 0127 3a2 2 0 012 2 2 2 0 01-2 2 2 2 0 01-2-2 2 2 0 011.951-2zM3 10h26v19H3z"/>
+  <path d="M13.643 13.734c-2.433 1.306-3.81 4.261-3.244 6.964.488 2.74 2.906 4.98 5.676 5.257 2.09.255 4.271-.581 5.652-2.17-2.73.504-5.667-.963-6.904-3.448-1.242-2.328-.863-5.383.91-7.337a6.547 6.547 0 00-2.09.734z"/>
+</svg>
