@@ -2,7 +2,10 @@ export IMAGE_NAME := env("IMAGE_NAME", "penguix")
 export DEFAULT_TAG := env("DEFAULT_TAG", "stable")
 export PODMAN := env("PODMAN", "podman")
 export REPO_ORG := env("GITHUB_REPOSITORY_OWNER", "alperkanat")
-export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest@sha256:2b52843ea2bfda73b0a08d97e76b734393b1d3a804681b9fabb26723bd3a2f0b")
+export bib_image := env("BIB_IMAGE", "ghcr.io/osbuild/bootc-image-builder:latest@sha256:536391d6c36b32c33f5a7e30deaffa3af1dfe66128284e0cfd73e7fcb9ccfd72")
+export qemu_image := env("QEMU_IMAGE", "ghcr.io/qemus/qemu:7.50@sha256:e7f6fda52503a546fd649670ba46e4bc23dc6dcef275bc3fac48877fbbc430df")
+export vm_ram := env("VM_RAM", "8192")
+export vm_cpus := env("VM_CPUS", "4")
 
 alias build-vm := build-qcow2
 alias rebuild-vm := rebuild-qcow2
@@ -125,6 +128,17 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
         exit 1
     fi
 
+    # Image identity, resolved once: an explicit IMAGE_VENDOR wins, otherwise
+    # fall back to the repository owner GitHub Actions supplies.
+    image_vendor="${IMAGE_VENDOR:-${REPO_ORG}}"
+
+    # target_image names the local image, and the VM recipes pass it with a
+    # `localhost/` prefix. The identity must not carry that prefix: image-info
+    # composes image-ref from IMAGE_NAME, and the ISO path hands that ref to
+    # Bootc Image Builder as the install target, so the prefix would become a
+    # registry path that cannot exist.
+    image_name="${target_image#localhost/}"
+
     # Bluefin-style version string: <fedora-version>.<date> for stable,
     # <tag>-<fedora-version>.<date> for everything else.
     if [[ "${tag}" =~ stable ]]; then
@@ -137,7 +151,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     if command -v skopeo &>/dev/null; then
         repotags=$(mktemp -t repotags.XXXXXXXX.json) || { echo "ERROR: mktemp failed to create tag-list temp file"; exit 1; }
         trap 'rm -f "${repotags}"' EXIT
-        skopeo list-tags "docker://ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}" >"${repotags}" 2>/dev/null \
+        skopeo list-tags "docker://ghcr.io/${image_vendor}/${image_name}" >"${repotags}" 2>/dev/null \
             || echo '{"Tags":[]}' >"${repotags}"
         if [[ $(jq "any(.Tags[]; contains(\"${ver}\"))" "${repotags}") == "true" ]]; then
             POINT=1
@@ -155,10 +169,10 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
         BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
     fi
 
-    # Image identity ARGs - these define how bootc/ublue ecosystem recognizes the image
-    # Override via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG
-    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${target_image}")
-    BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${IMAGE_VENDOR:-${REPO_ORG}}")
+    # Image identity ARGs - these define how bootc/ublue ecosystem recognizes the image.
+    # Override via env vars: IMAGE_NAME, IMAGE_VENDOR, UBLUE_IMAGE_TAG.
+    BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${image_name}")
+    BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${image_vendor}")
     BUILD_ARGS+=("--build-arg" "UBLUE_IMAGE_TAG=${UBLUE_IMAGE_TAG:-${tag}}")
 
     # Add GitHub token as build secret if available (for CI/CD)
@@ -187,7 +201,7 @@ build $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
     # Cache write (REGISTRY_CACHE_WRITE=1) is set by CI for non-PR builds only
     # PR builds and local builds are read-only to prevent cache poisoning
     CACHE_ARGS=()
-    cache_ref="ghcr.io/${IMAGE_VENDOR:-${REPO_ORG}}/${target_image}"
+    cache_ref="ghcr.io/${image_vendor}/${image_name}"
     if skopeo list-tags "docker://${cache_ref}" >/dev/null 2>&1; then
         CACHE_ARGS+=("--cache-from" "${cache_ref}")
         if [[ "${REGISTRY_CACHE_WRITE:-0}" == "1" ]]; then
@@ -254,17 +268,18 @@ _rootful_load_image $target_image=IMAGE_NAME $tag=DEFAULT_TAG:
         exit 0
     fi
 
-    # Try to resolve the image tag using podman inspect
+    # Does the image exist locally at all? A non-zero exit means it only lives
+    # in the registry, and the else branch below pulls it.
     set +e
-    resolved_tag=$(podman inspect -t image "${target_image}:${tag}" | jq -r '.[].RepoTags.[0]')
+    podman inspect -t image "${target_image}:${tag}" >/dev/null 2>&1
     return_code=$?
     set -e
 
-    USER_IMG_ID=$(podman images --filter reference="${target_image}:${tag}" --format "'{{ '{{.ID}}' }}'")
+    USER_IMG_ID=$(podman images -q --filter reference="${target_image}:${tag}")
 
     if [[ $return_code -eq 0 ]]; then
         # If the image is found, load it into rootful podman
-        ID=$(just sudoif podman images --filter reference="${target_image}:${tag}" --format "'{{ '{{.ID}}' }}'")
+        ID=$(just sudoif podman images -q --filter reference="${target_image}:${tag}")
         if [[ "$ID" != "$USER_IMG_ID" ]]; then
             # If the image ID is not found or different from user, copy the image from user podman to root podman
             COPYTMP=$(mktemp -p "${PWD}" -d -t _build_podman_scp.XXXXXXXXXX)
@@ -294,25 +309,29 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
     args+="--rootfs=btrfs"
 
     BUILDTMP=$(mktemp -p "${PWD}" -d -t _build-bib.XXXXXXXXXX)
+    # This script exits on the first error, so a failed build would otherwise
+    # leave the image BIB already wrote inside BUILDTMP behind in the repo root.
+    trap 'sudo rm -rf "${BUILDTMP}"' EXIT
 
     sudo podman run \
       --rm \
-      -it \
       --privileged \
-      --pull=newer \
       --net=host \
       --security-opt label=type:unconfined_t \
-      -v $(pwd)/${config}:/config.toml:ro \
-      -v $BUILDTMP:/output \
+      -v "${PWD}/${config}:/config.toml:ro" \
+      -v "${BUILDTMP}:/output" \
       -v /var/lib/containers/storage:/var/lib/containers/storage \
       "${bib_image}" \
       ${args} \
       "${target_image}:${tag}"
 
     mkdir -p output
-    sudo mv -f $BUILDTMP/* output/
-    sudo rmdir $BUILDTMP
-    sudo chown -R $USER:$USER output/
+    sudo mv -f "${BUILDTMP}"/* output/
+    sudo rmdir "${BUILDTMP}"
+    # `id` rather than `$USER`: these recipes run under `set -u` from cron,
+    # containers and systemd, where the kernel never exported USER, and aborting
+    # here would throw away a completed build.
+    sudo chown -R "$(id -u):$(id -g)" output/
 
 # Podman builds the image from the Containerfile and creates a bootable image
 # Parameters:
@@ -348,68 +367,230 @@ rebuild-raw $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_reb
 [group('Build Virtual Machine Image')]
 rebuild-iso $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_rebuild-bib target_image tag "iso" "iso/iso.toml")
 
-# Run a virtual machine with the specified image type and configuration
-_run-vm $target_image $tag $type $config:
-    #!/usr/bin/bash
-    set -eoux pipefail
+# The artifact Bootc Image Builder writes for a given --type, as a path from
+# the repository root. The directory is osbuild's export name, which is not
+# always the type name: see osbuild/image-builder internal/bibimg/imagetypes.go,
+# where raw exports as "image" while qcow2 exports as "qcow2" and the ISO types
+# export as "bootiso". Every VM recipe resolves its input through here.
+[private]
+vm-artifact $type:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "${type}" in
+        qcow2) echo "output/qcow2/disk.qcow2" ;;
+        raw) echo "output/image/disk.raw" ;;
+        iso) echo "output/bootiso/install.iso" ;;
+        *)
+            echo "ERROR: unknown image type '${type}' (expected qcow2, raw or iso)" >&2
+            exit 1
+            ;;
+    esac
 
-    # Determine the image file based on the type
-    image_file="output/${type}/disk.${type}"
-    if [[ $type == iso ]]; then
-        image_file="output/bootiso/install.iso"
+# Run a built artifact in a virtual machine.
+#
+# Native QEMU first, the shape projectbluefin/dakota's boot-vm uses: no
+# container pull, a real window on a desktop host, and 2222 forwarded to the
+# guest's sshd. Hosts without qemu-system-x86_64 fall back to
+# ghcr.io/qemus/qemu, which serves the same VM over a browser console and
+# provisions its own disk.
+#
+# The ISO needs a disk to install onto, so it gets a scratch qcow2 target at
+# output/iso/target.qcow2, created on first use. Disk images are booted as they
+# are, so the guest writes to the built artifact; `just build-<type>` restores
+# it and `just clean` removes the scratch target.
+_run-vm $target_image $tag $type:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    artifact=$(just vm-artifact "${type}")
+
+    # Build the artifact if it is not there yet.
+    if [[ ! -f "${artifact}" ]]; then
+        just "build-${type}" "${target_image}" "${tag}"
     fi
 
-    # Build the image if it does not exist
-    if [[ ! -f "${image_file}" ]]; then
-        just "build-${type}" "$target_image" "$tag"
+    if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
+        just _run-vm-container "${type}" "${artifact}"
+        exit 0
     fi
 
-    # Determine an available port to use
+    # OVMF lives at a different path on every distro, and the vars file has to
+    # be a writable copy: UEFI saves boot state into it.
+    ovmf_code=""
+    for f in \
+        /usr/share/edk2/ovmf/OVMF_CODE.fd \
+        /usr/share/OVMF/OVMF_CODE.fd \
+        /usr/share/OVMF/OVMF_CODE_4M.fd \
+        /usr/share/edk2/x64/OVMF_CODE.4m.fd \
+        /usr/share/qemu/OVMF_CODE.fd; do
+        [[ -f "${f}" ]] && { ovmf_code="${f}"; break; }
+    done
+    if [[ -z "${ovmf_code}" ]]; then
+        echo "ERROR: OVMF firmware not found — install edk2-ovmf (Fedora) or ovmf (Debian/Ubuntu)" >&2
+        exit 1
+    fi
+
+    ovmf_vars_src=""
+    for f in \
+        /usr/share/edk2/ovmf/OVMF_VARS.fd \
+        /usr/share/OVMF/OVMF_VARS.fd \
+        /usr/share/OVMF/OVMF_VARS_4M.fd \
+        /usr/share/edk2/x64/OVMF_VARS.4m.fd \
+        /usr/share/qemu/OVMF_VARS.fd; do
+        [[ -f "${f}" ]] && { ovmf_vars_src="${f}"; break; }
+    done
+    ovmf_vars=$(mktemp /tmp/OVMF_VARS.XXXXXX.fd)
+    [[ -n "${ovmf_vars_src}" ]] && cp "${ovmf_vars_src}" "${ovmf_vars}"
+    trap 'rm -f "${ovmf_vars}"' EXIT
+
+    # 2222 is the conventional host port for the guest's sshd, but it is only
+    # free until the first VM takes it.
+    ssh_port=2222
+    while ss -tunalp 2>/dev/null | grep -q ":${ssh_port} "; do
+        ssh_port=$(( ssh_port + 1 ))
+    done
+
+    args=(
+        -machine q35
+        -accel kvm
+        -cpu host
+        -smp "${vm_cpus}"
+        -m "${vm_ram}"
+        -device virtio-vga
+        -device virtio-keyboard
+        -device virtio-mouse
+        -device virtio-net-pci,netdev=net0
+        -netdev "user,id=net0,hostfwd=tcp:127.0.0.1:${ssh_port}-:22"
+        -drive "if=pflash,format=raw,readonly=on,file=${ovmf_code}"
+        -drive "if=pflash,format=raw,file=${ovmf_vars}"
+    )
+
+    if [[ "${type}" == iso ]]; then
+        target="output/iso/target.qcow2"
+        if [[ ! -f "${target}" ]]; then
+            echo "==> Creating the ISO's scratch target disk: ${target} (64G sparse)"
+            mkdir -p output/iso
+            qemu-img create -f qcow2 "${target}" 64G >/dev/null
+        fi
+        args+=(-drive "file=${artifact},media=cdrom,readonly=on,format=raw")
+        args+=(-drive "file=$(realpath "${target}"),if=virtio,format=qcow2")
+        args+=(-boot order=d)
+    else
+        args+=(-drive "file=${artifact},if=virtio,format=${type}")
+        args+=(-boot order=c)
+    fi
+
+    # No display (an ssh session, say): fall back to the serial console. Serial
+    # output only appears if the guest's kernel cmdline asks for it.
+    if [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+        args+=(-display gtk)
+    else
+        echo "==> No display detected: serial console on stdio (Ctrl-A X to quit)"
+        args+=(-display none -serial mon:stdio)
+    fi
+
+    echo "==> Booting ${artifact}"
+    echo "    RAM: ${vm_ram}M, CPUs: ${vm_cpus}, ssh: ssh -p ${ssh_port} <user>@127.0.0.1"
+    qemu-system-x86_64 "${args[@]}"
+
+# Containerised fallback for _run-vm, for hosts with no qemu-system-x86_64.
+# qemus/qemu boots the image and serves a web console; it provisions its own
+# disk, so the ISO needs no scratch target here. Disk images are booted with
+# -snapshot so the container never writes to the built artifact.
+[private]
+_run-vm-container $type $artifact:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    if [[ ! -f "${artifact}" ]]; then
+        echo "ERROR: ${artifact} not found — run: just build-${type}" >&2
+        exit 1
+    fi
+
+    case "${type}" in
+        qcow2)
+            boot_mount="/boot.qcow2"
+            arguments="-snapshot"
+            ;;
+        raw)
+            boot_mount="/boot.img"
+            arguments="-snapshot"
+            ;;
+        iso)
+            boot_mount="/boot.iso"
+            arguments=""
+            ;;
+    esac
+
     port=8006
-    while grep -q :${port} <<< $(ss -tunalp); do
+    while ss -tunalp 2>/dev/null | grep -q ":${port} "; do
         port=$(( port + 1 ))
     done
-    echo "Using Port: ${port}"
-    echo "Connect to http://localhost:${port}"
+    echo "==> Web console: http://localhost:${port}"
 
-    # Set up the arguments for running the VM
-    run_args=()
-    run_args+=(--rm --privileged)
-    run_args+=(--pull=newer)
-    run_args+=(--publish "127.0.0.1:${port}:8006")
-    run_args+=(--env "CPU_CORES=4")
-    run_args+=(--env "RAM_SIZE=8G")
-    run_args+=(--env "DISK_SIZE=64G")
-    run_args+=(--env "TPM=Y")
-    run_args+=(--env "GPU=Y")
-    run_args+=(--device=/dev/kvm)
-    run_args+=(--volume "${PWD}/${image_file}":"/boot.${type}")
-    run_args+=(docker.io/qemux/qemu)
+    run_args=(
+        --rm --privileged
+        --device=/dev/kvm
+        --publish "127.0.0.1:${port}:8006"
+        --env "CPU_CORES=${vm_cpus}"
+        --env "RAM_SIZE=${vm_ram}M"
+        --env "DISK_SIZE=64G"
+        --env "BOOT_MODE=uefi"
+        --env "TPM=Y"
+        --env "GPU=Y"
+    )
+    [[ -n "${arguments}" ]] && run_args+=(--env "ARGUMENTS=${arguments}")
+    run_args+=(--volume "$(realpath "${artifact}"):${boot_mount}" "${qemu_image}")
 
-    # Run the VM and open the browser to connect
-    (sleep 30 && xdg-open http://localhost:"$port") &
+    (sleep 15 && xdg-open "http://localhost:${port}") >/dev/null 2>&1 &
     podman run "${run_args[@]}"
 
 # Run a virtual machine from a QCOW2 image
 [group('Run Virtual Machine')]
-run-vm-qcow2 $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_run-vm target_image tag "qcow2" "iso/disk.toml")
+run-vm-qcow2 $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_run-vm target_image tag "qcow2")
 
 # Run a virtual machine from a RAW image
 [group('Run Virtual Machine')]
-run-vm-raw $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_run-vm target_image tag "raw" "iso/disk.toml")
+run-vm-raw $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_run-vm target_image tag "raw")
 
 # Run a virtual machine from an ISO
 [group('Run Virtual Machine')]
-run-vm-iso $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_run-vm target_image tag "iso" "iso/iso.toml")
+run-vm-iso $target_image=("localhost/" + IMAGE_NAME) $tag=DEFAULT_TAG: && (_run-vm target_image tag "iso")
 
-# Run a virtual machine using systemd-vmspawn
+# Run a virtual machine using systemd-vmspawn. Disk images only; for an ISO use run-vm-iso.
 [group('Run Virtual Machine')]
 spawn-vm rebuild="0" type="qcow2" ram="6G":
     #!/usr/bin/env bash
-
     set -euo pipefail
 
-    [ "{{ rebuild }}" -eq 1 ] && echo "Rebuilding the ISO" && just build-vm {{ rebuild }} {{ type }}
+    # vmspawn shells out to qemu and needs KVM. Left unchecked it fails with a
+    # generic error after doing work, so name what is missing up front.
+    for dep in systemd-vmspawn qemu-system-x86_64; do
+        if ! command -v "${dep}" >/dev/null 2>&1; then
+            echo "ERROR: ${dep} not found — use 'just run-vm-{{ type }}' instead" >&2
+            exit 1
+        fi
+    done
+    if [[ ! -w /dev/kvm ]]; then
+        echo "ERROR: /dev/kvm is missing or not writable — add your user to the kvm group, or use 'just run-vm-{{ type }}'" >&2
+        exit 1
+    fi
+
+    if [[ "{{ type }}" == "iso" ]]; then
+        echo "ERROR: systemd-vmspawn boots disk images; use 'just run-vm-iso' for an ISO" >&2
+        exit 1
+    fi
+
+    if [[ "{{ rebuild }}" -eq 1 ]]; then
+        echo "Rebuilding the {{ type }} image"
+        just "build-{{ type }}"
+    fi
+
+    artifact=$(just vm-artifact "{{ type }}")
+    if [[ ! -f "${artifact}" ]]; then
+        echo "ERROR: ${artifact} not found — run: just build-{{ type }}" >&2
+        exit 1
+    fi
 
     systemd-vmspawn \
       -M "bootc-image" \
@@ -418,7 +599,7 @@ spawn-vm rebuild="0" type="qcow2" ram="6G":
       --ram=$(echo {{ ram }}| /usr/bin/numfmt --from=iec) \
       --network-user-mode \
       --vsock=false --pass-ssh-key=false \
-      -i ./output/**/*.{{ type }}
+      -i "$(realpath "${artifact}")"
 
 # Expand .shellcheck-scope into the list of shell scripts under lint
 [private]
