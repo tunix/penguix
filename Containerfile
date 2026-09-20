@@ -54,11 +54,13 @@ FROM ghcr.io/ublue-os/bluefin-dx:stable@sha256:5e5d036561a12f531ddcdb039cf09f66d
 
 # Image identity - these define how bootc, fastfetch, and the ublue ecosystem
 # recognize your image. Change these to match your project name.
+# The base FROM line above is the only place the base image is declared:
+# Renovate updates its digest, a major bump is a tag edit there, and everything
+# else (base name, Fedora major) is derived from it at build time.
 ARG IMAGE_NAME="penguix"
 ARG IMAGE_VENDOR="alperkanat"
 ARG UBLUE_IMAGE_TAG="stable"
-ARG BASE_IMAGE_NAME="bluefin-dx"
-ARG FEDORA_MAJOR_VERSION="44"
+ARG BASE_IMAGE_NAME=""
 ARG VERSION=""
 
 ### /opt

@@ -37,15 +37,18 @@ built-in `dockerfile` manager updates every digest.
 FROM ghcr.io/projectbluefin/common:latest@sha256:<current> AS common
 FROM ghcr.io/ublue-os/brew:latest@sha256:<current> AS brew
 
-# Base image
-ARG FEDORA_MAJOR_VERSION="44"
-FROM quay.io/fedora-ostree-desktops/silverblue:44@sha256:<current>
+# Base image — the only place the base is declared
+FROM ghcr.io/ublue-os/bluefin-dx:stable@sha256:<current>
 ```
 
 **Never update digests manually.** Let Renovate open PRs for digest bumps.
 
-To change an image or tag, edit its `FROM` line. To bump the Fedora major
-release, update both the `FEDORA_MAJOR_VERSION` ARG and the base image tag.
+The base `FROM` line is the **single source of truth** for the base identity:
+there is no `FEDORA_MAJOR_VERSION` or `BASE_IMAGE_NAME` ARG to keep in sync.
+`just build` reads the base name and tag from the FROM line (the FROM with no
+stage alias), the version string becomes `<base-tag>.<date>`, and
+`00-image-info.sh` reads the Fedora major from the base's own `os-release` at
+build time — so nothing can drift. A major bump is a one-line tag edit.
 
 ## Build Script Conventions
 
@@ -97,13 +100,17 @@ EOF
 
 ## Base Image
 
-Default: `quay.io/fedora-ostree-desktops/silverblue:44`
+Default: `ghcr.io/ublue-os/bluefin-dx:stable` (tracks Bluefin's weekly stable
+stream; currently Fedora 44)
 
-The major version is controlled by the `FEDORA_MAJOR_VERSION` ARG and the `FROM` line in `Containerfile`. To bump Fedora releases:
+The `FROM` line in `Containerfile` is the single source of truth for the base
+identity. Renovate bumps its digest; Fedora majors arrive when Bluefin repoints
+`stable` (or you edit the tag deliberately). To change the base or its tag:
 
-1. Update `FEDORA_MAJOR_VERSION` and the `FROM` line in `Containerfile`
-2. Update the Renovate rule that blocks major updates for the base image
-3. Test with `just build` — expect `bootc container lint --fatal-warnings` to catch regressions
+1. Edit the base `FROM` line in `Containerfile`
+2. Test with `just build` — the version string and `image-info.json` derive
+   themselves (`<base-tag>.<date>`; Fedora major read from the base's
+   `os-release`), so no second edit exists to forget
 
 ## Common Rationalizations
 

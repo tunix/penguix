@@ -93,13 +93,16 @@ validates that the remaining sites agree — see issue #291.
 The Containerfile exposes these identity ARGs for downstream branding:
 
 ```dockerfile
-ARG IMAGE_NAME="finpilot"          # Your image's name (matches rename #1)
-ARG IMAGE_VENDOR="projectbluefin"  # Your GitHub org/username
-ARG UBLUE_IMAGE_TAG="stable"       # Stream name
-ARG BASE_IMAGE_NAME="silverblue"   # Base image for image-info.json
+ARG IMAGE_NAME="penguix"          # Your image's name (matches rename #1)
+ARG IMAGE_VENDOR="alperkanat"     # Your GitHub org/username
+ARG UBLUE_IMAGE_TAG="stable"      # Stream name
+ARG BASE_IMAGE_NAME=""            # Derived by `just build` from the FROM line
 ```
 
-These are consumed by `build/00-image-info.sh` to write:
+The base `FROM` line is the only place the base image is declared: Renovate
+updates its digest, a major bump is a tag edit there, and the Fedora major is
+read from the base's `os-release` at build time. These are consumed by
+`build/00-image-info.sh` to write:
 
 - `/usr/share/ublue-os/image-info.json` (read by the ublue ecosystem)
 - `/usr/lib/os-release` branding fields
