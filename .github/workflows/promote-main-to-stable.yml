@@ -225,7 +225,18 @@ jobs:
           # The same trust boundary the factory approver documents: only runs
           # on the bot-owned promotion branch, from the bot itself. Those
           # branches carry only commits that already passed their own PR checks.
-          runs_filter=".workflow_runs[] | select(.head_branch == \"${PROMOTION_BRANCH}\") | select(.actor.login == \"github-actions[bot]\") | .id"
+          #
+          # Approve only runs pinned to the branch's CURRENT head. The
+          # repair-promotion-branch force-push lands seconds after the
+          # reusable's rebuild, so action_required runs for both the old and
+          # the new head are listed at once; approving both makes them race
+          # for the same PR-number concurrency group and can cancel the
+          # current head's runs with nothing left running (observed on
+          # PR #26, 2026-09-20). Stale-head runs are superseded and must
+          # never run.
+          branch_head=$(gh api "repos/${{ github.repository }}/git/ref/heads/${PROMOTION_BRANCH}" \
+            --jq '.object.sha')
+          runs_filter=".workflow_runs[] | select(.head_branch == \"${PROMOTION_BRANCH}\") | select(.head_sha == \"${branch_head}\") | select(.actor.login == \"github-actions[bot]\") | .id"
 
           approved=0
           # Runs for a freshly pushed branch appear a few seconds after the
