@@ -1,0 +1,5 @@
+# Mutter (window manager)
+
+[org/gnome/mutter]
+workspaces-only-on-primary = false
+center-new-windows = true
