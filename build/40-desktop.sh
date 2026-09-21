@@ -11,8 +11,10 @@ cp -r /ctx/custom/var /
 # Ships gschema overrides, GNOME extensions, image artwork
 cp -r /ctx/custom/usr /
 
-# Recompile GSettings schemas so zz9-penguix-modifications.gschema.override takes effect
+# Recompile GSettings schemas (bluefin zz0/zz1 overrides) and rebuild the
+# dconf system database so our distro.d keyfiles are compiled into the image
 glib-compile-schemas /usr/share/glib-2.0/schemas/
+dconf update
 
 systemctl mask systemd-remount-fs.service
 systemctl mask zfs-import-cache.service

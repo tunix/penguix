@@ -36,33 +36,28 @@ brave-1password-fix:
     chmod 644 "${DEST}/com.1password.1password.json"
     echo "Done. Restart Brave completely (flatpak kill com.brave.Browser) to activate."
 
-# Syncs dconf settings for local user
+# Rebuilds the dconf system database so changed distro.d keyfiles take
+# effect without reinstalling the image
 [group('Desktop')]
 sync-dconf:
-    dconf reset -f /
-
-# Recompiles GSettings schemas so zz9-penguix-modifications.gschema.override takes effect
-# without reinstalling the image
-[group('Desktop')]
-sync-schemas:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
-    echo "GSettings defaults recompiled. Keys you explicitly set still win;"
-    echo "run 'gsettings reset <schema> <key>' to fall back to the new default."
+    sudo dconf update
+    echo "dconf system db rebuilt. Keys you explicitly set still win;"
+    echo "run 'gsettings reset <schema> <key>' to fall back to the image default."
 
-# One-shot: recompiles GSettings schemas and resets user dconf so every key
+# One-shot: rebuilds the dconf system db and resets user dconf so every key
 # falls back to the image default. WARNING: 'dconf reset -f /' wipes ALL
-# user-level settings (not just desktop ones) — this mirrors sync-dconf.
+# user-level settings (not just desktop ones).
 [group('Desktop')]
 desktop-defaults-apply:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
+    sudo dconf update
     dconf reset -f /
-    echo "Image desktop defaults applied: schemas recompiled, user dconf reset."
+    echo "Image desktop defaults applied: dconf db rebuilt, user dconf reset."
     echo "Log out/in (or restart apps) so everything picks up the new values."
 
 # Syncs skel for local user

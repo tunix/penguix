@@ -1,0 +1,11 @@
+# GTK file chooser and system datetime
+
+[org/gtk/settings/file-chooser]
+sort-directories-first = true
+
+[org/gtk/gtk4/settings/file-chooser]
+sort-directories-first = true
+sort-order = 'ascending'
+
+[org/gnome/desktop/datetime]
+automatic-timezone = true
