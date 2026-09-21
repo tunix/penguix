@@ -1,0 +1,10 @@
+# Nautilus, Tweaks
+
+[org/gnome/nautilus/icon-view]
+default-zoom-level = 'small-plus'
+
+[org/gnome/nautilus/window-state]
+initial-size = (1210, 750)
+
+[org/gnome/tweaks]
+show-extensions-notice = false

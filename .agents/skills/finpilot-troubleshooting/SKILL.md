@@ -84,6 +84,15 @@ description: >-
 | Missing package after boot              | Installed in wrong layer or runtime vs build-time confusion | Check if it's in `build/10-build.sh` (build-time) or `custom/brew/` (runtime)                                                   |
 | `/opt` is not writable                  | `/opt` is symlinked to `/var/opt` by default                | In `Containerfile`, replace `RUN rm -rf /opt && ln -s /var/opt /opt` with `RUN rm /opt && mkdir /opt` if immutability is needed |
 
+## Desktop / dconf Settings
+
+| Symptom                                                        | Cause                                                                                                                                 | Solution                                                                                                                              |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Custom keybinding (e.g. `<Super>t` → Ghostty) stops working    | Gschema overrides are only *defaults*; any dconf value wins. Bluefin ships relocatable-schema settings (media-keys custom keybindings, Ptyxis profile) via dconf keyfiles (`02-bluefin-keybindings`, `03-bluefin-ptyxis-palette`) | Keep those keys in `custom/etc/dconf/db/distro.d/99-*` keyfiles (sort after bluefin's), run `sudo dconf update`, then `gsettings reset` any shadowing user keys |
+| `gsettings get` returns a value that is not in the override    | `dconf read`/`dconf dump` show the *merged* profile view (user-db → local → site → distro), so the serving database is invisible        | Attribute with isolated profiles: write a file containing only `user-db:user` (or `system-db:distro`) and run `DCONF_PROFILE=/abs/path dconf dump /...` |
+| Distro db still serves values from a deleted keyfile           | `/etc` persists across rebases; the compiled `/etc/dconf/db/distro` is stale until rebuilt                                            | Run `sudo dconf update` (or `ujust sync-dconf`); `40-desktop.sh` runs `dconf update` at build time since the dconf-only conversion       |
+| Override file edited but `gsettings` shows old value           | User explicitly set the key; user-db always beats override defaults                                                                   | `gsettings reset <schema> <key>`, or `ujust desktop-defaults-apply` to reset all user dconf (destructive)                               |
+
 ## Renovate Issues
 
 | Symptom                       | Cause                                              | Solution                                                                   |
@@ -128,6 +137,7 @@ description: >-
 - Manually updating digests in `Containerfile` instead of using Renovate
 - Leaving COPRs enabled after install
 - Not verifying app IDs on Flathub before adding to `.preinstall`
+- Moving relocatable-schema settings (extension schemas, custom keybindings, Ptyxis profiles) into gschema overrides — dconf beats defaults
 - Pushing fixes directly to `main` instead of opening a PR
 
 ## Verification
