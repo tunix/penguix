@@ -5,6 +5,7 @@
   "prConcurrentLimit": 20,
   "recreateWhen": "always",
   "rebaseWhen": "auto",
+  "assignees": ["tunix"],
   "customManagers": [
     {
       "customType": "regex",
