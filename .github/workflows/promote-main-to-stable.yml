@@ -22,6 +22,16 @@ on:
   push:
     branches:
       - main
+    # Only image-relevant changes warrant a promotion PR on every push;
+    # CI-only commits (Renovate config, workflow edits, docs) are picked up
+    # by the daily scheduled refresh below instead. Keep this list in sync
+    # with the push paths in build-image.yml.
+    paths:
+      - "Containerfile"
+      - ".dockerignore"
+      - "build/**"
+      - "custom/**"
+      - "Justfile"
   schedule:
     # Daily refresh window (upstream finpilot cadence). Doubles as a backstop
     # for the check-approval job below.

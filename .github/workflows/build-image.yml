@@ -11,17 +11,27 @@ name: Build and Push Image
 #   pull_request:
 #     branches:
 #       - main
-#     paths-ignore:
-#       - "**.md"
-#       - ".github/workflows/*validate*.yml"
+#     paths:
+#       - "Containerfile"
+#       - ".dockerignore"
+#       - "build/**"
+#       - "custom/**"
+#       - "Justfile"
 on:
   push:
     branches:
       - main
       - stable
-    paths-ignore:
-      - "**.md"
-      - ".github/workflows/*validate*.yml"
+    # Only image-relevant paths rebuild the image. CI-only commits (Renovate
+    # config, workflow edits, docs) must not publish new :stable-testing /
+    # :stable tags. Keep this list in sync with the detect-changes filter
+    # below; that step is the single source of truth.
+    paths:
+      - "Containerfile"
+      - ".dockerignore"
+      - "build/**"
+      - "custom/**"
+      - "Justfile"
   workflow_dispatch:
 
 permissions:
@@ -117,6 +127,7 @@ jobs:
           filters: |
             image:
               - 'Containerfile'
+              - '.dockerignore'
               - 'build/**'
               - 'custom/**'
               - 'Justfile'

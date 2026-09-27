@@ -44,6 +44,34 @@ description: >-
 | `validate-justfiles.yml`      | PR paths: `Justfile`              | `just --list` syntax check                                    |
 | `validate-renovate.yml`       | PR paths: `.github/renovate.json` | `renovate-config-validator`                                   |
 
+## Push Trigger Path Filters
+
+Image builds and promotion PRs fire only on image-relevant changes. The push
+triggers of `build-image.yml` and `promote-main-to-stable.yml` use a `paths:`
+allowlist — **not** `paths-ignore` — mirroring the `detect-changes` filter:
+
+```yaml
+paths:
+  - "Containerfile"
+  - ".dockerignore"   # changes what COPY sends from the build context
+  - "build/**"
+  - "custom/**"
+  - "Justfile"
+```
+
+- Keep the trigger lists in sync with the `detect-changes` filter in
+  `build-image.yml`; that step is the single source of truth for
+  "image-relevant".
+- `paths-ignore` is fail-open: every new CI-only file triggers a full image
+  build (observed: one `.github/renovate.json` line built `:stable-testing`,
+  opened a promotion PR, and would have rebuilt `:stable`). An allowlist is
+  fail-closed; the daily `promote-main-to-stable.yml` schedule is the backstop
+  that promotes CI-only commits, and `repair-promotion-branch` builds the
+  squash branch from main's tree, so nothing drifts.
+- If a new build-context path appears (a directory the Containerfile COPYs),
+  add it to **both** the `paths:` allowlists and the `detect-changes` filter in
+  the same commit, or image builds silently stop firing for it.
+
 ## Branch Promotion and Tags
 
 - `main` is the testing branch and publishes `:stable-testing` (plus bare
