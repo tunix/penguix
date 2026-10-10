@@ -70,6 +70,18 @@ build time — so nothing can drift. A major bump is a one-line tag edit.
 - Always use `dnf5 install -y` (non-interactive)
 - COPR: enable → install → `copr_install_isolated` (auto-disables); never leave a repo enabled
 
+### Vendored GNOME Shell extensions
+
+Extensions under `custom/usr/share/gnome-shell/extensions/` load their GSettings
+schemas from their own `schemas/` dir at runtime — the global
+`glib-compile-schemas /usr/share/glib-2.0/schemas/` run does not cover them.
+Sources committed without a prebuilt `gschemas.compiled` (copied from a source
+checkout instead of an EGO zip) crash the extension on enable with
+`GLib.FileError: ... gschemas.compiled ... No such file or directory`.
+`build/40-desktop.sh` compiles any extension schemas dir that ships only XML
+sources. Symptom note: the bug stays hidden while a user-side copy of the same
+extension UUID exists, because the user copy shadows the system one.
+
 ### NVIDIA GPU support
 
 NVIDIA support is a build-time option activated by renaming the example script and adding its explicit Containerfile `RUN` block:
