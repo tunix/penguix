@@ -4,19 +4,29 @@ name: Promote main to stable
 # Two-branch model: `main` is the testing branch (publishes :stable-testing and
 # :testing); `stable` is the production branch. The shared factory workflow
 # opens (or refreshes) a squash promotion PR from `main` to `stable` on every
-# push, daily, or when a maintainer dispatches it. A human merges that PR in
-# the UI; the merge pushes `stable` and triggers build-image.yml, which
-# publishes :stable.
+# push, daily, or when a maintainer dispatches it. In a release window the
+# enroll job squash-merges the PR unless the do-not-merge label blocks it, then
+# dispatches build-image.yml, which publishes :stable.
+#
+# Release windows: Tuesday and Thursday 04:00 UTC (see check-release-window.yml).
+# A run outside a window only refreshes the PR; the next window picks it up.
+# Blocking a release means adding the do-not-merge label to the PR before the
+# window; removing the label lets the next window merge it automatically.
 #
 # Structure mirrors projectbluefin/finpilot's promote-main-to-stable.yml, which
 # solved three problems this repo hit (see upstream comments below):
 #   1. The reusable's auto-enrollment path runs `gh pr merge --auto` with no
-#      merge method and GitHub CLI refuses that without a TTY, so enrollment is
-#      off and the PR is merged by hand.
+#      merge method and GitHub CLI refuses that without a TTY, and a merge
+#      queue needs an organization-owned repository. Enrollment therefore
+#      happens in the inline enroll job below, which merges with an explicit
+#      --squash.
 #   2. The reusable's release gate sits behind enqueue_promotion, so the gate
 #      is invoked directly here to keep cosign verification.
 #   3. GitHub holds check runs for bot-authored PRs in `action_required`, and
 #      scheduled approvers are throttled; an inline job approves them at once.
+#   4. A push made with the github-actions token is exempt from push-triggered
+#      workflow runs, so a bot merge would never fire build-image.yml; the
+#      enroll job dispatches it explicitly after merging.
 
 on:
   push:
@@ -24,7 +34,9 @@ on:
       - main
   schedule:
     # Daily refresh window (upstream finpilot cadence). Doubles as a backstop
-    # for the check-approval job below.
+    # for the check-approval job below. On Tuesday and Thursday this run also
+    # enrolls the promotion for merge (see check-release-window.yml and the
+    # enroll job).
     - cron: "0 4 * * *"
   workflow_dispatch:
 
@@ -70,6 +82,13 @@ jobs:
           git push origin "HEAD:stable"
           echo "Created stable from ${GITHUB_SHA}"
 
+  # Tuesday and Thursday 04:00 UTC are the release windows: runs inside a
+  # window enroll the promotion PR for merge (see the enroll job), every other
+  # run only refreshes it. Manual dispatch is the hotfix escape hatch.
+  release_window:
+    name: Check release window
+    uses: ./.github/workflows/check-release-window.yml
+
   promote:
     name: Promote main to stable
     needs: ensure-stable
@@ -83,24 +102,23 @@ jobs:
       source_branch: main
       target_branch: stable
       # A personal image runs no e2e suites. The gate job below verifies the
-      # current candidate's cosign signature before a human merges.
+      # current candidate's cosign signature before the PR is merged.
       run_e2e: false
       # The only path that auto-enrolls the PR is a merge queue, which needs an
       # organization-owned repository. Personal-account forks cannot use one.
       use_merge_queue: false
-      # Enrolling without a merge queue runs `gh pr merge --auto` with no merge
+      # The reusable's enqueue job runs `gh pr merge --auto` with no merge
       # method, and GitHub CLI refuses that without a TTY ("--merge, --rebase,
       # or --squash required when not running interactively"). The reusable
-      # exposes no merge-method input, so enrollment stays off and the promotion
-      # PR is merged by hand.
-      #
-      # Merging by hand matters beyond the merge method. A push made with the
-      # github-actions token is exempt from workflow runs only for
-      # workflow_dispatch and repository_dispatch events, so a bot merge would
-      # never fire push-triggered build-image.yml and :stable would never
-      # publish. A merge performed by a person fires it, which is why this PR
-      # is merged in the UI rather than by a bot.
+      # exposes no merge-method input, so enrollment stays off here; the inline
+      # enroll job below merges the PR with an explicit --squash in a release
+      # window instead.
       enqueue_promotion: false
+      # Truthful since the enroll job exists: the release window really does
+      # merge this PR without a human unless do-not-merge blocks it. The PR
+      # body reads this input to choose between the "auto-merge scheduled" and
+      # "merged by a human" notes.
+      auto_merge: true
       # Personal-account forks do not have an <owner>/maintainers team.
       # Organization forks can enable this and optionally set `reviewer`.
       request_reviewer: false
@@ -298,3 +316,76 @@ jobs:
       # e2e is ever enabled for this image.
       run_e2e: false
     secrets: inherit
+
+  # The reusable's enqueue job cannot enroll this PR (a merge queue needs an
+  # organization-owned repository, and its non-queue path invokes `gh pr merge
+  # --auto` without a merge method, which the CLI refuses non-interactively).
+  # Enroll directly here instead: in a release window, after the gate passes,
+  # squash-merge the promotion PR unless do-not-merge blocks it.
+  #
+  # The gate is the quality bar for the merge: it resolves the candidate's
+  # digests from :testing and verifies their cosign signatures. Branch
+  # protection on stable adds nothing on top (this repository has none), which
+  # is why the enrollment waits for the gate rather than for checks.
+  enroll:
+    name: Merge promotion in the release window
+    needs: [release_window, locate-promotion-pr, gate]
+    if: >-
+      needs.release_window.outputs.should_enqueue == 'true' &&
+      needs.locate-promotion-pr.outputs.pr_number != '' &&
+      needs.gate.result == 'success' &&
+      needs.gate.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ needs.locate-promotion-pr.outputs.pr_number }}
+    steps:
+      - name: Merge unless do-not-merge blocks it, then dispatch the :stable build
+        run: |
+          set -euo pipefail
+
+          # A maintainer blocks a release by labeling the PR before the window.
+          # Removing the label lets the next window pick the PR up.
+          blocked=$(gh pr view "$PR_NUMBER" \
+            --repo "${{ github.repository }}" \
+            --json labels \
+            --jq 'any(.labels[].name; . == "do-not-merge")')
+          if [ "$blocked" = "true" ]; then
+            echo "::notice::PR #${PR_NUMBER} carries do-not-merge; skipping this release window."
+            exit 0
+          fi
+
+          # Mergeability can read UNKNOWN right after a branch update; retry
+          # briefly. A PR that stays unmergeable is left for the next window.
+          state=UNKNOWN
+          for attempt in 1 2 3 4 5 6 7 8; do
+            state=$(gh pr view "$PR_NUMBER" \
+              --repo "${{ github.repository }}" \
+              --json mergeable --jq '.mergeable')
+            if [ "$state" = "MERGEABLE" ]; then
+              break
+            fi
+            if [ "$attempt" -lt 8 ]; then
+              sleep 15
+            fi
+          done
+          if [ "$state" != "MERGEABLE" ]; then
+            echo "::warning::PR #${PR_NUMBER} is not mergeable (${state}); leaving it for the next window."
+            exit 0
+          fi
+
+          gh pr merge "$PR_NUMBER" \
+            --repo "${{ github.repository }}" \
+            --squash
+          echo "::notice::Merged PR #${PR_NUMBER} in the release window."
+
+          # A push made with the github-actions token is exempt from
+          # push-triggered workflow runs, so the merge itself never fires
+          # build-image.yml. Dispatch the :stable build explicitly.
+          gh workflow run build-image.yml --ref stable
+          echo "::notice::Dispatched build-image.yml on stable to publish :stable."

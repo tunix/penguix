@@ -1,0 +1,57 @@
+name: Check release window
+
+# Adapted from projectbluefin/bluefin's check-release-window.yml. Upstream
+# gates a single weekday (Tuesday, the bluefin/dakota release). This repository
+# merges in two weekly windows — Tuesday and Thursday 04:00 UTC — so the
+# weekday check accepts either day. Manual dispatch is always allowed as the
+# hotfix escape hatch. Any other event only refreshes the promotion PR; the
+# next window picks it up.
+
+on:
+  workflow_call:
+    outputs:
+      should_enqueue:
+        description: "Whether to enroll the promotion PR for merge"
+        value: ${{ jobs.release_window.outputs.should_enqueue }}
+
+permissions: {}
+
+jobs:
+  release_window:
+    name: Check release window
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      should_enqueue: ${{ steps.window.outputs.should_enqueue }}
+    steps:
+      - name: Determine whether to enroll the promotion
+        id: window
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+
+          case "$EVENT_NAME" in
+            workflow_dispatch)
+              echo "Manual dispatch — allowing the hotfix release escape hatch."
+              echo "should_enqueue=true" >> "$GITHUB_OUTPUT"
+              ;;
+            schedule|workflow_run)
+              weekday=$(date -u +%u)
+              if [[ "$weekday" == "2" || "$weekday" == "4" ]]; then
+                echo "Tuesday/Thursday UTC event — enrolling the promotion for merge."
+                echo "should_enqueue=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "Non-window event — refreshing the promotion PR without merging."
+                echo "should_enqueue=false" >> "$GITHUB_OUTPUT"
+              fi
+              ;;
+            push)
+              echo "Push trigger — refreshing the promotion PR without merging."
+              echo "should_enqueue=false" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unknown event — refreshing the promotion PR without merging."
+              echo "should_enqueue=false" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
