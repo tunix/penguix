@@ -44,7 +44,7 @@ mouse-sensitive = true
 mouse-sensitive-fullscreen-window = false
 
 [org/gnome/shell/extensions/blur-my-shell/panel]
-brightness = 1.0
+brightness = 0.6
 force-light-text = true
 override-background = true
 override-background-dynamically = true
