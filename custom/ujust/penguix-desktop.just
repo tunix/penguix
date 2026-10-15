@@ -3,16 +3,13 @@
 ### penguix-desktop.just
 #######################
 
-# Enables touchpad history navigation scroll & wayland support for Brave Browser
+# Deploys Brave flags (Wayland + PipeWire camera etc.) from /etc/skel
 [group('Fixes')]
 brave-wayland-fixes:
     #!/usr/bin/env bash
     set -euo pipefail
-    mkdir -p "${HOME}/.var/app/com.brave.Browser/config"
-    cat <<'EOF' >"${HOME}/.var/app/com.brave.Browser/config/brave-flags.conf"
-    --enable-features=UseOzonePlatform,TouchpadOverscrollHistoryNavigation
-    --ozone-platform=wayland
-    EOF
+    install -D -m 644 /etc/skel/.var/app/com.brave.Browser/config/brave-flags.conf \
+        "${HOME}/.var/app/com.brave.Browser/config/brave-flags.conf"
 
 # Enables 1Password desktop app integration for Brave Browser (flatpak)
 [group('Fixes')]
