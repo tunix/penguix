@@ -83,6 +83,7 @@ description: >-
 | Service not starting                    | Service not enabled or missing dependency                   | Check `systemctl status service.name`, verify `systemctl enable` in `build/10-build.sh`                                         |
 | Missing package after boot              | Installed in wrong layer or runtime vs build-time confusion | Check if it's in `build/10-build.sh` (build-time) or `custom/brew/` (runtime)                                                   |
 | `/opt` is not writable                  | `/opt` is symlinked to `/var/opt` by default                | In `Containerfile`, replace `RUN rm -rf /opt && ln -s /var/opt /opt` with `RUN rm /opt && mkdir /opt` if immutability is needed |
+| Camera not detected in flatpak Chromium browsers (Meet: "no camera") | Chromium only uses the xdg-desktop-portal camera path when the `WebRtcPipeWireCamera` feature is enabled; IPU6/MIPI laptops have no plain V4L2 capture device to fall back on | Add `WebRtcPipeWireCamera` to `custom/etc/skel/.var/app/com.brave.Browser/config/brave-flags.conf`, deploy with `ujust brave-wayland-fixes`, and allow the GNOME camera permission dialog once |
 
 ## Desktop / dconf Settings
 
