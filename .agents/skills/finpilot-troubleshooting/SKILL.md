@@ -93,6 +93,7 @@ description: >-
 | `gsettings get` returns a value that is not in the override    | `dconf read`/`dconf dump` show the *merged* profile view (user-db → local → site → distro), so the serving database is invisible        | Attribute with isolated profiles: write a file containing only `user-db:user` (or `system-db:distro`) and run `DCONF_PROFILE=/abs/path dconf dump /...` |
 | Distro db still serves values from a deleted keyfile           | `/etc` persists across rebases; the compiled `/etc/dconf/db/distro` is stale until rebuilt                                            | Run `sudo dconf update` (or `ujust sync-dconf`); `40-desktop.sh` runs `dconf update` at build time since the dconf-only conversion       |
 | Override file edited but `gsettings` shows old value           | User explicitly set the key; user-db always beats override defaults                                                                   | `gsettings reset <schema> <key>`, or `ujust desktop-defaults-apply` to reset all user dconf (destructive)                               |
+| Need to validate a modified `distro.d` keyfile before commit   | `DCONF_PROFILE` dumps always resolve `system-db:` from `/etc/dconf/db/` — `XDG_CONFIG_DIRS`/`XDG_CONFIG_HOME` are ignored, so a temp profile still shows the *installed* db, not the candidate keyfile | Syntax-check with `dconf update <tmp-dbdir>` (nonzero exit + stderr on parse errors) and review values by reading the keyfile; to preview live, copy the keyfile into `/etc/dconf/db/distro.d/` and run `ujust sync-dconf` |
 
 ## Renovate Issues
 
