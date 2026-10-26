@@ -50,7 +50,7 @@ COPY --from=brew /system_files /oci/brew
 
 # Base Image - GNOME included (Bluefin DX)
 # Pinned so Renovate/Dependabot can open PRs when upstream re-publishes :stable
-FROM ghcr.io/ublue-os/bluefin-dx:stable@sha256:1f6594cf4834b8cbd621c6d4302c7f4481b9d3c876d3fa4838d83dc7576e1c14
+FROM ghcr.io/ublue-os/bluefin-dx:stable@sha256:e3e83b371d7feb0e3ff34e674a2d817146469e5cc2b6cd37cc430d92c34381f8
 
 # Image identity - these define how bootc, fastfetch, and the ublue ecosystem
 # recognize your image. Change these to match your project name.
