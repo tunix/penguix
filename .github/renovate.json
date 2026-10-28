@@ -28,6 +28,11 @@
   ],
   "packageRules": [
     {
+      "description": "Give container images a settling period before proposing updates — skips intermediate rebuilds",
+      "matchDatasources": ["docker"],
+      "minimumReleaseAge": "1 day"
+    },
+    {
       "description": "Automerge safe low-risk updates (digest/pin only) when checks pass",
       "matchUpdateTypes": ["digest", "pin", "pinDigest"],
       "automerge": true,
