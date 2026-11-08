@@ -88,14 +88,14 @@ jobs:
 
       - name: Preflight
         id: preflight
-        uses: projectbluefin/actions/bootc-build/preflight@cbf1ce09363db6a09bfaae16fde95c7b8c2874bf # v1
+        uses: projectbluefin/actions/bootc-build/preflight@6453818f6279a2f2c1282919aad0009a88c01819 # v1
         with:
           registry: ghcr.io
           github-token: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ env.IMAGE_NAME }}
 
       - name: Setup runner
-        uses: projectbluefin/actions/bootc-build/setup-runner@cbf1ce09363db6a09bfaae16fde95c7b8c2874bf # v1
+        uses: projectbluefin/actions/bootc-build/setup-runner@6453818f6279a2f2c1282919aad0009a88c01819 # v1
         with:
           storage-backend: btrfs
           native-overlay: "true"
@@ -104,7 +104,7 @@ jobs:
 
       - name: Restore DNF cache
         id: dnf-cache-restore
-        uses: projectbluefin/actions/bootc-build/dnf-cache@cbf1ce09363db6a09bfaae16fde95c7b8c2874bf # v1
+        uses: projectbluefin/actions/bootc-build/dnf-cache@6453818f6279a2f2c1282919aad0009a88c01819 # v1
         with:
           action: restore
           cache-name: ${{ env.IMAGE_NAME }}
@@ -112,7 +112,7 @@ jobs:
 
       - name: Detect changes
         id: detect-changes
-        uses: projectbluefin/actions/bootc-build/detect-changes@cbf1ce09363db6a09bfaae16fde95c7b8c2874bf # v1
+        uses: projectbluefin/actions/bootc-build/detect-changes@6453818f6279a2f2c1282919aad0009a88c01819 # v1
         with:
           filters: |
             image:
@@ -154,7 +154,7 @@ jobs:
       - name: Generate tags
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         id: generate-tags
-        uses: projectbluefin/actions/bootc-build/generate-tags@cbf1ce09363db6a09bfaae16fde95c7b8c2874bf # v1
+        uses: projectbluefin/actions/bootc-build/generate-tags@6453818f6279a2f2c1282919aad0009a88c01819 # v1
         with:
           base-name: ${{ env.IMAGE_NAME }}
           stream-name: ${{ env.TAG_STREAM }}
@@ -203,7 +203,7 @@ jobs:
 
       - name: Save DNF cache
         if: always() && !cancelled() && github.event_name != 'pull_request'
-        uses: projectbluefin/actions/bootc-build/dnf-cache@cbf1ce09363db6a09bfaae16fde95c7b8c2874bf # v1
+        uses: projectbluefin/actions/bootc-build/dnf-cache@6453818f6279a2f2c1282919aad0009a88c01819 # v1
         with:
           action: save
           cache-name: ${{ env.IMAGE_NAME }}
@@ -215,7 +215,7 @@ jobs:
       - name: Rechunk image
         if: env.ENABLE_RECHUNKING == 'true' && github.event_name != 'pull_request'
         id: rechunk-image
-        uses: projectbluefin/actions/bootc-build/chunka@cbf1ce09363db6a09bfaae16fde95c7b8c2874bf # v1
+        uses: projectbluefin/actions/bootc-build/chunka@6453818f6279a2f2c1282919aad0009a88c01819 # v1
         with:
           source-image: localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           max-layers: ${{ env.RECHUNK_MAX_LAYERS }}
@@ -234,7 +234,7 @@ jobs:
       # PR builds only build and validate, they never publish.
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -243,7 +243,7 @@ jobs:
       - name: Push to GHCR
         if: github.event_name != 'pull_request'
         id: push
-        uses: projectbluefin/actions/bootc-build/push-image@cbf1ce09363db6a09bfaae16fde95c7b8c2874bf # v1
+        uses: projectbluefin/actions/bootc-build/push-image@6453818f6279a2f2c1282919aad0009a88c01819 # v1
         with:
           image-name: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.branch-tags.outputs.tags }}
@@ -259,7 +259,7 @@ jobs:
       - name: Sign and publish
         if: github.event_name != 'pull_request'
         continue-on-error: true
-        uses: projectbluefin/actions/bootc-build/sign-and-publish@cbf1ce09363db6a09bfaae16fde95c7b8c2874bf # v1
+        uses: projectbluefin/actions/bootc-build/sign-and-publish@6453818f6279a2f2c1282919aad0009a88c01819 # v1
         with:
           image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
           digest: ${{ steps.push.outputs.digest }}
