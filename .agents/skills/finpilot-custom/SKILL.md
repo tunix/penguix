@@ -59,6 +59,13 @@ brew "node"
 brew "python"
 ```
 
+### Flatpak Entries in Brewfiles
+
+Modern homebrew-bundle natively supports `flatpak "app.id"` lines on Linux; ujust recipes consume them via `brew bundle --file`.
+
+- Flatpak entries may resolve from **non-Flathub remotes** (e.g. `flatpark`). Verify with `flatpak remote-info <remote> <app-id>` on a system that has the remote configured — Flathub search alone is not sufficient and can produce false negatives.
+- `build/validate-brewfiles.sh` only checks `brew`/`cask` lines and skips `flatpak` lines, so app-ID validation for Brewfile flatpak entries is manual.
+
 ### How Users Invoke Them
 
 Users install via `ujust` commands (shortcuts defined in `custom/ujust/*.just`):
