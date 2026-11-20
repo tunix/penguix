@@ -1,9 +1,9 @@
 # penguix
 
 Userspace-only personalization for [Bluefin](https://projectbluefin.io/) and
-[Dakota](https://docs.projectbluefin.io/dakota/). Nothing in this repo is
-layered into an OS image: no RPMs, no COPR, no Containerfile, no fork of the
-base image.
+[Dakota](https://docs.projectbluefin.io/dakota/) — see AGENTS.md for the
+project constraints. Nothing in this repo is layered into an OS image: no
+RPMs, no COPR, no Containerfile, no fork of the base image.
 
 - Software: Homebrew (formulas, casks, and Flatpaks via the `flatpak "…"`
   Brewfile directive) and Flathub
