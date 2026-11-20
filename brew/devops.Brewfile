@@ -1,0 +1,17 @@
+# DevOps / cloud tooling.
+tap "hashicorp/tap", trusted: true
+
+brew "ansible"
+brew "argocd"
+brew "awscli"
+brew "cosign"
+brew "dive"
+brew "helm"
+brew "k9s"
+brew "kafkactl"
+brew "kind"
+brew "kubectl"
+brew "kubectx"
+brew "lego"
+brew "sshpass"
+brew "terraform"
