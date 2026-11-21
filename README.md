@@ -16,7 +16,7 @@ RPMs, no COPR, no Containerfile, no fork of the base image.
 ```bash
 git clone https://github.com/tunix/penguix.git
 cd penguix
-just penguix-setup          # chains: brew → flatpaks → dconf → extensions → home → shell → sysctl
+just penguix-setup          # chains: shell → sysctl → brew → flatpaks → dconf → extensions → home
 ```
 
 Or install the recipes as your global justfile so they work from anywhere:
@@ -86,8 +86,8 @@ just brave-wayland-fixes        # Brave flatpak flags only
 just brave-1password-fix        # 1Password native messaging for the Brave flatpak
 ```
 
-**System** — everything else; the shell change and the sysctl tweak are
-chained into `penguix-setup` as steps 6/7 and 7/7, both behind a confirm:
+**System** — everything else; the shell change and the sysctl tweak run
+FIRST in `penguix-setup` (steps 1/7 and 2/7), both behind a confirm:
 
 ```text
 just change-shell               # login shell -> fish (sudo usermod; alias: chsh)
@@ -96,6 +96,11 @@ just update-and-reboot          # bootc upgrade + optional reboot
 just clean-containers           # podman prune
 just penguix-install-global-justfile   # generate the delegating `just -g` shim
 ```
+
+Idempotency: `change-shell`, `penguix-sysctl-ttl` and `brave-wayland-fixes`
+fast-exit 0 when the target state is already in place; the brew/flatpak
+bundles and the extension installer are naturally no-ops for what is already
+installed. `penguix-setup` is safe to re-run end to end.
 
 ## sysctl
 

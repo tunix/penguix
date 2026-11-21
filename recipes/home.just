@@ -16,12 +16,18 @@ penguix-home:
     echo "Home files deployed (brave-flags, autostart entries)."
 
 # Deploy Brave flatpak flags (Wayland + PipeWire camera etc.).
+# Fast-exits when the deployed file already matches.
 [group('Fixes')]
 brave-wayland-fixes:
     #!/usr/bin/env bash
     set -euo pipefail
-    install -D -m 644 "{{repo_root}}/home/.var/app/com.brave.Browser/config/brave-flags.conf" \
-        "$HOME/.var/app/com.brave.Browser/config/brave-flags.conf"
+    src="{{repo_root}}/home/.var/app/com.brave.Browser/config/brave-flags.conf"
+    dest="$HOME/.var/app/com.brave.Browser/config/brave-flags.conf"
+    if [ -f "$dest" ] && cmp -s "$src" "$dest"; then
+        echo "Brave flags already deployed; nothing to do."
+        exit 0
+    fi
+    install -D -m 644 "$src" "$dest"
 
 # Enable 1Password desktop integration for the Brave flatpak. Requires the
 # 1Password GUI installed via brew cask first.

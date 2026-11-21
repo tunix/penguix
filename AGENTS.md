@@ -39,7 +39,10 @@ changing anything; the rules below are constraints, not suggestions.
   explaining why.
 - dconf edits: change `dconf/penguix.ini`, never dump raw user state into
   the repo (proposals go to `proposal-*.ini`, which is gitignored).
-- Every recipe must be idempotent and safe to re-run.
+- Every recipe must be idempotent and safe to re-run: when the target state
+  is already in place, fast-exit 0 with a clear "nothing to do" message
+  before any prompt or privileged action (see change-shell, sysctl-ttl,
+  brave-wayland-fixes).
 
 ## Verification expectations
 

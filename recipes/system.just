@@ -3,11 +3,19 @@
 # opt-in sysctl tweak, which cannot exist at user level (sysctls are
 # kernel-global) and is therefore gated behind an explicit confirmation.
 
-# Change login shell for the current user.
+# Change login shell for the current user. Fast-exits when the shell is
+# already the target.
 [group('System')]
 change-shell shell='/usr/bin/fish':
     #!/usr/bin/env bash
-    sudo usermod --shell {{shell}} "$(id -un)"
+    set -euo pipefail
+    user="$(id -un)"
+    current="$(getent passwd "$user" | cut -d: -f7)"
+    if [ "$current" = "{{shell}}" ]; then
+        echo "Login shell already {{shell}}; nothing to do."
+        exit 0
+    fi
+    sudo usermod --shell {{shell}} "$user"
 
 alias chsh := change-shell
 
@@ -36,13 +44,19 @@ clean-containers:
 # OPTIONAL, opt-in: anti-fingerprinting default TTL. This is the only
 # recipe in this repo that writes outside $HOME (it needs root because
 # sysctls are kernel-global; there is no userspace sysctl).
+# Fast-exits when the setting is already in place.
 [group('System')]
 penguix-sysctl-ttl:
     #!/usr/bin/env bash
     set -euo pipefail
-    if ! gum confirm "Write net.ipv4.ip_default_ttl=65 to /etc/sysctl.d/99-penguix-ttl.conf? (sudo)"; then
+    conf="/etc/sysctl.d/99-penguix-ttl.conf"
+    if [ -f "$conf" ] && [ "$(cat "$conf")" = "net.ipv4.ip_default_ttl=65" ]; then
+        echo "sysctl TTL already configured ($conf); nothing to do."
         exit 0
     fi
-    printf 'net.ipv4.ip_default_ttl=65\n' | sudo tee /etc/sysctl.d/99-penguix-ttl.conf >/dev/null
+    if ! gum confirm "Write net.ipv4.ip_default_ttl=65 to $conf? (sudo)"; then
+        exit 0
+    fi
+    printf 'net.ipv4.ip_default_ttl=65\n' | sudo tee "$conf" >/dev/null
     sudo sysctl --system
-    echo "TTL applied. Reversal: sudo rm /etc/sysctl.d/99-penguix-ttl.conf && sudo sysctl --system"
+    echo "TTL applied. Reversal: sudo rm $conf && sudo sysctl --system"

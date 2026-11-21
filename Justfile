@@ -23,34 +23,35 @@ import "recipes/home.just"
 import "recipes/system.just"
 import? "recipes/work.just"
 
-# One-shot: bring a fresh system to the penguix state. Each step is
-# idempotent and asks for confirmation, so this is safe to re-run.
+# One-shot: bring a fresh system to the penguix state. System-level bits run
+# first; every step is idempotent (fast exit 0 when already applied) and asks
+# for confirmation, so this is safe to re-run.
 [group('penguix')]
 penguix-setup:
     #!/usr/bin/env bash
     set -euo pipefail
     J="{{repo_root}}/Justfile"
     echo "==> penguix userspace setup"
-    if gum confirm "1/7 Software (brew formulas + casks)?"; then
-        just --justfile "$J" penguix-brew
-    fi
-    if gum confirm "2/7 Flatpaks (Brewfile DSL)?"; then
-        just --justfile "$J" penguix-flatpaks
-    fi
-    if gum confirm "3/7 Desktop settings (per-user dconf)?"; then
-        just --justfile "$J" penguix-dconf-apply
-    fi
-    if gum confirm "4/7 GNOME Shell extensions (user-installed)?"; then
-        just --justfile "$J" penguix-extensions
-    fi
-    if gum confirm "5/7 Home fixes (Brave flags, autostart)?"; then
-        just --justfile "$J" penguix-home
-    fi
-    if gum confirm "6/7 Login shell -> fish (sudo usermod)?"; then
+    if gum confirm "1/7 Login shell -> fish (sudo usermod)?"; then
         just --justfile "$J" change-shell
     fi
-    if gum confirm "7/7 sysctl TTL=65 (sudo, opt-in anti-fingerprinting)?"; then
+    if gum confirm "2/7 sysctl TTL=65 (sudo, opt-in anti-fingerprinting)?"; then
         just --justfile "$J" penguix-sysctl-ttl
+    fi
+    if gum confirm "3/7 Software (brew formulas + casks)?"; then
+        just --justfile "$J" penguix-brew
+    fi
+    if gum confirm "4/7 Flatpaks (Brewfile DSL)?"; then
+        just --justfile "$J" penguix-flatpaks
+    fi
+    if gum confirm "5/7 Desktop settings (per-user dconf)?"; then
+        just --justfile "$J" penguix-dconf-apply
+    fi
+    if gum confirm "6/7 GNOME Shell extensions (user-installed)?"; then
+        just --justfile "$J" penguix-extensions
+    fi
+    if gum confirm "7/7 Home fixes (Brave flags, autostart)?"; then
+        just --justfile "$J" penguix-home
     fi
     echo "Done. Log out/in (or restart GNOME Shell) so extension and dconf changes fully apply."
 
