@@ -32,6 +32,14 @@ SPLIT_DIRS = {
 }
 
 
+# dconf path -> schema id for schemas whose id differs from the path
+# (gsettings needs the CamelCase id, not the path-derived dotted form)
+SCHEMA_ALIASES = {
+    "org/gtk/settings/file-chooser": "org.gtk.Settings.FileChooser",
+    "org/gtk/gtk4/settings/file-chooser": "org.gtk.gtk4.Settings.FileChooser",
+}
+
+
 def run(cmd, env=None, timeout=10):
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=env)
@@ -80,7 +88,7 @@ def main() -> int:
 
     same, differs, unknown = [], [], []
     for path, keys in parse_dump(live_dump):
-        dotted = path.replace("/", ".")
+        dotted = SCHEMA_ALIASES.get(path) or path.replace("/", ".")
         sp = path.strip("/").split("/")
         # exact schema, or longest relocatable prefix + full path
         schema = relpath = None
