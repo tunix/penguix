@@ -6,15 +6,16 @@
 
 
 # Extensions that must be installed at user level on a fresh system.
-# Settings for these live in dconf/penguix.ini.
+# Settings for these live in dconf/extensions.ini.
 #
-# Verified against extensions.gnome.org shell_version_map (2026-11):
+# Derived from the 2026-11 `dconf dump` + EGO shell_version_map checks:
 # - theme-scheduler@lsbcodes: supports GNOME 50 — replaces the dead
 #   nightthemeswitcher (upstream stopped at GNOME 3.38).
 # - grand-theft-focus: supports GNOME 50 natively.
-# - search-light: latest declares up to GNOME 49 — the installer fails
-#   closed on GNOME 50; force it with PENGUIX_FORCE=1 if you want to try.
-PENGUIX_USER_EXTENSIONS := "search-light@icedman.github.com theme-scheduler@lsbcodes grand-theft-focus@zalckos.github.com"
+# - search-light is intentionally NOT in this list: the dump shows it
+#   disabled on the source machine; its tuned settings are kept in
+#   extensions.ini for when it is re-enabled.
+PENGUIX_USER_EXTENSIONS := "theme-scheduler@lsbcodes grand-theft-focus@zalckos.github.com"
 
 # Install + enable every user extension (idempotent). A per-extension
 # failure warns and continues, so one dead extension cannot block setup.

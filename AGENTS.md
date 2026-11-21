@@ -37,8 +37,9 @@ changing anything; the rules below are constraints, not suggestions.
   extensions.gnome.org covers the target GNOME major. The installer fails
   closed on incompatible versions; do not weaken that without a comment
   explaining why.
-- dconf edits: change `dconf/penguix.ini`, never dump raw user state into
-  the repo (proposals go to `proposal-*.ini`, which is gitignored).
+- dconf edits: change the topic file under `dconf/`, never dump raw user
+  state into the repo (proposals go to `dconf/proposals/`, which is
+  gitignored).
 - Every recipe must be idempotent and safe to re-run: when the target state
   is already in place, fast-exit 0 with a clear "nothing to do" message
   before any prompt or privileged action (see change-shell, sysctl-ttl,

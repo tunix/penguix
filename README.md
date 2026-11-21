@@ -45,7 +45,11 @@ ujust recipes; they are just invoked through the repo justfile or `just -g`.
 | `Justfile` | Entry point; chained `penguix-setup` recipe |
 | `recipes/*.just` | Grouped recipes: Apps / Desktop / Fixes / System |
 | `brew/*.Brewfile` | Software declarations (brew, casks, flatpak DSL) |
-| `dconf/penguix.ini` | Per-user desktop settings, applied with `dconf load /` |
+| `dconf/desktop.ini` | Desktop settings (fonts, peripherals, wm, power, media keys…) |
+| `dconf/shell.ini` | GNOME Shell: app folders, favorites, enabled extensions, weather |
+| `dconf/extensions.ini` | Shell extension settings (blur-my-shell, tilingshell, appindicator…) |
+| `dconf/apps.ini` | App-specific settings (Ptyxis, rtv, valhalla, firewall-config) |
+| `dconf/proposals/` | gitignored output of `penguix-dconf-backup` |
 | `home/` | User-level file deployments (Brave flags, autostart) |
 | `scripts/` | Extension installer, Brewfile validator |
 
@@ -71,9 +75,9 @@ just install-jetbrains-toolbox  # user-level JetBrains Toolbox
 **Desktop** — per-user GNOME settings and extensions:
 
 ```text
-just penguix-dconf-apply        # dconf load / < dconf/penguix.ini
-just penguix-dconf-backup       # dump current settings to a proposal file
-just penguix-dconf-reset KEY    # reset one key to factory default
+just penguix-dconf-apply        # dconf load / < every dconf/*.ini
+just penguix-dconf-backup       # dump current settings to dconf/proposals/
+just penguix-dconf-reset KEY    # reset one key to the factory default
 just penguix-extensions         # install + enable user GNOME Shell extensions
 just penguix-extension-install <uuid>   # one extension (also -disable/-uninstall/-list)
 ```
@@ -115,7 +119,21 @@ just penguix-sysctl-ttl         # asks with gum confirm; writes /etc/sysctl.d/99
 
 ## Fonts and cursor theme
 
-- JetBrains Mono: already shipped by Bluefin as `jetbrains-mono-fonts-all`.
+- MonoLisa (Text/Code): the configured UI font. It is a commercial font and
+  is not in Homebrew or Flathub — install it into `~/.local/share/fonts/`
+  (userspace) on each machine. On fresh installs the font keys in
+  `dconf/desktop.ini` fall back to the default typeface until the font is
+  present.
 - Yaru cursor theme is not in the base images; install it into
   `~/.local/share/icons/` (userspace) or let GNOME use the default theme and
-  delete the `cursor-theme` line from `dconf/penguix.ini`.
+  delete the `cursor-theme` line from `dconf/desktop.ini`.
+
+## Known gaps
+
+- Ptyxis profile customizations (palette etc.) live under a random per-machine
+  profile UUID (`org/gnome/Ptyxis/Profiles/<uuid>/`), so they cannot be
+  carried in the repo. Create the profile once per machine and set the
+  palette manually.
+- GDM settings (`org/gnome/login-screen`, e.g. fingerprint auth) read the
+  SYSTEM dconf database; user-level values are inert, so they are not in this
+  repo.

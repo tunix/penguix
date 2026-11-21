@@ -4,12 +4,19 @@
 # user-level and survives OS rebases/switches.
 
 
-# Apply dconf/penguix.ini into the user database (idempotent).
+# dconf/ holds one keyfile per topic: desktop.ini, shell.ini,
+# extensions.ini, apps.ini. All are applied by penguix-dconf-apply.
+
+
+# Apply every dconf/*.ini into the user database (idempotent).
 [group('Desktop')]
 penguix-dconf-apply:
     #!/usr/bin/env bash
     set -euo pipefail
-    dconf load / < "{{repo_root}}/dconf/penguix.ini"
+    for f in "{{repo_root}}"/dconf/*.ini; do
+        echo "==> dconf load: $(basename "$f")"
+        dconf load / < "$f"
+    done
     echo "dconf user settings applied. Log out/in (or restart apps) for some keys to take effect."
 
 # Write the keys that differ from factory defaults back into the repo, so
@@ -19,10 +26,12 @@ penguix-dconf-apply:
 penguix-dconf-backup:
     #!/usr/bin/env bash
     set -euo pipefail
-    out="{{repo_root}}/dconf/proposal-$(date +%Y%m%d-%H%M%S).ini"
+    dest="{{repo_root}}/dconf/proposals"
+    mkdir -p "$dest"
+    out="$dest/proposal-$(date +%Y%m%d-%H%M%S).ini"
     dconf dump / > "$out"
     echo "Current user settings dumped to $out"
-    echo "Review the diff against dconf/penguix.ini and merge what you want to keep."
+    echo "Review the diff against dconf/*.ini and merge what you want to keep."
 
 # Reset a single key back to the image factory default (undo a repo setting).
 # Usage: just penguix-dconf-reset org/gnome/desktop/interface cursor-theme

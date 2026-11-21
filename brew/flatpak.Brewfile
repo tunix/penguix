@@ -1,5 +1,10 @@
-# GUI applications, all Flatpaks from Flathub. Uses the upstream
-# Homebrew Bundle `flatpak` directive (landed 2025-12).
+# GUI applications. Flathub by default; the two self-published apps come
+# from the FlatPark remote (dl.flatpark.org). The `remote:` + `url:` form is
+# Homebrew's Tier-3 "named shared remote": brew bundle adds the remote when
+# missing (bluefin already ships it via remotes.d/flatpark.flatpakrepo;
+# dakota does not). The url points at the .flatpakrepo file so the GPG key
+# is imported — a bare repo URL would get --no-gpg-verify. Both app ids
+# verified against the FlatPark repo summary, 2026-11.
 flatpak "be.alexandervanhee.gradia"
 flatpak "com.belmoussaoui.Decoder"
 flatpak "com.belmoussaoui.Obfuscate"
@@ -19,7 +24,8 @@ flatpak "io.github.getnf.embellish"
 flatpak "io.github.nozwock.Packet"
 flatpak "io.github.nroduit.Weasis"
 flatpak "io.github.tobagin.karere"
-flatpak "io.github.tunix.valhalla"
+flatpak "io.github.tunix.valhalla", remote: "flatpark", url: "https://dl.flatpark.org/flatpark.flatpakrepo"
+flatpak "com.nousresearch.hermes-light", remote: "flatpark", url: "https://dl.flatpark.org/flatpark.flatpakrepo"
 flatpak "io.github.vikdevelop.SaveDesktop"
 flatpak "io.gitlab.liferooter.TextPieces"
 flatpak "it.mijorus.gearlever"
