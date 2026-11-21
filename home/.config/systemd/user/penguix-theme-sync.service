@@ -1,0 +1,14 @@
+[Unit]
+Description=penguix: keep CLI themes (zellij/k9s/bat/nvim) in sync with GNOME color-scheme
+# Requires a graphical session (gsettings needs the user session bus)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/penguix-theme-sync-watch
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

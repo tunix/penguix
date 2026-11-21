@@ -8,12 +8,38 @@ penguix-home:
     #!/usr/bin/env bash
     set -euo pipefail
     if command -v rsync >/dev/null; then
-        rsync -rcv "{{repo_root}}/home/" "$HOME/"
+        rsync -rcpv "{{repo_root}}/home/" "$HOME/"
     else
         # rsync is not guaranteed on bootc images; cp is fine for a one-shot deploy
         cp -Rv "{{repo_root}}/home/." "$HOME/"
     fi
-    echo "Home files deployed (brave-flags, autostart entries)."
+    echo "Home files deployed (brave-flags, autostart entries, theme-sync watcher)."
+    just --justfile "{{repo_root}}/Justfile" penguix-theme-sync
+
+# Keep CLI themes (zellij/k9s/bat/nvim) in sync with GNOME color-scheme.
+# Deploys the watcher files (penguix-home does) and enables the systemd
+# user unit. The dotfiles script it calls must exist and be executable;
+# everything else degrades gracefully.
+# Fast-exits when the unit is already enabled.
+[group('Fixes')]
+penguix-theme-sync:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ! [ -x "$HOME/.local/bin/toggle-color-preferences.sh" ]; then
+        echo "WARN: ~/.local/bin/toggle-color-preferences.sh missing (deploy from dotfiles);"
+        echo "      theme-sync will start but only log until the script appears." >&2
+    fi
+    state="$(systemctl --user is-enabled penguix-theme-sync.service 2>/dev/null || true)"
+    if [ "$state" = "enabled" ]; then
+        echo "penguix-theme-sync already enabled; nothing to do."
+        exit 0
+    fi
+    if ! systemctl --user daemon-reload 2>/dev/null; then
+        echo "WARN: no user systemd session available; run 'just penguix-theme-sync' from a desktop session later." >&2
+        exit 0
+    fi
+    systemctl --user enable --now penguix-theme-sync.service
+    echo "penguix-theme-sync enabled (CLI themes now follow GNOME color-scheme)."
 
 # Deploy Brave flatpak flags (Wayland + PipeWire camera etc.).
 # Fast-exits when the deployed file already matches.

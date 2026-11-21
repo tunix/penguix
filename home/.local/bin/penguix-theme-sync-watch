@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Watch GNOME color-scheme changes and keep CLI themes in sync.
+#
+# Replaces the old nightthemeswitcher custom-command hook: that extension
+# is dead upstream (max GNOME 3.38). With theme-scheduler switching
+# color-scheme at fixed hours (or any manual toggle), this watcher applies
+# the CLI-side themes (zellij/k9s/bat/nvim) by calling the dotfiles script.
+#
+# Loop-safe: the dotfiles script also writes color-scheme back; identical
+# rewrites are ignored here, so the chain terminates.
+#
+# Runs as a systemd user unit: penguix-theme-sync.service.
+
+set -uo pipefail
+
+SCRIPT="${HOME}/.local/bin/toggle-color-preferences.sh"
+last=""
+
+apply() {
+    local scheme="$1"
+    if [ ! -x "$SCRIPT" ]; then
+        echo "penguix-theme-sync: $SCRIPT not found (deploy it from dotfiles); CLI themes not synced." >&2
+        return 0
+    fi
+    "$SCRIPT" "$scheme" >/dev/null 2>&1 || echo "penguix-theme-sync: sync script failed for $scheme" >&2
+}
+
+# Initial sync to the value already set (without emitting a change).
+current="$(gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null || true)"
+case "$current" in
+    *prefer-dark*) last="prefer-dark"; apply dark ;;
+    *)             last="prefer-light"; apply light ;;
+esac
+echo "penguix-theme-sync: initial scheme $last"
+
+# React to actual changes only (process substitution keeps `last` in scope,
+# so rewrites of the same value — e.g. by the script itself — are ignored).
+while read -r line; do
+    case "$line" in
+        *prefer-dark*) new="prefer-dark" ;;
+        *)             new="prefer-light" ;;
+    esac
+    if [ "$new" = "$last" ]; then
+        continue  # a rewrite of the same value (e.g. by the script itself)
+    fi
+    last="$new"
+    echo "penguix-theme-sync: scheme -> $new"
+    if [ "$new" = "prefer-dark" ]; then apply dark; else apply light; fi
+done < <(gsettings monitor org.gnome.desktop.interface color-scheme 2>/dev/null)

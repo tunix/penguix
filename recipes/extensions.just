@@ -12,10 +12,12 @@
 # - theme-scheduler@lsbcodes: supports GNOME 50 — replaces the dead
 #   nightthemeswitcher (upstream stopped at GNOME 3.38).
 # - grand-theft-focus: supports GNOME 50 natively.
+# - solaar-extension: supports GNOME 50/51 (EGO v12); talks to flatpak
+#   solaar over its exported session dbus interface.
 # - search-light is intentionally NOT in this list: the dump shows it
 #   disabled on the source machine; its tuned settings are kept in
 #   extensions.ini for when it is re-enabled.
-PENGUIX_USER_EXTENSIONS := "theme-scheduler@lsbcodes grand-theft-focus@zalckos.github.com"
+PENGUIX_USER_EXTENSIONS := "theme-scheduler@lsbcodes grand-theft-focus@zalckos.github.com solaar-extension@sidevesh"
 
 # Install + enable every user extension (idempotent). A per-extension
 # failure warns and continues, so one dead extension cannot block setup.

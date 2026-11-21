@@ -137,3 +137,21 @@ just penguix-sysctl-ttl         # asks with gum confirm; writes /etc/sysctl.d/99
 - GDM settings (`org/gnome/login-screen`, e.g. fingerprint auth) read the
   SYSTEM dconf database; user-level values are inert, so they are not in this
   repo.
+
+## Theme scheduling (replaces nightthemeswitcher)
+
+nightthemeswitcher is dead upstream (last GNOME 3.38). The replacement is
+two pieces, both userspace:
+
+1. `theme-scheduler@lsbcodes` (GNOME 50) switches GNOME's light/dark style
+   at fixed clock times — set the hours once in its preferences GUI
+   (it has no config in this repo yet; use `penguix-dconf-backup` to keep a
+   proposal once tuned).
+2. `penguix-theme-sync` (enabled by `penguix-home`) runs a systemd **user**
+   unit that watches `color-scheme` and calls the dotfiles script
+   (`~/.local/bin/toggle-color-preferences.sh`) so zellij/k9s/bat/nvim
+   follow the GNOME style. The script itself stays in dotfiles; the watcher
+   ignores same-value rewrites so the chain cannot loop.
+
+Lost in the swap: nightthemeswitcher's manual toggle keybinding
+(`<Shift><Super>t`) — GNOME quick settings has a native style toggle.
