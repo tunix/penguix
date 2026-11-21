@@ -40,3 +40,14 @@ penguix-dconf-reset KEY:
     #!/usr/bin/env bash
     dconf reset "{{KEY}}"
     echo "Reset {{KEY}} to system default."
+
+# Compare the live user db against TRUE schema defaults (read-only).
+# Uses an empty dconf profile so gsettings returns compiled schema defaults
+# instead of effective values. Buckets: SAME-AS-DEFAULT (safe to reset,
+# per repo file, with the exact dconf reset command), DIFFERS (keep),
+# UNKNOWN (extension/app schemas the script cannot judge).
+[group('Desktop')]
+penguix-dconf-vs-defaults:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    python3 "{{repo_root}}/scripts/dconf-vs-defaults.py"
