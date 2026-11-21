@@ -124,9 +124,11 @@ just penguix-sysctl-ttl         # asks with gum confirm; writes /etc/sysctl.d/99
   (userspace) on each machine. On fresh installs the font keys in
   `dconf/desktop.ini` fall back to the default typeface until the font is
   present.
-- Yaru cursor theme is not in the base images; install it into
-  `~/.local/share/icons/` (userspace) or let GNOME use the default theme and
-  delete the `cursor-theme` line from `dconf/desktop.ini`.
+- **Bibata** cursor theme: installed user-level by `just penguix-bibata`
+  (downloads the pinned release `ful1e5/Bibata_Cursor v2.0.7` into
+  `~/.local/share/icons/` and selects `Bibata-Modern-Ice`; pass another
+  variant as an argument, e.g. `just penguix-bibata Bibata-Modern-Classic`).
+  Yaru (the previous choice) is not installed on dakota and was replaced.
 
 ## Theme scheduling (replaces nightthemeswitcher)
 
