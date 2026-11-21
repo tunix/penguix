@@ -23,7 +23,7 @@ import? "recipes/work.just"
 
 # One-shot: bring a fresh system to the penguix state. Each step is
 # idempotent and asks for confirmation, so this is safe to re-run.
-[group('Penguix')]
+[group('penguix')]
 penguix-setup:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -47,7 +47,7 @@ penguix-setup:
 
 # Install this Justfile as the global justfile (~/.config/just/justfile),
 # so recipes run via `just -g <recipe>` from any directory.
-[group('Penguix')]
+[group('penguix')]
 penguix-install-global-justfile:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -63,7 +63,7 @@ penguix-install-global-justfile:
     echo "Try: just -g penguix-setup"
 
 # Show what of the penguix state is already applied.
-[group('Penguix')]
+[group('penguix')]
 penguix-status:
     #!/usr/bin/env bash
     set -euo pipefail
