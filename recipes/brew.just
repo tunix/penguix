@@ -16,7 +16,7 @@ penguix-brew:
         install -m 644 "$f" "$dest/"
         echo "Synced $(basename "$f") -> $dest/"
     done
-    just penguix-brew-all
+    just --justfile "{{repo_root}}/Justfile" penguix-brew-all
 
 # Run brew bundle over every Brewfile (install missing, never upgrade).
 [group('Apps')]

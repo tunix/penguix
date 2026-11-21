@@ -22,7 +22,7 @@ just penguix-setup          # chains: brew → flatpaks → dconf → extensions
 Or install the recipes as your global justfile so they work from anywhere:
 
 ```bash
-just penguix-install-global-justfile   # symlinks ~/.config/just/justfile -> this Justfile
+just penguix-install-global-justfile   # generates a delegating global justfile
 cd $ANYWHERE
 just -g penguix-setup
 ```

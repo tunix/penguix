@@ -24,7 +24,7 @@ penguix-extensions:
     set -euo pipefail
     status=0
     for uuid in {{PENGUIX_USER_EXTENSIONS}}; do
-        if ! just penguix-extension-install "$uuid"; then
+        if ! just --justfile "{{repo_root}}/Justfile" penguix-extension-install "$uuid"; then
             echo "WARN: $uuid not installed — setup continues." >&2
             status=1
         fi
