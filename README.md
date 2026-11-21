@@ -48,7 +48,7 @@ ujust recipes; they are just invoked through the repo justfile or `just -g`.
 | `dconf/desktop.ini` | Desktop settings (fonts, peripherals, wm, power, media keys…) |
 | `dconf/shell.ini` | GNOME Shell: app folders, favorites, enabled extensions, weather |
 | `dconf/extensions.ini` | Shell extension settings (blur-my-shell, tilingshell, appindicator…) |
-| `dconf/apps.ini` | App-specific settings (Ptyxis, rtv, valhalla, firewall-config) |
+| `dconf/apps.ini` | App-specific settings (rtv, valhalla, firewall-config) |
 | `dconf/proposals/` | gitignored output of `penguix-dconf-backup` |
 | `home/` | User-level file deployments (Brave flags, autostart) |
 | `scripts/` | Extension installer, Brewfile validator |
@@ -133,9 +133,11 @@ just penguix-sysctl-ttl         # asks with gum confirm; writes /etc/sysctl.d/99
 - GDM settings (`org/gnome/login-screen`, e.g. fingerprint auth) read the
   SYSTEM dconf database; user-level values are inert, so they are not in this
   repo.
-- Ptyxis profile: the UUID is stable (projectbluefin/common ships the same
-  one for bluefin), so `dconf/apps.ini` carries the catppuccin palette to
-  dakota too. On bluefin it is simply redundant.
+- Ptyxis settings were dropped on purpose: dakota's default terminal is
+  Ghostty (built into the image) and Ptyxis is not installed there. If you
+  ever rebase to bluefin, re-add the `[org/gnome/Ptyxis]` sections from the
+  archived penguix-finpilot-2 repo (projectbluefin/common ships a matching
+  fixed profile UUID for the catppuccin palette).
 
 ## Theme scheduling (replaces nightthemeswitcher)
 
