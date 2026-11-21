@@ -24,6 +24,8 @@ changing anything; the rules below are constraints, not suggestions.
 
 ## Conventions
 
+- The project name is always written lowercase: `penguix`. Never
+  `Penguix`/`PENGUIX` in prose, code, group names or identifiers.
 - Recipes follow ujust style: `[group(...)]` tags, `set
   allow-duplicate-recipes := true`, `set ignore-comments := true`, gum for
   prompts. They run via `just`/`just -g`, never via `ujust` (it has no
