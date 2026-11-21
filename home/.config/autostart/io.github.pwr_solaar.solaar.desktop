@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Solaar
+Exec=flatpak run --command=solaar io.github.pwr_solaar.solaar --window=hide
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+Categories=Utility;
+Hidden=false
