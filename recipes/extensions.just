@@ -9,15 +9,16 @@
 # Settings for these live in dconf/extensions.ini.
 #
 # Derived from the 2026-11 `dconf dump` + EGO shell_version_map checks:
-# - theme-scheduler@lsbcodes: supports GNOME 50 — replaces the dead
-#   nightthemeswitcher (upstream stopped at GNOME 3.38).
 # - grand-theft-focus: supports GNOME 50 natively.
 # - solaar-extension: supports GNOME 50/51 (EGO v12); talks to flatpak
 #   solaar over its exported session dbus interface.
+# - theme-scheduler was dropped: color-scheme scheduling is now handled by
+#   the penguix-sun-scheduler systemd user timer (sun-based with a fixed
+#   09:00/18:00 fallback; see README).
 # - search-light is intentionally NOT in this list: the dump shows it
 #   disabled on the source machine; its tuned settings are kept in
 #   extensions.ini for when it is re-enabled.
-PENGUIX_USER_EXTENSIONS := "theme-scheduler@lsbcodes grand-theft-focus@zalckos.github.com solaar-extension@sidevesh"
+PENGUIX_USER_EXTENSIONS := "grand-theft-focus@zalckos.github.com solaar-extension@sidevesh"
 
 # Install + enable every user extension (idempotent). A per-extension
 # failure warns and continues, so one dead extension cannot block setup.

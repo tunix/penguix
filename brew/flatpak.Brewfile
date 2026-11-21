@@ -8,6 +8,11 @@
 flatpak "be.alexandervanhee.gradia"
 flatpak "com.belmoussaoui.Decoder"
 flatpak "com.belmoussaoui.Obfuscate"
+# No extension-management app ships with dakota: the standalone GNOME
+# Extensions app was retired upstream (only gnome-extensions CLI remains in
+# gnome-shell; GNOME Settings gained an Extensions panel). ExtensionManager
+# adds EGO browsing/install on top.
+flatpak "com.mattjakeman.ExtensionManager"
 flatpak "com.brave.Browser"
 flatpak "com.discordapp.Discord"
 flatpak "com.github.huluti.Curtail"

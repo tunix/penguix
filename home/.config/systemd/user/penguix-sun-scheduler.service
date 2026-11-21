@@ -1,0 +1,8 @@
+[Unit]
+Description=penguix: set color-scheme from local sunrise/sunset
+# Needs the user session bus (gsettings)
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/penguix-sun-scheduler

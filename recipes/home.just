@@ -15,6 +15,27 @@ penguix-home:
     fi
     echo "Home files deployed (brave-flags, autostart entries, theme-sync watcher)."
     just --justfile "{{repo_root}}/Justfile" penguix-theme-sync
+    just --justfile "{{repo_root}}/Justfile" penguix-sun-scheduler
+
+# Re-evaluate color-scheme every minute from local sunrise/sunset. Location
+# comes from night-light-last-coordinates (gsd writes it when Night Light
+# follows the system location); fallback: fixed 09:00 light / 18:00 dark.
+# Fast-exits when the timer is already enabled.
+[group('Fixes')]
+penguix-sun-scheduler:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    state="$(systemctl --user is-enabled penguix-sun-scheduler.timer 2>/dev/null || true)"
+    if [ "$state" = "enabled" ]; then
+        echo "penguix-sun-scheduler already enabled; nothing to do."
+        exit 0
+    fi
+    if ! systemctl --user daemon-reload 2>/dev/null; then
+        echo "WARN: no user systemd session available; run 'just penguix-sun-scheduler' from a desktop session later." >&2
+        exit 0
+    fi
+    systemctl --user enable --now penguix-sun-scheduler.timer
+    echo "penguix-sun-scheduler enabled (color-scheme follows local sunrise/sunset)."
 
 # Keep CLI themes (zellij/k9s/bat/nvim) in sync with GNOME color-scheme.
 # Deploys the watcher files (penguix-home does) and enables the systemd

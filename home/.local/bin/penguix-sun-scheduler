@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+"""penguix: set GNOME color-scheme by local sunrise/sunset.
+
+Runs every minute from the penguix-sun-scheduler systemd user timer.
+
+Location source: `org.gnome.settings-daemon.plugins.color
+night-light-last-coordinates`, which gnome-settings-daemon populates when
+Night Light follows the system location (Settings > Location + Night Light
+schedule-automatic). Fallback when unavailable/unparseable: fixed 09:00
+light, 18:00 dark.
+
+Sunrise/sunset: NOAA solar formulas, zenith 90.833 deg, stdlib only.
+Idempotent: color-scheme is written only when it differs.
+"""
+
+import datetime
+import math
+import subprocess
+import sys
+
+FALLBACK_LIGHT = datetime.time(9, 0)
+FALLBACK_DARK = datetime.time(18, 0)
+SCHEMA = "org.gnome.desktop.interface"
+KEY = "color-scheme"
+
+
+def gsettings(*args: str) -> str | None:
+    try:
+        r = subprocess.run(["gsettings", *args], capture_output=True, text=True, timeout=10)
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return None
+    return r.stdout.strip() if r.returncode == 0 else None
+
+
+def read_coords():
+    raw = gsettings("get", "org.gnome.settings-daemon.plugins.color",
+                    "night-light-last-coordinates")
+    if not raw:
+        return None
+    m = None
+    try:
+        m = [float(x) for x in raw.strip("()").split(",")]
+    except ValueError:
+        return None
+    if len(m) != 2 or not all(-90 <= abs(v) <= 360 for v in m):
+        return None
+    lat, lon = m
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        return None
+    return lat, lon
+
+
+def sun_times_utc_minutes(lat: float, lon: float, day: int) -> tuple[float, float] | None:
+    """NOAA sunrise/sunset in UTC minutes (longitude positive east)."""
+    zenith = 90.833
+
+    def gamma(hour: float) -> float:
+        return 2 * math.pi / 365 * (day - 1 + (hour - 12) / 24)
+
+    def eqtime(hour: float) -> float:
+        g = gamma(hour)
+        return 229.18 * (0.000075 + 0.001868 * math.cos(g) - 0.032077 * math.sin(g)
+                         - 0.014615 * math.cos(2 * g) - 0.040849 * math.sin(2 * g))
+
+    def decl(hour: float) -> float:
+        g = gamma(hour)
+        return (0.006918 - 0.399912 * math.cos(g) + 0.070257 * math.sin(g)
+                - 0.006758 * math.cos(2 * g) - 0.000907 * math.sin(2 * g)
+                + 0.002936 * math.cos(3 * g) - 0.001489 * math.sin(3 * g))
+
+    d = decl(12)
+    cos_ha = (math.cos(math.radians(zenith)) / (math.cos(math.radians(lat)) * math.cos(d))
+              - math.tan(math.radians(lat)) * math.tan(d))
+    if not -1 <= cos_ha <= 1:
+        return None  # polar day/night: sun never crosses the horizon
+    ha = math.degrees(math.acos(cos_ha))
+    noon = 720 - 4 * lon - eqtime(12)
+    return noon - 4 * ha, noon + 4 * ha
+
+
+def target_scheme(now_local: datetime.datetime) -> str:
+    coords = read_coords()
+    if coords:
+        utc = now_local.astimezone(datetime.timezone.utc)
+        times = sun_times_utc_minutes(coords[0], coords[1], utc.timetuple().tm_yday)
+        if times:
+            sr, ss = times
+            base = datetime.datetime.combine(utc.date(), datetime.time(), tzinfo=datetime.timezone.utc)
+            sunrise = base + datetime.timedelta(minutes=sr)
+            sunset = base + datetime.timedelta(minutes=ss)
+            return "prefer-light" if sunrise <= utc < sunset else "prefer-dark"
+    # fallback: fixed hours, in local time
+    light = now_local.replace(hour=FALLBACK_LIGHT.hour, minute=FALLBACK_LIGHT.minute, second=0)
+    dark = now_local.replace(hour=FALLBACK_DARK.hour, minute=FALLBACK_DARK.minute, second=0)
+    return "prefer-light" if light <= now_local < dark else "prefer-dark"
+
+
+def main() -> int:
+    now = datetime.datetime.now().astimezone()
+    want = target_scheme(now)
+    current = gsettings("get", SCHEMA, KEY) or "'default'"
+    want_text = f"'{want}'"
+    if current == want_text:
+        print(f"penguix-sun-scheduler: {want} already active; nothing to do.")
+        return 0
+    r = subprocess.run(["gsettings", "set", SCHEMA, KEY, want_text], timeout=10)
+    if r.returncode != 0:
+        print("penguix-sun-scheduler: failed to set color-scheme", file=sys.stderr)
+        return 1
+    print(f"penguix-sun-scheduler: color-scheme -> {want}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

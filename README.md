@@ -139,18 +139,26 @@ just penguix-sysctl-ttl         # asks with gum confirm; writes /etc/sysctl.d/99
 
 ## Theme scheduling (replaces nightthemeswitcher)
 
-nightthemeswitcher is dead upstream (last GNOME 3.38). The replacement is
-two pieces, both userspace:
+nightthemeswitcher is dead upstream (last GNOME 3.38), and GNOME has NO
+native automatic light/dark scheduling: the Settings Style panel is a plain
+Default/Dark toggle (verified upstream), and Night Light only adjusts color
+temperature. penguix therefore schedules it itself, all userspace:
 
-1. `theme-scheduler@lsbcodes` (GNOME 50) switches GNOME's light/dark style
-   at fixed clock times — set the hours once in its preferences GUI
-   (it has no config in this repo yet; use `penguix-dconf-backup` to keep a
-   proposal once tuned).
-2. `penguix-theme-sync` (enabled by `penguix-home`) runs a systemd **user**
-   unit that watches `color-scheme` and calls the dotfiles script
-   (`~/.local/bin/toggle-color-preferences.sh`) so zellij/k9s/bat/nvim
-   follow the GNOME style. The script itself stays in dotfiles; the watcher
-   ignores same-value rewrites so the chain cannot loop.
+1. `penguix-sun-scheduler` — a systemd **user** timer (every minute) running
+   `~/.local/bin/penguix-sun-scheduler` (python3, stdlib only): reads the
+   current location from `night-light-last-coordinates` (gnome-settings-daemon
+   writes it when Night Light follows the system location), computes
+   sunrise/sunset with the NOAA formulas, and flips `color-scheme` to
+   prefer-light/prefer-dark accordingly. When no location is available the
+   fallback is fixed 09:00 light / 18:00 dark. Idempotent: it writes only
+   when the scheme actually flips.
+2. `penguix-theme-sync` — the watcher from before: reacts to color-scheme
+   changes and calls the dotfiles script
+   (`~/.local/bin/toggle-color-preferences.sh`) so zellij/k9s/bat/nvim follow
+   the GNOME style. The script stays in dotfiles; same-value rewrites are
+   ignored so the chain cannot loop.
 
-Lost in the swap: nightthemeswitcher's manual toggle keybinding
-(`<Shift><Super>t`) — GNOME quick settings has a native style toggle.
+The theme-scheduler extension was dropped from this repo — the timer does
+its job without a shell extension. Lost from nightthemeswitcher: the manual
+toggle keybinding (`<Shift><Super>t`) — GNOME quick settings has a native
+style toggle.

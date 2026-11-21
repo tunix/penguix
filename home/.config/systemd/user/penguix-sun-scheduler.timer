@@ -1,0 +1,13 @@
+[Unit]
+Description=penguix: re-evaluate sun-based color-scheme every minute
+
+[Timer]
+# Every minute is cheap (one gsettings read + one float calc); the scheduler
+# itself is idempotent and only writes color-scheme when it actually flips.
+OnCalendar=*-*-* *:*:00
+AccuracySec=5s
+Persistent=false
+Unit=penguix-sun-scheduler.service
+
+[Install]
+WantedBy=timers.target
