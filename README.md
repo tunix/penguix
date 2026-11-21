@@ -130,13 +130,12 @@ just penguix-sysctl-ttl         # asks with gum confirm; writes /etc/sysctl.d/99
 
 ## Known gaps
 
-- Ptyxis profile customizations (palette etc.) live under a random per-machine
-  profile UUID (`org/gnome/Ptyxis/Profiles/<uuid>/`), so they cannot be
-  carried in the repo. Create the profile once per machine and set the
-  palette manually.
 - GDM settings (`org/gnome/login-screen`, e.g. fingerprint auth) read the
   SYSTEM dconf database; user-level values are inert, so they are not in this
   repo.
+- Ptyxis profile: the UUID is stable (projectbluefin/common ships the same
+  one for bluefin), so `dconf/apps.ini` carries the catppuccin palette to
+  dakota too. On bluefin it is simply redundant.
 
 ## Theme scheduling (replaces nightthemeswitcher)
 
