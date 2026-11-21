@@ -16,7 +16,7 @@ RPMs, no COPR, no Containerfile, no fork of the base image.
 ```bash
 git clone https://github.com/tunix/penguix.git
 cd penguix
-just penguix-setup          # chains: brew → flatpaks → dconf → extensions → home fixes
+just penguix-setup          # chains: brew → flatpaks → dconf → extensions → home → shell → sysctl
 ```
 
 Or install the recipes as your global justfile so they work from anywhere:
@@ -51,20 +51,51 @@ ujust recipes; they are just invoked through the repo justfile or `just -g`.
 
 ## Recipes
 
+Grouped as in ujust. The chained one-shot:
+
 ```text
-just penguix-setup              # one-shot full state (prompts per step)
-just penguix-brew               # brew bundle all Brewfiles (install, not upgrade)
-just penguix-flatpaks           # flatpaks from the Brewfile DSL
-just penguix-dconf-apply        # dconf load / < dconf/penguix.ini
-just penguix-dconf-backup       # dump current settings back into the repo
-just penguix-extensions         # install + enable user GNOME Shell extensions
-just penguix-home               # deploy ~/.var/app/Brave flags, autostart, etc.
+just penguix-setup              # 7 steps, gum confirm each (see System note below)
 just penguix-status             # show what is installed/applied
 ```
 
-Granular variants (`penguix-brew-cli`, `penguix-brew-devops`,
-`penguix-extension-install <uuid>`, `brave-1password-fix`, …) are listed by
-`just --list`.
+**Apps** — software via Homebrew and Flathub:
+
+```text
+just penguix-brew               # sync Brewfiles to ~/.config/homebrew + brew bundle all
+just penguix-flatpaks           # flatpaks from the Brewfile DSL
+just penguix-brew-cli           # per-category: also -coding, -devops, -gui
+just penguix-brew-check         # validate Brewfiles without evaluating them
+just install-jetbrains-toolbox  # user-level JetBrains Toolbox
+```
+
+**Desktop** — per-user GNOME settings and extensions:
+
+```text
+just penguix-dconf-apply        # dconf load / < dconf/penguix.ini
+just penguix-dconf-backup       # dump current settings to a proposal file
+just penguix-dconf-reset KEY    # reset one key to factory default
+just penguix-extensions         # install + enable user GNOME Shell extensions
+just penguix-extension-install <uuid>   # one extension (also -disable/-uninstall/-list)
+```
+
+**Fixes** — user-level file deployments (old /etc/skel content):
+
+```text
+just penguix-home               # deploy all of home/ into $HOME
+just brave-wayland-fixes        # Brave flatpak flags only
+just brave-1password-fix        # 1Password native messaging for the Brave flatpak
+```
+
+**System** — everything else; the shell change and the sysctl tweak are
+chained into `penguix-setup` as steps 6/7 and 7/7, both behind a confirm:
+
+```text
+just change-shell               # login shell -> fish (sudo usermod; alias: chsh)
+just penguix-sysctl-ttl         # opt-in TTL=65 sysctl (sudo; see sysctl section)
+just update-and-reboot          # bootc upgrade + optional reboot
+just clean-containers           # podman prune
+just penguix-install-global-justfile   # generate the delegating `just -g` shim
+```
 
 ## sysctl
 
