@@ -128,17 +128,6 @@ just penguix-sysctl-ttl         # asks with gum confirm; writes /etc/sysctl.d/99
   `~/.local/share/icons/` (userspace) or let GNOME use the default theme and
   delete the `cursor-theme` line from `dconf/desktop.ini`.
 
-## Known gaps
-
-- GDM settings (`org/gnome/login-screen`, e.g. fingerprint auth) read the
-  SYSTEM dconf database; user-level values are inert, so they are not in this
-  repo.
-- Ptyxis settings were dropped on purpose: dakota's default terminal is
-  Ghostty (built into the image) and Ptyxis is not installed there. If you
-  ever rebase to bluefin, re-add the `[org/gnome/Ptyxis]` sections from the
-  archived penguix-finpilot-2 repo (projectbluefin/common ships a matching
-  fixed profile UUID for the catppuccin palette).
-
 ## Theme scheduling (replaces nightthemeswitcher)
 
 nightthemeswitcher is dead upstream (last GNOME 3.38), and GNOME has NO
