@@ -1,0 +1,10 @@
+# Brave flatpak override — enables the 1Password desktop app integration.
+# Deployed into $HOME/.local/share/flatpak/overrides/com.brave.Browser by
+# 'just penguix-home' (it is the persisted form of:
+#   flatpak override --user --talk-name=org.freedesktop.Flatpak com.brave.Browser
+# ). It lets the sandboxed browser talk to the host session-bus name
+# org.freedesktop.Flatpak so the 1Password native messaging wrapper can
+# 'flatpak-spawn --host' the 1Password BrowserSupport binary. Without it the
+# 1Password extension in Brave cannot reach the desktop app.
+[Context]
+talk-name=org.freedesktop.Flatpak

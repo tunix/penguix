@@ -112,17 +112,26 @@ brave-wayland-fixes:
     install -D -m 644 "$src" "$dest"
 
 # Enable 1Password desktop integration for the Brave flatpak. Requires the
-# 1Password GUI installed via brew cask first.
+# 1Password GUI installed via brew cask first. The talk-name override also
+# ships as a file (home/.local/share/flatpak/overrides/com.brave.Browser)
+# applied by penguix-home; this recipe re-asserts it via the flatpak CLI for
+# homes where that deploy has not run yet.
 [group('Fixes')]
 brave-1password-fix:
     #!/usr/bin/env bash
     set -euo pipefail
     SRC="$HOME/.config/BraveSoftware/Brave-Browser/NativeMessagingHosts"
     DEST="$HOME/.var/app/com.brave.Browser/config/BraveSoftware/Brave-Browser/NativeMessagingHosts"
+    OVERRIDE="$HOME/.local/share/flatpak/overrides/com.brave.Browser"
     if [ ! -f "${SRC}/1PasswordWrapper.sh" ] || [ ! -f "${SRC}/com.1password.1password.json" ]; then
         echo "1Password native messaging files not found in ${SRC}." >&2
         echo "Install the GUI first: just penguix-brew-gui" >&2
         exit 1
+    fi
+    if [ -f "${DEST}/1PasswordWrapper.sh" ] && [ -f "${DEST}/com.1password.1password.json" ] \
+        && grep -q 'talk-name=org.freedesktop.Flatpak' "$OVERRIDE" 2>/dev/null; then
+        echo "1Password integration for the Brave flatpak already in place; nothing to do."
+        exit 0
     fi
     flatpak override --user --talk-name=org.freedesktop.Flatpak com.brave.Browser
     mkdir -p "${DEST}"
