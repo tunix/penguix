@@ -50,7 +50,7 @@ ujust recipes; they are just invoked through the repo justfile or `just -g`.
 | `dconf/extensions.ini` | Shell extension settings (blur-my-shell, tilingshell, appindicator…) |
 | `dconf/apps.ini` | App-specific settings (rtv, valhalla, firewall-config) |
 | `dconf/proposals/` | gitignored output of `penguix-dconf-backup` |
-| `home/` | User-level file deployments (Brave flags, autostart) |
+| `home/` | User-level file deployments (Brave flags, autostart, Brave flatpak 1Password override) |
 | `scripts/` | Extension installer, Brewfile validator |
 
 ## Recipes
@@ -85,7 +85,8 @@ just penguix-extension-install <uuid>   # one extension (also -disable/-uninstal
 **Fixes** — user-level file deployments (old /etc/skel content):
 
 ```text
-just penguix-home               # deploy all of home/ into $HOME
+just penguix-home               # deploy all of home/ into $HOME (incl. the
+                                # Brave↔1Password flatpak talk-name override)
 just brave-wayland-fixes        # Brave flatpak flags only
 just brave-1password-fix        # 1Password native messaging for the Brave flatpak
 ```
@@ -101,10 +102,10 @@ just clean-containers           # podman prune
 just penguix-install-global-justfile   # generate the delegating `just -g` shim
 ```
 
-Idempotency: `change-shell`, `penguix-sysctl-ttl` and `brave-wayland-fixes`
-fast-exit 0 when the target state is already in place; the brew/flatpak
-bundles and the extension installer are naturally no-ops for what is already
-installed. `penguix-setup` is safe to re-run end to end.
+Idempotency: `change-shell`, `penguix-sysctl-ttl`, `brave-wayland-fixes` and
+`brave-1password-fix` fast-exit 0 when the target state is already in place;
+the brew/flatpak bundles and the extension installer are naturally no-ops for
+what is already installed. `penguix-setup` is safe to re-run end to end.
 
 ## sysctl
 
