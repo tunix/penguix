@@ -1,5 +1,15 @@
 # AGENTS.md — penguix
 
+> [!IMPORTANT]
+> **penguix moved to [tunix/dotfiles](https://github.com/tunix/dotfiles)** as the
+> `gnome` layer (`gnome/dconf`, `gnome/home`, `gnome/brew`, `gnome/scripts`,
+> `gnome/recipes`). This repo is archived and no longer updated.
+>
+> Setup on the desktop: `just --justfile ~/dotfiles/hosts/penguix.just setup`.
+> Recipes dropped the `penguix-` prefix (`penguix-dconf-apply` → `dconf-apply`,
+> `penguix-setup` → `setup`, …); `penguix-home` and `brave-wayland-fixes` are
+> covered by `just apply`.
+
 Userspace-only personalization for Bluefin/Dakota. Repo state lives in
 `recipes/`, `brew/`, `dconf/`, `home/`, `scripts/`. Read this file before
 changing anything; the rules below are constraints, not suggestions.
