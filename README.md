@@ -1,5 +1,15 @@
 # penguix
 
+> [!IMPORTANT]
+> **penguix moved to [tunix/dotfiles](https://github.com/tunix/dotfiles)** as the
+> `gnome` layer (`gnome/dconf`, `gnome/home`, `gnome/brew`, `gnome/scripts`,
+> `gnome/recipes`). This repo is archived and no longer updated.
+>
+> Setup on the desktop: `just --justfile ~/dotfiles/hosts/penguix.just setup`.
+> Recipes dropped the `penguix-` prefix (`penguix-dconf-apply` → `dconf-apply`,
+> `penguix-setup` → `setup`, …); `penguix-home` and `brave-wayland-fixes` are
+> covered by `just apply`.
+
 Userspace-only personalization for [Bluefin](https://projectbluefin.io/) and
 [Dakota](https://docs.projectbluefin.io/dakota/) — see AGENTS.md for the
 project constraints. Nothing in this repo is layered into an OS image: no
